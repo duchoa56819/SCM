@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 23: Dự báo Nhu cầu (Demand Forecasting - Exponential Smoothing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .control-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 50%; text-align: left; font-weight: bold; font-size: 1.1rem;}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--primary);}
+        .slider-val { width: 10%; font-size: 1.5rem; font-weight: 900; color: var(--warning); text-align: right;}
+
+        canvas { background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; width: 100%; height: 300px; }
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0369a1); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 23: Làm mịn Số mũ (Exponential Smoothing)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Thuật toán cốt lõi của Trí tuệ Nhân tạo trong Dự báo Bán hàng (Demand Forecasting).</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Hệ thống AI của bạn cần dự báo doanh số tháng sau. Công thức là:<br>
+            <code style="color:var(--primary); font-size:1.1rem;">Dự báo = (Alpha * Thực tế tháng này) + ((1 - Alpha) * Dự báo cũ)</code><br>
+            Bạn có 2 bộ dữ liệu: Hàng tiêu dùng (Nhiễu loạn) và Hàng Công nghệ (Tăng vọt). Hãy điều chỉnh hệ số <strong>Alpha (α)</strong> để giảm thiểu Sai số Tuyệt đối Trung bình (MAD).
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">LOẠI DỮ LIỆU</div>
+                <select id="dataType" style="background: rgba(0,0,0,0.8); color: var(--primary); border: none; font-size: 1.2rem; font-weight: bold; margin-top: 10px; cursor: pointer;" onchange="drawChart()">
+                    <option value="stable">Bột giặt (Bình ổn, Nhiễu)</option>
+                    <option value="trend">iPhone (Sốc tăng vọt)</option>
+                </select>
+            </div>
+            <div><div style="color: var(--text-muted);">SAI SỐ MAD</div><div class="stat-value" id="madStat" style="color: var(--danger)">0.0</div></div>
+            <div><div style="color: var(--text-muted);">ĐÁNH GIÁ</div><div class="stat-value" id="perfStat" style="color: var(--success)">-</div></div>
+        </div>
+
+        <div class="control-panel">
+            <h2 style="margin-top: 0; color: var(--primary);">ĐIỀU CHỈNH THAM SỐ TRỌNG SỐ ALPHA (α)</h2>
+            
+            <div class="slider-group">
+                <div class="slider-label">Hệ số Alpha (α):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(1.0 = Tin tưởng hoàn toàn vào tháng gần nhất. 0.1 = Rất bảo thủ)</span></div>
+                <input type="range" id="alphaSlider" min="0.1" max="1.0" step="0.1" value="0.5" oninput="updateAlpha()">
+                <div class="slider-val" id="valAlpha">0.5</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 10px;">
+            <div style="color: var(--success); font-weight: bold;">■ Nhu Cầu Thực Tế</div>
+            <div style="color: var(--danger); font-weight: bold;">■ Đường Dự Báo (Forecast)</div>
+        </div>
+
+        <canvas id="chartCanvas" width="800" height="300"></canvas>
+
+        <button class="action-btn" onclick="drawChart()">CHẠY THUẬT TOÁN DỰ BÁO ➔</button>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #0ea5e9; margin-top: 0;">📚 Cẩm nang AI Forecasting</h3>
+            <p><strong>Làm mịn số mũ (Exponential Smoothing)</strong> là nền tảng của hàng ngàn phần mềm dự báo (SAP, Oracle). Sai số của Dự báo được đo bằng <strong>MAD (Mean Absolute Deviation)</strong>. MAD càng nhỏ càng tốt.</p>
+            <ul>
+                <li><strong>Hàng bình ổn (Bột giặt/Gạo):</strong> Nhu cầu thực tế luôn dao động nhẹ (Nhiễu/Noise). Nếu bạn để Alpha = 1.0 (Bám sát quá), đường dự báo của bạn sẽ nhảy múa điên cuồng theo từng cơn sốc nhỏ, dẫn đến sai số (MAD) rất cao. <strong>Chiến thuật: Kéo Alpha xuống thấp (0.1 - 0.2)</strong> để "lọc nhiễu" và tạo ra đường dự báo phẳng phiu, ổn định.</li>
+                <li><strong>Hàng bùng nổ (Công nghệ/Thời trang):</strong> Tháng 4 bán 10 cái, Tháng 5 tự nhiên bán 100 cái do Trend Tiktok. Nếu bạn để Alpha = 0.2, AI sẽ "phản ứng quá chậm", dự báo tháng 6 vẫn lẹt đẹt ở mức 20 cái, gây cháy hàng nặng. <strong>Chiến thuật: Kéo Alpha lên cao (0.8 - 0.9)</strong> để đường dự báo gập góc mạnh, đuổi kịp Trend ngay lập tức.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('chartCanvas');
+        const ctx = canvas.getContext('2d');
+        let alphaValue = 0.5;
+
+        // Data arrays (12 periods)
+        const dataStable = [50, 60, 45, 55, 48, 62, 51, 49, 58, 47, 53, 50]; 
+        const dataTrend  = [20, 25, 22, 28, 80, 85, 90, 88, 150, 145, 155, 160];
+
+        function updateAlpha() {
+            alphaValue = parseFloat(document.getElementById('alphaSlider').value);
+            document.getElementById('valAlpha').innerText = alphaValue.toFixed(1);
+            drawChart();
+        }
+
+        function drawChart() {
+            let type = document.getElementById('dataType').value;
+            let actual = type === 'stable' ? dataStable : dataTrend;
+            
+            // Calculate Forecast array
+            let forecast = [];
+            forecast[0] = actual[0]; // F1 = A1
+            
+            let totalError = 0;
+            for(let i=1; i<actual.length; i++) {
+                // Formula: F(t) = a*A(t-1) + (1-a)*F(t-1)
+                let f = (alphaValue * actual[i-1]) + ((1 - alphaValue) * forecast[i-1]);
+                forecast.push(f);
+                
+                // Calculate absolute error for MAD (don't count period 1 since it's seeded)
+                totalError += Math.abs(actual[i] - f);
+            }
+            
+            let mad = totalError / (actual.length - 1);
+            
+            document.getElementById('madStat').innerText = mad.toFixed(2);
+            
+            // Evaluate
+            let isGood = false;
+            if(type === 'stable' && mad < 6) isGood = true; // Alpha low is good
+            if(type === 'trend' && mad < 25) isGood = true; // Alpha high is good
+            
+            let perf = document.getElementById('perfStat');
+            if (isGood) {
+                perf.innerText = "TỐT LẮM!";
+                perf.style.color = "var(--success)";
+            } else {
+                perf.innerText = "SAI SỐ CAO!";
+                perf.style.color = "var(--danger)";
+            }
+
+            // Draw Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let maxVal = Math.max(...actual, ...forecast) * 1.1; // Add 10% padding
+            let xStep = canvas.width / (actual.length - 1);
+            
+            function getY(val) {
+                return canvas.height - (val / maxVal * canvas.height);
+            }
+
+            // Draw Grid
+            ctx.strokeStyle = "rgba(255,255,255,0.1)";
+            ctx.lineWidth = 1;
+            for(let i=0; i<actual.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * xStep, 0);
+                ctx.lineTo(i * xStep, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw Actual
+            ctx.strokeStyle = "var(--success)"; // #10b981
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, getY(actual[0]));
+            for(let i=1; i<actual.length; i++) {
+                ctx.lineTo(i * xStep, getY(actual[i]));
+            }
+            ctx.stroke();
+
+            // Draw Points Actual
+            ctx.fillStyle = "white";
+            for(let i=0; i<actual.length; i++) {
+                ctx.beginPath();
+                ctx.arc(i * xStep, getY(actual[i]), 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw Forecast
+            ctx.strokeStyle = "var(--danger)"; // #ef4444
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, getY(forecast[0]));
+            for(let i=1; i<forecast.length; i++) {
+                ctx.lineTo(i * xStep, getY(forecast[i]));
+            }
+            ctx.stroke();
+            ctx.setLineDash([]); // reset
+
+            // Draw Points Forecast
+            ctx.fillStyle = "var(--danger)";
+            for(let i=0; i<forecast.length; i++) {
+                ctx.beginPath();
+                ctx.arc(i * xStep, getY(forecast[i]), 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { drawChart(); };
+    </script>
+</body>
+</html>

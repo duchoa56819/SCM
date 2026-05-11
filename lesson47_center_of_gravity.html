@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 47: Trung tâm Trọng lực (Center of Gravity Method)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #3b0764, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; user-select: none;}
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #7e22ce); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2.5rem; font-weight: 900; color: white; margin-top: 5px; }
+
+        .map-area { position: relative; width: 100%; height: 500px; background: rgba(0,0,0,0.4); border: 2px solid #475569; border-radius: 12px; overflow: hidden; margin-bottom: 20px; cursor: crosshair; background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px;}
+        
+        .city { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; border: 2px solid rgba(255,255,255,0.3); z-index: 2;}
+        .c-A { background: rgba(59, 130, 246, 0.7); width: 60px; height: 60px; left: 150px; top: 150px; } /* Dem 1000 */
+        .c-B { background: rgba(245, 158, 11, 0.7); width: 40px; height: 40px; left: 750px; top: 150px; } /* Dem 500 */
+        .c-C { background: rgba(239, 68, 68, 0.7); width: 90px; height: 90px; left: 450px; top: 400px; } /* Dem 2000 */
+
+        .city-label { position: absolute; transform: translate(-50%, 0); margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); text-align: center; z-index: 2;}
+
+        .warehouse { position: absolute; width: 40px; height: 40px; background: var(--primary); border-radius: 8px; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; z-index: 10; cursor: grab; box-shadow: 0 0 15px var(--primary); transition: background 0.2s;}
+        .warehouse:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); }
+
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;}
+        line { stroke: rgba(255,255,255,0.2); stroke-width: 2; stroke-dasharray: 5,5;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 47: Tìm Vị Trí Kho (Center of Gravity)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bài toán hình học quyết định sự sống còn của Hệ thống Phân phối Logistic.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Công ty cần xây 1 Tổng kho (Warehouse) duy nhất để cấp hàng cho 3 Thành phố.<br>
+            - Thành phố A (Xanh): Nhu cầu 1,000 Tấn.<br>
+            - Thành phố B (Vàng): Nhu cầu 500 Tấn.<br>
+            - Thành phố C (Đỏ): Nhu cầu khổng lồ 2,000 Tấn.<br>
+            <em>Trò chơi: Nhấn giữ và Kéo biểu tượng 🏢 Kho hàng trên bản đồ. Tìm ra vị trí có <strong>Tổng Cước phí Vận chuyển RẺ NHẤT</strong>. (Gợi ý: Cước phí = Khoảng cách × Nhu cầu).</em>
+        </div>
+
+        <div class="map-area" id="map" onmousemove="drag(event)" onmouseup="stopDrag()" onmouseleave="stopDrag()">
+            <svg id="svgLines">
+                <line id="lA" x1="150" y1="150" x2="450" y2="250" />
+                <line id="lB" x1="750" y1="150" x2="450" y2="250" />
+                <line id="lC" x1="450" y1="400" x2="450" y2="250" />
+            </svg>
+
+            <!-- Cities -->
+            <div class="city c-A">A</div>
+            <div class="city-label" style="left: 150px; top: 180px;">1,000 Tấn</div>
+            
+            <div class="city c-B">B</div>
+            <div class="city-label" style="left: 750px; top: 170px;">500 Tấn</div>
+            
+            <div class="city c-C">C</div>
+            <div class="city-label" style="left: 450px; top: 445px;">2,000 Tấn</div>
+
+            <!-- Warehouse (Draggable) -->
+            <div class="warehouse" id="wh" onmousedown="startDrag(event)" style="left: 450px; top: 250px;">🏢</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">TỔNG CƯỚC PHÍ (Ton-Miles)</div><div class="stat-value" id="costStat" style="color: var(--warning)">$0</div></div>
+            <div><div style="color: var(--text-muted);">ĐÁNH GIÁ VỊ TRÍ</div><div class="stat-value" id="evalStat" style="color: white; font-size: 1.5rem; line-height: 2.5rem;">Đang tìm kiếm...</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Thiết kế Mạng lưới (Network Design)</h3>
+            <p>Rất nhiều công ty chọn đặt kho ở vị trí "Chính giữa bản đồ" (Trung tâm Hình học) cho đẹp. Đó là một sai lầm chết người tốn kém hàng triệu Đô.</p>
+            <ul>
+                <li><strong>Trọng lực của Nhu cầu (Gravity of Demand):</strong> Cước vận tải tỷ lệ thuận với Trọng lượng (Volume) và Khoảng cách (Distance). Thành phố C tiêu thụ tới 2,000 Tấn (hơn 2 thành phố kia cộng lại). Do đó, C có "Lực hấp dẫn" cực lớn. Vị trí kho tối ưu phải bị "kéo lệch" về sát Thành phố C để giảm thiểu quãng đường cho những chiếc xe chở nặng nhất.</li>
+                <li><strong>Tọa độ Tối ưu Toán học:</strong> X_cg = Sum(X * Vol) / Sum(Vol). Nhờ công thức này, máy tính sẽ chỉ ra tọa độ vàng duy nhất. Khi bạn kéo kho hàng về đúng tọa độ đó, điểm số Cước phí sẽ chạm đáy (Cực tiểu). Ở bài này, chi phí thấp nhất rơi vào khoảng <strong style="color:var(--success)">$748,000</strong>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const cities = [
+            { id: 'A', x: 150, y: 150, vol: 1000 },
+            { id: 'B', x: 750, y: 150, vol: 500 },
+            { id: 'C', x: 450, y: 400, vol: 2000 }
+        ];
+
+        let whX = 450;
+        let whY = 250;
+        let isDragging = false;
+        let mapRect;
+
+        function startDrag(e) {
+            isDragging = true;
+            mapRect = document.getElementById('map').getBoundingClientRect();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            
+            whX = e.clientX - mapRect.left;
+            whY = e.clientY - mapRect.top;
+
+            // Bounds
+            if (whX < 20) whX = 20;
+            if (whX > mapRect.width - 20) whX = mapRect.width - 20;
+            if (whY < 20) whY = 20;
+            if (whY > mapRect.height - 20) whY = mapRect.height - 20;
+
+            updateMap();
+        }
+
+        function updateMap() {
+            let wh = document.getElementById('wh');
+            wh.style.left = whX + 'px';
+            wh.style.top = whY + 'px';
+
+            let totalCost = 0;
+
+            // Update lines and math
+            for(let i=0; i<cities.length; i++) {
+                let c = cities[i];
+                let line = document.getElementById('l' + c.id);
+                line.setAttribute('x2', whX);
+                line.setAttribute('y2', whY);
+
+                let dist = Math.sqrt(Math.pow(c.x - whX, 2) + Math.pow(c.y - whY, 2));
+                totalCost += dist * c.vol;
+            }
+
+            // The absolute minimum is near X=407, Y=292 with cost ~ 748,000
+            let costText = document.getElementById('costStat');
+            costText.innerText = "$" + Math.round(totalCost).toLocaleString();
+
+            let evalText = document.getElementById('evalStat');
+            
+            if (totalCost < 755000) {
+                evalText.innerText = "🏆 CHÍNH XÁC! (TỐI ƯU)";
+                evalText.style.color = "var(--success)";
+                costText.style.color = "var(--success)";
+                wh.style.background = "var(--success)";
+            } else if (totalCost < 850000) {
+                evalText.innerText = "Tốt, nhưng chưa tối ưu";
+                evalText.style.color = "var(--warning)";
+                costText.style.color = "var(--warning)";
+                wh.style.background = "var(--primary)";
+            } else {
+                evalText.innerText = "Quá đắt đỏ! Kéo lại.";
+                evalText.style.color = "var(--danger)";
+                costText.style.color = "var(--danger)";
+                wh.style.background = "var(--primary)";
+            }
+        }
+
+        window.onload = () => {
+            mapRect = document.getElementById('map').getBoundingClientRect();
+            updateMap();
+        };
+    </script>
+</body>
+</html>

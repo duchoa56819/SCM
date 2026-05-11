@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 70: Tháp Điều Khiển (Control Tower & Visibility)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .map-area { background: #1e293b; border: 2px solid var(--border); border-radius: 12px; height: 300px; position: relative; overflow: hidden; margin-bottom: 20px;}
+        
+        /* The Map */
+        .ocean { position: absolute; width: 100%; height: 100%; background: #0c4a6e; }
+        .land-left { position: absolute; width: 15%; height: 100%; background: #064e3b; left: 0;}
+        .land-right { position: absolute; width: 15%; height: 100%; background: #064e3b; right: 0;}
+        .canal { position: absolute; width: 10px; height: 100px; background: #0c4a6e; left: 50%; top: 100px;}
+        .land-mid { position: absolute; width: 20px; height: 100%; background: #064e3b; left: 50%; margin-left:-10px;}
+        /* Clear the canal hole */
+        .canal-hole { position: absolute; width: 20px; height: 40px; background: #0c4a6e; left: 50%; top: 130px; margin-left:-10px; z-index: 2;}
+
+        .start-lbl { position: absolute; left: 20px; top: 140px; font-weight: bold; z-index: 10;}
+        .end-lbl { position: absolute; right: 20px; top: 140px; font-weight: bold; z-index: 10;}
+
+        /* Obstacle */
+        .obstacle { position: absolute; width: 20px; height: 40px; background: var(--danger); left: 50%; top: 130px; margin-left:-10px; z-index: 3; display: flex; justify-content: center; align-items: center; font-weight: bold; opacity: 0;}
+
+        /* Ships */
+        .ship { position: absolute; width: 30px; height: 20px; background: white; border-radius: 10px; z-index: 4; transition: all 1s linear; display: flex; justify-content: center; align-items: center; font-size: 0.7rem;}
+        .ship-blind { top: 110px; left: 50px; background: #94a3b8; color: black;}
+        .ship-ai { top: 170px; left: 50px; background: var(--success); color: white; font-weight: bold;}
+
+        /* Radar overlay */
+        .radar { position: absolute; width: 150px; height: 150px; border-radius: 50%; border: 2px solid rgba(56, 189, 248, 0.5); left: 50%; top: 130px; transform: translate(-50%, -50%); z-index: 5; pointer-events: none; opacity: 0;}
+        .radar::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(rgba(56, 189, 248, 0.5), transparent); animation: spin 2s linear infinite;}
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-start { background: linear-gradient(135deg, var(--warning), #b45309); }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);}
+
+        .result-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;}
+        .res-col { background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center;}
+        .res-col h3 { margin-top: 0; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;}
+        .msg-box { font-size: 0.95rem; line-height: 1.5; min-height: 80px; margin-bottom: 10px;}
+        .cost-lbl { font-size: 1.5rem; font-weight: bold;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 70: Tháp Điều Khiển (Control Tower)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Xóa mù chuỗi cung ứng bằng Tầm nhìn Thời gian thực (Real-time Visibility).</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Tàu chở hàng của bạn đi từ Châu Á sang Châu Âu qua Kênh đào Suez (Điểm nghẽn ở giữa bản đồ).<br>
+            Đột nhiên, một con tàu khác mắc cạn, bịt kín Kênh đào!<br>
+            - <strong>Tàu Xám (Không có Control Tower):</strong> Bị mù thông tin. Cứ chạy thẳng vào Kênh đào rồi mới biết bị kẹt. Kẹt cứng 10 ngày.<br>
+            - <strong>Tàu Xanh (Có AI Control Tower):</strong> Nhận được cảnh báo vệ tinh ngay lập tức. Hệ thống AI tự động Bẻ lái đi vòng qua Mũi Hảo Vọng (Đường vòng cung). Mất thêm 5 ngày, nhưng thoát nạn!<br>
+            <em>Bấm CHẠY MÔ PHỎNG để xem Tầm nhìn (Visibility) cứu bạn bao nhiêu tiền!</em>
+        </div>
+
+        <div class="map-area">
+            <div class="ocean"></div>
+            <div class="land-left"></div>
+            <div class="land-right"></div>
+            <div class="land-mid"></div>
+            <div class="canal-hole"></div>
+
+            <div class="start-lbl">Châu Á</div>
+            <div class="end-lbl">Châu Âu</div>
+
+            <div class="obstacle" id="obs">KẸT</div>
+            <div class="radar" id="radar"></div>
+
+            <div class="ship ship-blind" id="sBlind">1</div>
+            <div class="ship ship-ai" id="sAi">2</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-start" id="btnRun" onclick="runSim()">▶ BẮT ĐẦU CHUYẾN ĐI & GÂY SỰ CỐ</button>
+        </div>
+
+        <div class="result-panel">
+            <div class="res-col" style="border-color: #94a3b8;">
+                <h3>1. Mạng lưới Mù (Blind)</h3>
+                <div class="msg-box" id="msg1" style="color: #94a3b8;">Tàu đang chạy bình thường...</div>
+                <div class="cost-lbl" id="cost1" style="color: var(--danger);">Thiệt hại: $0</div>
+            </div>
+            <div class="res-col" style="border-color: var(--success);">
+                <h3>2. Có Control Tower</h3>
+                <div class="msg-box" id="msg2" style="color: var(--success);">Tàu đang chạy dưới sự giám sát AI...</div>
+                <div class="cost-lbl" id="cost2" style="color: var(--success);">Thiệt hại: $0</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #38bdf8;">📚 Cẩm nang Control Tower (Tháp Điều Khiển)</h3>
+            <p>Sự cố Ever Given kẹt ở kênh đào Suez năm 2021 đã phơi bày điểm yếu chết người của Logistics toàn cầu: <strong>Sự Mù Lòa (Lack of Visibility)</strong>.</p>
+            <ul>
+                <li><strong>Quản lý dựa trên Lịch trình cũ:</strong> Hàng ngàn công ty chỉ biết con tàu dự kiến đến vào ngày 30. Họ không hề biết con tàu đang ở đâu trên biển. Khi Kênh đào bị kẹt, họ vẫn đinh ninh hàng sẽ về đúng hẹn. Kết quả: Tàu kẹt 10 ngày, nhà máy thiếu linh kiện phải đóng cửa, thiệt hại hàng Triệu Đô. Mãi 5 ngày sau họ mới nhận được email thông báo từ hãng tàu!</li>
+                <li><strong>Khái niệm Control Tower:</strong> Gắn GPS/IoT lên Container. Kết nối dữ liệu Thời tiết, Cảng biển, Vệ tinh vào một màn hình duy nhất (Như Tháp điều khiển Không lưu). Nếu có đình công ở Cảng biển hoặc bão lớn, màn hình sẽ chớp đỏ cảnh báo ngay trong Tích Tắc.</li>
+                <li><strong>Xử lý ngoại lệ (Exception Management):</strong> Nhờ biết trước sự cố từ xa 2000 dặm, Thuật toán AI lập tức tính toán: "Nên chờ Kênh thông, hay bẻ lái đi vòng qua Châu Phi tốn thêm 5 ngày?". Quyết định bẻ lái linh hoạt này (Agility) giúp bạn cứu được chuỗi sản xuất khỏi việc bị đứt gãy hoàn toàn. Visibility chính là Tiền bạc!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runSim() {
+            document.getElementById('btnRun').disabled = true;
+
+            let s1 = document.getElementById('sBlind');
+            let s2 = document.getElementById('sAi');
+            let obs = document.getElementById('obs');
+            let radar = document.getElementById('radar');
+            
+            let msg1 = document.getElementById('msg1');
+            let msg2 = document.getElementById('msg2');
+
+            // Phase 1: Move to middle
+            s1.style.left = '35%';
+            s2.style.left = '35%';
+
+            setTimeout(() => {
+                // Event happens!
+                obs.style.opacity = 1;
+                radar.style.opacity = 1;
+
+                msg2.innerHTML = "🚨 AI CẢNH BÁO: Kênh Suez bị kẹt!<br>➔ Đã bẻ lái tự động vòng qua Mũi Hảo Vọng.";
+                msg2.style.color = "var(--warning)";
+
+                // Phase 2: Ship 1 goes straight into trap
+                s1.style.left = '48%';
+                msg1.innerHTML = "❌ KHÔNG BIẾT GÌ: Cứ chạy thẳng vào điểm mù... và bị kẹt cứng!";
+                msg1.style.color = "var(--danger)";
+                document.getElementById('cost1').innerText = "Thiệt hại: $1,000,000 (Trễ 10 ngày)";
+
+                // Phase 2: Ship 2 swerves (CSS arc approx)
+                s2.style.top = '250px'; // go down
+                s2.style.left = '50%'; // go under
+
+                setTimeout(() => {
+                    // Ship 2 completes maneuver
+                    s2.style.top = '140px';
+                    s2.style.left = '85%'; // Reach Europe
+                    
+                    msg2.innerHTML = "✅ VỀ ĐÍCH AN TOÀN!<br>Tốn thêm chút nhiên liệu đi vòng, nhưng cứu được Dây chuyền sản xuất.";
+                    msg2.style.color = "var(--success)";
+                    document.getElementById('cost2').innerText = "Thiệt hại: $200,000 (Trễ 5 ngày)";
+                    
+                    radar.style.opacity = 0;
+                    document.getElementById('btnRun').innerText = "MÔ PHỎNG KẾT THÚC";
+                }, 1000);
+
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

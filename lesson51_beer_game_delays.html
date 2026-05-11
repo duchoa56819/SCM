@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 51: Trò chơi Phân phối Bia (Beer Game - System Dynamics)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f59e0b; --success: #10b981; --warning: #fcd34d; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #451a03, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fbbf24, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .pipeline-vis { display: flex; justify-content: space-between; background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;}
+        .node { flex: 1; text-align: center; font-weight: bold; position: relative;}
+        .node::after { content: "➔"; position: absolute; right: -15px; top: 10px; font-size: 1.5rem; color: var(--text-muted);}
+        .node:last-child::after { display: none; }
+        .node-val { font-size: 1.5rem; color: var(--primary); margin-top: 5px; background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; display: inline-block; min-width: 40px;}
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: var(--panel-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(0,0,0,0.5); color: var(--primary); font-weight: 800;}
+        .col-wk { font-weight: bold; color: var(--text-muted); }
+        .col-dem { color: var(--danger); font-weight: bold; }
+        .col-inv { font-weight: bold; }
+        .col-inp { width: 100px; }
+        input[type="number"] { width: 60px; padding: 5px; text-align: center; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--border); border-radius: 4px; font-weight: bold;}
+        
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #b45309); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; transform: none; box-shadow: none;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--success); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 51: Trò chơi Đội Bia (Beer Distribution Game)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Mô phỏng Thảm họa tâm lý khi Chuỗi cung ứng bị trễ hạn (Lead Time Delay).</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn là Chủ cửa hàng Bia. 3 tuần đầu tiên, mọi thứ yên bình, Nhu cầu (Demand) là 10. Bạn bán 10, Đặt hàng (Order) 10.<br>
+            <strong>Đột nhiên ở Tuần 4:</strong> Có một bài báo khen Bia của bạn. Nhu cầu tăng vọt lên <strong style="color:var(--danger)">20 Thùng/Tuần</strong>.<br>
+            <em>Lưu ý Tử thần: Phải mất đúng <strong>2 Tuần</strong> thì số hàng bạn vừa đặt mới được Nhà Máy giao tới cửa hàng của bạn! Hãy nhập số lượng đặt hàng cho các Tuần tiếp theo. Đừng để Âm Tồn Kho, nhưng cũng đừng để Hàng ế đầy kho!</em>
+        </div>
+
+        <div class="pipeline-vis">
+            <div class="node">Cửa hàng Bạn<br><div class="node-val" id="p1">📦 10</div></div>
+            <div class="node">Đang Giao (Tuần 1)<br><div class="node-val" id="p2">🚚 10</div></div>
+            <div class="node">Đang Giao (Tuần 2)<br><div class="node-val" id="p3">🏭 10</div></div>
+        </div>
+
+        <table>
+            <tr>
+                <th>Tuần</th>
+                <th>Khách Hàng Mua (Demand)</th>
+                <th>Tồn Kho (Inventory)</th>
+                <th>Đơn Bạn Đặt (Order)</th>
+            </tr>
+            <tr><td class="col-wk">Tuần 1</td><td class="col-dem">10</td><td class="col-inv" style="color:var(--success)">10</td><td class="col-inp">10</td></tr>
+            <tr><td class="col-wk">Tuần 2</td><td class="col-dem">10</td><td class="col-inv" style="color:var(--success)">10</td><td class="col-inp">10</td></tr>
+            <tr><td class="col-wk">Tuần 3</td><td class="col-dem">10</td><td class="col-inv" style="color:var(--success)">10</td><td class="col-inp">10</td></tr>
+            <!-- Active Week -->
+            <tr style="background: rgba(255,255,255,0.05);" id="rowActive">
+                <td class="col-wk" id="wkDisp">Tuần 4</td>
+                <td class="col-dem" style="font-size: 1.2rem;">20 (TĂNG VỌT!)</td>
+                <td class="col-inv" id="invDisp" style="color:var(--warning)">0 (Cháy hàng)</td>
+                <td class="col-inp"><input type="number" id="orderInp" value="20" min="0"></td>
+            </tr>
+            <!-- Future lines -->
+            <tbody id="histLogs"></tbody>
+        </table>
+
+        <button class="action-btn" id="btnNext" onclick="nextWeek()">CHỐT ĐƠN HÀNG & SANG TUẦN TIẾP THEO</button>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--success);">📚 Cẩm nang Động lực học Hệ thống (System Dynamics)</h3>
+            <p>Trò chơi Beer Game được tạo ra tại Đại học MIT năm 1960. Hơn 90% sinh viên MBA và CEO trên toàn cầu đều thất bại thảm hại trong lần chơi đầu tiên.</p>
+            <ul>
+                <li><strong>Cạm bẫy Lead Time (Độ trễ):</strong> Ở Tuần 4, Nhu cầu tăng thành 20. Kho bạn về 0. Bạn hoảng sợ đặt 30 thùng. Sang Tuần 5, Nhu cầu vẫn 20. Hàng Tuần 4 CHƯA VỀ (Vì trễ 2 tuần). Kho bạn bị Âm (Nợ khách). Bạn càng hoảng loạn, đặt lên 40, 50 thùng!</li>
+                <li><strong>Ảo giác Tích trữ (Hoarding Panic):</strong> Bạn quên mất rằng trong "Đường ống vận chuyển (Pipeline)", 30 thùng và 40 thùng của bạn đang được xe tải chở đến. Đến Tuần 6 và 7, đột nhiên một "Cơn lũ" 70 thùng bia đổ ập vào cửa hàng của bạn. Tồn kho vọt lên +50. Bạn phải ôm đống hàng ế đó suốt nửa năm.</li>
+                <li><strong>Bài học Cốt lõi:</strong> Khi chuỗi cung ứng có Độ Trễ, con người thường phản ứng thái quá với biến động ngắn hạn. Bạn phải luôn nhớ công thức: <em>Lượng hàng thực tế = Tồn kho + Hàng đang trên đường (In-transit)</em>. Chỉ khi nào tin tưởng vào "Hàng trên đường", bạn mới không bị cuốn vào Hiệu ứng Bullwhip!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let week = 4;
+        let inventory = 0;
+        let pipeline = [10, 10]; // week 4 incoming is pipeline[0] = 10, week 5 is 10.
+        
+        let hist = '';
+
+        function nextWeek() {
+            let order = parseInt(document.getElementById('orderInp').value);
+            if(isNaN(order) || order < 0) order = 0;
+
+            // Process Current Week
+            let incoming = pipeline.shift(); // Nhận hàng
+            pipeline.push(order); // Đẩy đơn mới vào cuối ống
+
+            // Move historical row
+            let invColor = inventory === 0 ? 'white' : (inventory < 0 ? 'var(--danger)' : 'var(--success)');
+            
+            hist += `
+                <tr>
+                    <td class="col-wk">Tuần ${week}</td>
+                    <td class="col-dem">20</td>
+                    <td class="col-inv" style="color:${invColor}">${inventory}</td>
+                    <td class="col-inp" style="color:var(--text-muted)">${order}</td>
+                </tr>
+            `;
+
+            document.getElementById('histLogs').innerHTML = hist;
+
+            // Prepare Next Week
+            week++;
+            
+            // New Inventory = Old Inventory + Incoming - Demand
+            inventory = inventory + incoming - 20;
+
+            if (week > 8) {
+                document.getElementById('rowActive').style.display = 'none';
+                document.getElementById('btnNext').disabled = true;
+                
+                let evalMsg = "";
+                if (inventory > 20) evalMsg = "❌ THẤT BẠI: Bạn đã hoảng loạn đặt quá nhiều. Lũ Bia đã đổ về kho làm bạn ngập trong Hàng Ế (Bullwhip Effect)!";
+                else if (inventory < -10) evalMsg = "❌ THẤT BẠI: Bạn đặt quá rụt rè, nợ khách hàng một đống bia và bị chửi rủa.";
+                else evalMsg = "🏆 THIÊN TÀI! Bạn giữ được bình tĩnh và kiểm soát được Tồn kho ở mức độ an toàn hoàn hảo!";
+
+                alert("TRÒ CHƠI KẾT THÚC!\n\n" + evalMsg);
+                return;
+            }
+
+            // Update UI
+            document.getElementById('wkDisp').innerText = "Tuần " + week;
+            
+            let iDisp = inventory;
+            if(inventory < 0) iDisp = inventory + " (Nợ khách)";
+            
+            let iColor = inventory === 0 ? 'var(--warning)' : (inventory < 0 ? 'var(--danger)' : 'var(--success)');
+            
+            let invEl = document.getElementById('invDisp');
+            invEl.innerText = iDisp;
+            invEl.style.color = iColor;
+
+            // Update Pipeline Vis
+            document.getElementById('p1').innerText = "📦 " + (inventory > 0 ? inventory : 0);
+            document.getElementById('p2').innerText = "🚚 " + pipeline[0];
+            document.getElementById('p3').innerText = "🏭 " + pipeline[1];
+        }
+    </script>
+</body>
+</html>

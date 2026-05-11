@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 64: Mạng Lưới Đàn Hồi (Elastic Supply Chain)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s; flex: 1;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(14, 165, 233, 0.5);}
+
+        .chart-container { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px; position: relative; height: 300px; margin-bottom: 20px; display: flex; align-items: flex-end; justify-content: space-around;}
+        
+        .month-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; width: 6%; position: relative; z-index: 2;}
+        .bar { width: 100%; background: var(--primary); border-radius: 4px 4px 0 0; z-index: 3;}
+        .lbl { font-size: 0.8rem; margin-top: 5px; color: var(--text-muted);}
+
+        /* Waste block logic */
+        .waste-block { position: absolute; width: 100%; background: rgba(239, 68, 68, 0.4); border: 1px dashed var(--danger); z-index: 1; bottom: 0; opacity: 0; transition: opacity 0.5s;}
+        
+        /* Capacity Line */
+        .cap-line { position: absolute; left: 0; right: 0; height: 4px; background: var(--warning); z-index: 4; transition: all 0.5s; bottom: 15%;}
+        .cap-line::after { content: "NĂNG LỰC KHO BÃI THỰC TẾ"; position: absolute; right: 10px; top: -20px; font-size: 0.8rem; font-weight: bold; color: var(--warning);}
+
+        .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2.5rem; font-weight: 900; color: white; margin-top: 5px; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 64: Chuỗi Cung Ứng Đàn Hồi (Elastic SCM)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Mô hình "Airbnb cho Nhà kho" đánh bại Hợp đồng thuê cứng nhắc.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Nhu cầu hàng hóa của bạn ổn định 10 tháng. Nhưng vào Tháng 11 (Black Friday) và Tháng 12 (Giáng Sinh), lượng hàng đổ về kho TĂNG GẤP 5 LẦN!<br>
+            Bạn làm cách nào để chứa hết số hàng này?<br>
+            <em>Trò chơi: Nhấn chọn 2 chiến lược quản lý Mặt Bằng Kho dưới đây để xem cách Dòng tiền bị lãng phí như thế nào qua biểu đồ 12 Tháng!</em>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt active" id="btnRigid" onclick="runSim('rigid')">🏭 Mô hình Cứng Nhắc (Thuê kho Khổng lồ 5 năm)</button>
+            <button class="btn-opt" id="btnElastic" onclick="runSim('elastic')">☁️ Mô hình Đàn Hồi (Thuê linh hoạt On-demand)</button>
+        </div>
+
+        <div class="chart-container" id="chartArea">
+            <div class="cap-line" id="capLine"></div>
+
+            <!-- Month 1-10 (Low demand) -->
+            <script>
+                const demands = [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 80, 80]; // Peak in 11, 12
+                for(let i=0; i<12; i++) {
+                    document.write(`
+                        <div class="month-col">
+                            <div class="waste-block w-blk" style="height: 80%; bottom: ${demands[i]}%;"></div>
+                            <div class="bar" style="height: ${demands[i]}%;"></div>
+                            <div class="lbl">T${i+1}</div>
+                        </div>
+                    `);
+                }
+            </script>
+        </div>
+
+        <div class="dashboard">
+            <div><div style="color: var(--text-muted);">TỔNG CHI PHÍ THUÊ MẶT BẰNG</div><div class="stat-value" id="costStat" style="color: var(--danger)">$1,200,000</div></div>
+            <div><div style="color: var(--text-muted);">SỐ TIỀN BỊ LÃNG PHÍ (Lãng phí Không gian)</div><div class="stat-value" id="wasteStat" style="color: var(--danger)">$650,000!</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #38bdf8;">📚 Cẩm nang On-demand Warehousing (Flexe)</h3>
+            <p>Khái niệm "Cloud Computing" (Dùng bao nhiêu trả bấy nhiêu) đã lan sang lĩnh vực Logistics vật lý, tạo ra khái niệm <strong>Đàn Hồi (Elasticity)</strong>.</p>
+            <ul>
+                <li><strong>Gánh nặng của Mô hình Cứng (Rigid):</strong> Để chịu được đỉnh tải của Tháng 11 (Black Friday), bạn phải cắn răng ký hợp đồng thuê một cái Kho Siêu To suốt 5 năm. Hệ quả: Từ Tháng 1 đến Tháng 10, cái kho khổng lồ đó trống rỗng 80%. Bạn vẫn phải trả tiền điện, tiền thuê đất, tiền bảo vệ. Vùng màu Đỏ trên biểu đồ chính là dòng máu tiền mặt của công ty đang rỉ máu.</li>
+                <li><strong>Cách mạng Đàn Hồi (Elasticity):</strong> Bạn chỉ thuê một Kho Core (Kho lõi) rất nhỏ để gánh lượng hàng cơ bản (15%). Khi Mùa cao điểm tới, bạn bật App (như Flexe, Stord) và "đặt chỗ" tạm thời trong kho của các công ty khác (những người đang dư chỗ). Bạn trả tiền thuê Đắt hơn bình thường, nhưng bạn <strong>Chỉ thuê đúng 2 Tháng</strong> rồi rút đi.</li>
+                <li><strong>Kết quả:</strong> Năng lực lưu trữ của bạn biến thiên bám sát hoàn toàn với đường cong Nhu cầu. Bạn không lãng phí 1 mét vuông nào. Tổng chi phí một năm giảm hơn một Nửa! Tốc độ mở rộng và thu hẹp bằng một cái nhấp chuột.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runSim(mode) {
+            document.getElementById('btnRigid').classList.remove('active');
+            document.getElementById('btnElastic').classList.remove('active');
+            
+            let wastes = document.querySelectorAll('.w-blk');
+
+            if (mode === 'rigid') {
+                document.getElementById('btnRigid').classList.add('active');
+                
+                // Set Cap Line high
+                let line = document.getElementById('capLine');
+                line.style.bottom = "80%";
+                line.style.background = "var(--danger)";
+                
+                // Show waste blocks
+                wastes.forEach((w, i) => {
+                    if (i < 10) w.style.opacity = 1; // Show waste for months 1-10
+                });
+
+                document.getElementById('costStat').innerText = "$1,200,000";
+                document.getElementById('costStat').style.color = "var(--danger)";
+                document.getElementById('wasteStat').innerText = "$650,000!";
+                document.getElementById('wasteStat').style.color = "var(--danger)";
+
+            } else {
+                document.getElementById('btnElastic').classList.add('active');
+                
+                // Make Cap Line hug the bars
+                // For simplicity in UI, we'll hide the static cap line and just make the wastes disappear
+                let line = document.getElementById('capLine');
+                line.style.bottom = "15%"; // Hugs the normal demand
+                line.style.background = "var(--success)";
+
+                // Hide waste blocks
+                wastes.forEach(w => w.style.opacity = 0);
+
+                // Math: Core cost is low, spike cost is high, but total is small
+                document.getElementById('costStat').innerText = "$450,000";
+                document.getElementById('costStat').style.color = "var(--success)";
+                document.getElementById('wasteStat').innerText = "$0 (Tuyệt đối)";
+                document.getElementById('wasteStat').style.color = "var(--success)";
+            }
+        }
+
+        window.onload = () => runSim('rigid');
+    </script>
+</body>
+</html>

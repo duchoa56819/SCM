@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 33: Thuật toán Lấy hàng trong Kho (Picker Routing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #6ee7b7, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s; flex: 1;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);}
+
+        .warehouse-floor { position: relative; width: 600px; height: 400px; background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; margin: 0 auto 20px auto; overflow: hidden; display: flex; justify-content: space-evenly; padding-top: 20px;}
+        
+        /* Aisles */
+        .aisle { width: 40px; height: 320px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center;}
+        
+        /* Items to pick */
+        .item { width: 15px; height: 15px; background: var(--warning); border-radius: 50%; box-shadow: 0 0 10px var(--warning); z-index: 2;}
+
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;}
+        polyline { fill: none; stroke: var(--primary); stroke-width: 4; stroke-dasharray: 8,8; opacity: 0;}
+        polyline.active { opacity: 1; animation: draw 2s linear forwards; }
+
+        @keyframes draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 33: Lộ trình Nhặt hàng (Picker Routing)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cách Amazon định tuyến di chuyển cho công nhân trong kho khổng lồ.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Một Đơn hàng TMĐT yêu cầu công nhân (Picker) nhặt 6 món đồ nằm rải rác ở 4 Dãy Kệ (Aisle) khác nhau.<br>
+            Bạn thiết kế phần mềm cầm tay (Scanner) chỉ đường cho công nhân đi lấy hàng theo thuật toán nào?<br>
+            <em>- <strong>Return (Đi vào - Quay ra):</strong> Đi vào lối đi lấy hàng rồi quay ngược lại ra cửa.</em><br>
+            <em>- <strong>S-Shape (Đi xuyên dích dắc):</strong> Đi xuyên luôn qua lối đi để sang lối tiếp theo theo hình chữ S.</em>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt active" id="btnRet" onclick="runSim('return')">Thuật toán Return (Quay đầu)</button>
+            <button class="btn-opt" id="btnS" onclick="runSim('sshape')">Thuật toán S-Shape (Chữ S)</button>
+        </div>
+
+        <div class="warehouse-floor" id="floor">
+            <div class="aisle" id="a1">
+                <div class="item" style="margin-top: 100px;"></div>
+                <div class="item" style="margin-top: 50px;"></div>
+            </div>
+            <div class="aisle" id="a2">
+                <div class="item" style="margin-top: 250px;"></div>
+            </div>
+            <div class="aisle" id="a3">
+                <div class="item" style="margin-top: 50px;"></div>
+            </div>
+            <div class="aisle" id="a4">
+                <div class="item" style="margin-top: 150px;"></div>
+                <div class="item" style="margin-top: 80px;"></div>
+            </div>
+
+            <!-- SVG Path Drawing -->
+            <svg>
+                <!-- Return Path (Approximate points) -->
+                <!-- Start at (30, 380) bottom left -->
+                <!-- A1: go up to 120, go down to 380 -->
+                <!-- Move to A2: (170, 380), go up to 270, go down to 380 -->
+                <!-- Move to A3: (310, 380), go up to 70, go down to 380 -->
+                <!-- Move to A4: (450, 380), go up to 170, go down to 380 -->
+                <polyline id="pathRet" points="30,380 95,380 95,120 95,380 235,380 235,270 235,380 375,380 375,70 375,380 515,380 515,170 515,380 30,380" stroke-dasharray="1000"/>
+
+                <!-- S-Shape Path -->
+                <!-- Start bottom left (30, 380) -->
+                <!-- A1: go up to TOP (95, 20) -->
+                <!-- Move to A2: (235, 20), go DOWN to bottom (235, 380) -->
+                <!-- Move to A3: (375, 380), go UP to top (375, 20) -->
+                <!-- Move to A4: (515, 20), go DOWN to bottom (515, 380) -->
+                <!-- Return to start: (30, 380) -->
+                <polyline id="pathS" points="30,380 95,380 95,20 235,20 235,380 375,380 375,20 515,20 515,380 30,380" stroke-dasharray="1000"/>
+            </svg>
+            
+            <div style="position: absolute; bottom: 10px; left: 10px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px;">🏁 TRẠM ĐÓNG GÓI</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">SỐ LẦN ĐỔI HƯỚNG</div><div class="stat-value" id="turnStat" style="color: var(--warning)">8 Lần</div></div>
+            <div><div style="color: var(--text-muted);">QUÃNG ĐƯỜNG ĐI BỘ</div><div class="stat-value" id="distStat" style="color: var(--danger)">245 Mét</div></div>
+        </div>
+
+        <div class="detail-box" id="detailBox">
+            <strong style="color:var(--danger)">Return (Quay đầu):</strong> Công nhân đi vào lấy đồ rồi quay ngược lại ra cửa chính. Hành trình bị trùng lặp rất nhiều. Phù hợp nếu đồ cần lấy nằm ở đầu dãy kệ, nhưng nếu đồ nằm ở cuối kệ thì việc đi vào đi ra rất tốn sức.
+        </div>
+    </div>
+
+    <script>
+        function runSim(algo) {
+            document.getElementById('btnRet').classList.remove('active');
+            document.getElementById('btnS').classList.remove('active');
+            
+            document.getElementById('pathRet').classList.remove('active');
+            document.getElementById('pathS').classList.remove('active');
+
+            if (algo === 'return') {
+                document.getElementById('btnRet').classList.add('active');
+                
+                // Reset animation
+                void document.getElementById('pathRet').offsetWidth; 
+                document.getElementById('pathRet').classList.add('active');
+
+                document.getElementById('turnStat').innerText = "8 Lần (Mỏi lưng)";
+                document.getElementById('distStat').innerText = "245 Mét";
+                document.getElementById('distStat').style.color = "var(--danger)";
+
+                document.getElementById('detailBox').innerHTML = `
+                    <strong style="color:var(--danger)">Return (Quay đầu):</strong> Công nhân đi vào dãy kệ lấy đồ, sau đó quay ngược lại trở ra lối đi chính ở dưới cùng. Hành trình di chuyển bị "Gấp đôi" do phải lùi lại con đường vừa đi. Sẽ vô cùng mệt mỏi nếu nhà kho dài cả trăm mét!
+                `;
+            } else {
+                document.getElementById('btnS').classList.add('active');
+                
+                void document.getElementById('pathS').offsetWidth; 
+                document.getElementById('pathS').classList.add('active');
+
+                document.getElementById('turnStat').innerText = "4 Lần (Mượt mà)";
+                document.getElementById('distStat').innerText = "180 Mét";
+                document.getElementById('distStat').style.color = "var(--success)";
+
+                document.getElementById('detailBox').innerHTML = `
+                    <strong style="color:var(--success)">S-Shape (Chữ S):</strong> Thuật toán kinh điển nhất trong Hệ thống WMS (Warehouse Management System). Công nhân cứ đi thẳng xuyên qua dãy kệ đầu tiên, rẽ sang dãy thứ hai và đi dọc xuống. Tạo thành hình chữ S liên tục. Họ không bao giờ phải quay đầu lặp lại quãng đường. Tiết kiệm 30% sức lực và thời gian bốc xếp!
+                `;
+            }
+        }
+
+        window.onload = () => { runSim('return'); };
+    </script>
+</body>
+</html>

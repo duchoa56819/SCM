@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 68: Tự Động Hóa Kho (Goods-to-Person Robotics)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #0f172a, #020617); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #34d399, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .sim-col { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; display: flex; flex-direction: column;}
+        .sim-col h3 { margin-top: 0; font-size: 1.1rem; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;}
+        
+        .wh-box { height: 250px; background: #1e293b; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 15px; border: 1px solid var(--border);}
+        
+        /* Person to Goods Elements */
+        .ptg-human { position: absolute; width: 20px; height: 20px; background: var(--warning); border-radius: 50%; left: 50%; top: 90%; transition: all 1s linear; z-index: 2;}
+        .ptg-shelf { position: absolute; width: 30px; height: 10px; background: #475569; }
+
+        /* Goods to Person Elements */
+        .gtp-human { position: absolute; width: 30px; height: 30px; background: var(--success); border-radius: 50%; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 2;}
+        .gtp-robot { position: absolute; width: 25px; height: 25px; background: #fbbf24; border-radius: 4px; left: 50%; top: 10%; transition: all 0.5s linear; display: flex; justify-content: center; align-items: center;}
+        
+        .stat-huge { font-size: 2.5rem; font-weight: 900; margin-top: auto;}
+        
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #059669); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 68: Robot Kiva (Goods-to-Person)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cuộc cách mạng phế truất mô hình Nhặt hàng bằng xe đẩy của nhân loại.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Trung tâm Xử lý Đơn hàng E-Commerce trong ngày Siêu Sale 11/11.<br>
+            - <strong>Truyền thống (Người đi tìm Hàng):</strong> Nhân viên đẩy xe đẩy đi bộ 15km/ngày qua các kệ hàng. 70% thời gian là đi bộ (Không tạo ra giá trị).<br>
+            - <strong>Tương lai (Hàng tự tìm Người):</strong> Robot AGV luồn dưới gầm kệ, nhấc bổng cả cái Kệ nặng 1 tấn và chạy đến chỗ nhân viên đang đứng đợi sẵn.<br>
+            <em>Bấm CHẠY MÔ PHỎNG để xem Tốc độ nhặt hàng (UPH - Units Per Hour) chênh lệch khủng khiếp như thế nào.</em>
+        </div>
+
+        <button class="action-btn" onclick="startSim()">▶ CHẠY SO SÁNH TỐC ĐỘ (MÔ PHỎNG 1 GIỜ)</button>
+
+        <div class="sim-grid">
+            <!-- Person to Goods -->
+            <div class="sim-col">
+                <h3>🚶 Người Tìm Hàng (Person-to-Goods)</h3>
+                <div class="wh-box" id="ptgBox">
+                    <div class="ptg-human" id="ptgH"></div>
+                    <!-- Shelves gen by JS -->
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">NĂNG SUẤT (UPH)</div>
+                <div class="stat-huge" id="ptgScore" style="color: var(--warning)">0</div>
+            </div>
+
+            <!-- Goods to Person -->
+            <div class="sim-col">
+                <h3>🤖 Hàng Tìm Người (Goods-to-Person)</h3>
+                <div class="wh-box" id="gtpBox">
+                    <div class="gtp-human"></div>
+                    <div class="gtp-robot" id="gtpR1">📦</div>
+                    <div class="gtp-robot" id="gtpR2" style="top: 20%; left: 30%;">📦</div>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">NĂNG SUẤT (UPH)</div>
+                <div class="stat-huge" id="gtpScore" style="color: var(--success)">0</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #34d399;">📚 Cẩm nang Robotics (AGV / AMR)</h3>
+            <p>Năm 2012, Amazon đã chi 775 Triệu Đô la để mua đứt công ty robot Kiva Systems. Quyết định đó đã làm thay đổi vĩnh viễn ngành Logistics thế giới.</p>
+            <ul>
+                <li><strong>Gót chân Achilles của sức người:</strong> Việc đi bộ dọc các lối đi khổng lồ trong kho là vô cùng lãng phí. Nhân viên đi mỏi chân, tìm đồ sai, tốc độ nhặt hàng kịch kim chỉ đạt <strong>80 - 100 món/giờ</strong>. Bạn không thể thuê 10,000 người vào chung một cái kho vì họ sẽ đâm xe đẩy vào nhau.</li>
+                <li><strong>Nghịch đảo quy trình (Inversion):</strong> Thay vì bắt người đi tìm kệ. Amazon bắt kệ đi tìm người. Hàng trăm con Robot chui dưới gầm kệ (Pod), xếp hàng chạy lần lượt đến trạm làm việc (Pick Station). Nhân viên chỉ việc đứng một chỗ, thò tay rút hàng bỏ vào hộp.</li>
+                <li><strong>Năng suất đột phá:</strong> Tốc độ nhặt vọt lên <strong>400 - 600 món/giờ</strong> (Gấp 5-6 lần sức người). Chưa hết, vì không cần lối đi cho người đi bộ, các kệ hàng có thể được xếp sát sạt vào nhau. Dung lượng chứa hàng của kho (Storage Density) tăng lên 50%. Đây là định nghĩa hoàn hảo nhất của việc sử dụng Tư bản (Vốn) thay thế cho Lao động!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Draw static shelves for PTG
+        let ptgBox = document.getElementById('ptgBox');
+        for(let i=0; i<4; i++){
+            for(let j=0; j<4; j++){
+                let s = document.createElement('div');
+                s.className = 'ptg-shelf';
+                s.style.left = (20 + j*60) + 'px';
+                s.style.top = (20 + i*50) + 'px';
+                ptgBox.appendChild(s);
+            }
+        }
+
+        let simRunning = false;
+        let ptgScore = 0;
+        let gtpScore = 0;
+
+        function startSim() {
+            if (simRunning) return;
+            simRunning = true;
+            ptgScore = 0;
+            gtpScore = 0;
+
+            let ptgInterval = setInterval(() => {
+                // Move human random
+                let h = document.getElementById('ptgH');
+                h.style.left = (20 + Math.random()*200) + 'px';
+                h.style.top = (20 + Math.random()*180) + 'px';
+                ptgScore += Math.floor(Math.random() * 3) + 1; // 1-3 units
+                document.getElementById('ptgScore').innerText = ptgScore;
+                if (ptgScore >= 100) clearInterval(ptgInterval);
+            }, 1000);
+
+            let gtpInterval = setInterval(() => {
+                // Robots bring shelves to bottom then go back up
+                let r1 = document.getElementById('gtpR1');
+                let r2 = document.getElementById('gtpR2');
+                
+                if (r1.style.top === '80%') { r1.style.top = '10%'; r1.style.left = '30%'; }
+                else { r1.style.top = '80%'; r1.style.left = '50%'; }
+
+                setTimeout(() => {
+                    if (r2.style.top === '80%') { r2.style.top = '10%'; r2.style.left = '70%'; }
+                    else { r2.style.top = '80%'; r2.style.left = '50%'; }
+                }, 250);
+
+                gtpScore += Math.floor(Math.random() * 15) + 5; // 5-20 units
+                document.getElementById('gtpScore').innerText = gtpScore;
+                
+                if (gtpScore >= 500) {
+                    clearInterval(gtpInterval);
+                    simRunning = false;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>

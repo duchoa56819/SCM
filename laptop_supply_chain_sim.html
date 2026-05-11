@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Chuỗi cung ứng Laptop</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--success);
+            margin-top: 5px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .panel h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--primary);
+            color: white;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            outline: none;
+            transition: border 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="number"]:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+        }
+
+        .log-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .log-entry {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mô Phỏng Chuỗi Cung Ứng</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Quản lý nhà máy sản xuất Laptop trong 12 tuần. Tối đa hóa lợi nhuận của bạn!</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div style="color: var(--text-muted); font-weight: 600;">TUẦN HIỆN TẠI (Max 12)</div>
+                <div class="stat-value" id="weekStat" style="color: white">1</div>
+            </div>
+            <div class="stat-item">
+                <div style="color: var(--text-muted); font-weight: 600;">TIỀN MẶT (Cash)</div>
+                <div class="stat-value" id="cashStat">$10,000</div>
+            </div>
+            <div class="stat-item">
+                <div style="color: var(--text-muted); font-weight: 600;">NHU CẦU TUẦN NÀY</div>
+                <div class="stat-value" id="demandStat" style="color: var(--warning)">15 máy</div>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <!-- Source -->
+            <div class="panel" style="border-top: 4px solid #60a5fa;">
+                <h2 style="color: #60a5fa">📦 Nguồn Cung (Source)</h2>
+                <div class="info-row"><span>Tồn kho linh kiện:</span> <strong id="compCount" style="font-size: 1.3rem;">20</strong></div>
+                <div class="info-row"><span>Đang vận chuyển về:</span> <strong id="incomingCount" style="color: var(--warning)">0</strong></div>
+                <div class="info-row" style="color: var(--text-muted); font-size: 0.9rem;">Phí lưu kho: $5/linh kiện/tuần</div>
+                <div class="info-row" style="color: var(--text-muted); font-size: 0.9rem;">Thời gian giao hàng: 1 tuần</div>
+                
+                <div style="margin-top: 20px;">
+                    <label>Đặt mua linh kiện ($200/cái)</label>
+                    <input type="number" id="orderQty" placeholder="Số lượng (Ví dụ: 10)" min="0">
+                </div>
+            </div>
+
+            <!-- Make -->
+            <div class="panel" style="border-top: 4px solid #a78bfa;">
+                <h2 style="color: #a78bfa">⚙️ Sản Xuất (Make)</h2>
+                <div class="info-row"><span>Tồn kho Laptop:</span> <strong id="laptopCount" style="font-size: 1.3rem;">10</strong></div>
+                <div class="info-row"><span>Năng lực tối đa:</span> <strong>50 máy/tuần</strong></div>
+                <div class="info-row" style="color: var(--text-muted); font-size: 0.9rem;">Phí lưu kho: $10/máy/tuần</div>
+                <div class="info-row" style="color: var(--text-muted); font-size: 0.9rem;">Tỷ lệ: 1 linh kiện = 1 Laptop</div>
+                
+                <div style="margin-top: 20px;">
+                    <label>Ra lệnh sản xuất ($50/máy)</label>
+                    <input type="number" id="prodQty" placeholder="Số lượng (Ví dụ: 5)" min="0">
+                </div>
+            </div>
+
+            <!-- Deliver -->
+            <div class="panel" style="border-top: 4px solid #34d399;">
+                <h2 style="color: #34d399">🚀 Bán Hàng (Deliver)</h2>
+                <div class="info-row"><span>Giá bán 1 Laptop:</span> <strong style="color: var(--success); font-size: 1.3rem;">$500</strong></div>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-top: 20px;">
+                    Hệ thống sẽ <strong>tự động xuất kho</strong> để bán dựa trên "Nhu cầu tuần này". 
+                    Nếu thiếu hàng, bạn sẽ mất doanh thu và làm khách hàng phật lòng.
+                </p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+            <button class="action-btn" onclick="endWeek()" style="flex: 2;">HOÀN TẤT & CHUYỂN TUẦN ➔</button>
+            <button id="aiBtn" class="action-btn" onclick="autoPlay()" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">🤖 AI TỰ CHƠI (MỤC TIÊU 60)</button>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <h3 style="margin-bottom: 15px; color: #cbd5e1;">📋 Nhật ký hoạt động (Logs)</h3>
+            <div class="log-container" id="logContent">
+                <div class="log-entry" style="color: var(--text-muted)">Hệ thống sẵn sàng. Bắt đầu tuần 1.</div>
+            </div>
+        </div>
+
+        <!-- Hướng dẫn chiến thuật -->
+        <div style="text-align: center; margin-top: 40px;">
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #cbd5e1; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                📖 Xem Cẩm nang Chiến thuật & Công thức
+            </button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px;">📚 Cẩm nang Chiến thuật & Công thức Tối ưu</h2>
+            <div style="line-height: 1.8; color: #cbd5e1;">
+                <p><strong>CÔNG THỨC ĐẶT HÀNG CHUẨN (Base Stock Policy):</strong></p>
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-left: 4px solid var(--primary); border-radius: 4px; margin-bottom: 20px; font-size: 1.1rem; color: white;">
+                    Lượng cần đặt = (Max Demand × Lead Time) - Tồn kho hiện tại - Hàng đang vận chuyển
+                </div>
+                
+                <h4 style="color: white; margin-bottom: 10px;">Các bước phân tích ra công thức (Ví dụ trong mô phỏng này):</h4>
+                <ol style="padding-left: 20px; margin-bottom: 0;">
+                    <li style="margin-bottom: 10px;"><strong>Phân tích Chi phí cơ hội (Newsvendor Model):</strong> Mất doanh thu 1 Laptop là thiệt hại $250 lợi nhuận tiềm năng. Trong khi phí lưu kho 1 linh kiện chỉ $5. Vì $250 > $5 rất nhiều lần, bắt buộc phải chọn chiến lược an toàn tuyệt đối (Worst-case scenario) để không bao giờ thiếu hàng.</li>
+                    <li style="margin-bottom: 10px;"><strong>Xác định Nhu cầu tối đa (Max Demand):</strong> Trong mô phỏng này, nhu cầu lớn nhất mỗi tuần có thể lên tới <strong>30 máy</strong>.</li>
+                    <li style="margin-bottom: 10px;"><strong>Xác định Thời gian trễ (Lead Time):</strong> Đặt mua Tuần 1, hàng mất Tuần 2 để vận chuyển, đến Tuần 3 mới có thể đưa vào sản xuất. Vậy Thời gian trễ là <strong>2 tuần</strong>.</li>
+                    <li><strong>Mục tiêu dự trữ:</strong> Lấy Nhu cầu lớn nhất × Thời gian trễ = 30 × 2 = <strong>60 linh kiện</strong>. Đây là Mức tồn kho mục tiêu (Base Stock Level) để đảm bảo an toàn tuyệt đối cho chuỗi cung ứng của bạn.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            week: 1,
+            maxWeeks: 12,
+            cash: 10000,
+            components: 20,
+            laptops: 10,
+            incomingComponents: 0,
+            demand: Math.floor(Math.random() * 21) + 10, // 10 to 30
+            logs: []
+        };
+
+        const CONSTANTS = {
+            COMP_COST: 200,
+            PROD_COST: 50,
+            PRICE: 500,
+            HOLD_COMP: 5,
+            HOLD_LAPTOP: 10,
+            MAX_PROD: 50
+        };
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+        }
+
+        function addLog(msg, type='info') {
+            let color = '#f8fafc';
+            if (type === 'success') color = '#34d399';
+            if (type === 'danger') color = '#ef4444';
+            if (type === 'warning') color = '#fbbf24';
+
+            state.logs.unshift(`<div class="log-entry" style="color: ${color}"><strong>Tuần ${state.week}:</strong> ${msg}</div>`);
+        }
+
+        function endWeek() {
+            if (state.week > state.maxWeeks) {
+                alert("Trò chơi đã kết thúc! Tải lại trang để chơi lại.");
+                return;
+            }
+
+            const orderInput = document.getElementById('orderQty').value;
+            const prodInput = document.getElementById('prodQty').value;
+
+            const orderQty = parseInt(orderInput) || 0;
+            const prodQty = parseInt(prodInput) || 0;
+
+            if (orderQty < 0 || prodQty < 0) {
+                alert("Số lượng nhập vào không hợp lệ!");
+                return;
+            }
+
+            if (prodQty > state.components) {
+                alert(`Lỗi: Không đủ linh kiện để sản xuất ${prodQty} máy. Bạn chỉ có ${state.components} linh kiện trong kho.`);
+                return;
+            }
+
+            if (prodQty > CONSTANTS.MAX_PROD) {
+                alert(`Lỗi: Năng lực nhà máy tối đa chỉ đạt ${CONSTANTS.MAX_PROD} máy/tuần.`);
+                return;
+            }
+
+            const totalCost = (orderQty * CONSTANTS.COMP_COST) + (prodQty * CONSTANTS.PROD_COST);
+            if (totalCost > state.cash) {
+                alert(`Lỗi: Không đủ tiền mặt! Chi phí là ${formatMoney(totalCost)} nhưng quỹ của bạn chỉ còn ${formatMoney(state.cash)}.`);
+                return;
+            }
+
+            // Thực thi hành động
+            state.cash -= totalCost;
+            
+            // Sản xuất
+            state.components -= prodQty;
+            state.laptops += prodQty;
+
+            // Bán hàng tự động
+            let sold = Math.min(state.laptops, state.demand);
+            let missed = state.demand - sold;
+            state.laptops -= sold;
+            
+            let revenue = sold * CONSTANTS.PRICE;
+            state.cash += revenue;
+
+            // Tính chi phí lưu kho
+            let holdCost = (state.components * CONSTANTS.HOLD_COMP) + (state.laptops * CONSTANTS.HOLD_LAPTOP);
+            state.cash -= holdCost;
+
+            // Ghi nhận log
+            let summary = `Đã sản xuất ${prodQty} máy, đặt mua ${orderQty} linh kiện. Đã bán ${sold}/${state.demand} máy. 
+                           Doanh thu: ${formatMoney(revenue)}. Phí lưu kho: ${formatMoney(holdCost)}.`;
+            
+            if (missed > 0) {
+                addLog(summary + ` ⚠️ Bỏ lỡ ${missed} khách hàng do thiếu hàng!`, 'warning');
+            } else {
+                addLog(summary, 'success');
+            }
+
+            // Nhập kho linh kiện đã đặt từ tuần trước
+            if (state.incomingComponents > 0) {
+                state.components += state.incomingComponents;
+                addLog(`📦 Đã nhận ${state.incomingComponents} linh kiện đặt từ tuần trước vào kho.`, 'info');
+            }
+            // Gán linh kiện đặt tuần này thành đang vận chuyển
+            state.incomingComponents = orderQty;
+
+            // Kiểm tra phá sản
+            if (state.cash < 0) {
+                addLog(`💀 Công ty phá sản! Dòng tiền bị âm.`, 'danger');
+                renderUI();
+                setTimeout(() => alert("GAME OVER! Bạn đã phá sản do hết tiền mặt."), 100);
+                state.week = 999; 
+                return;
+            }
+
+            // Chuyển sang tuần mới
+            state.week++;
+            state.demand = Math.floor(Math.random() * 21) + 10; // 10 to 30
+
+            // Kiểm tra chiến thắng
+            if (state.week > state.maxWeeks) {
+                addLog(`🎉 CHÚC MỪNG! Bạn đã sống sót 12 tuần. TỔNG TÀI SẢN: ${formatMoney(state.cash)}.`, 'success');
+                setTimeout(() => alert(`KẾT THÚC MÔ PHỎNG!\nTổng tài sản của bạn: ${formatMoney(state.cash)}\nSo với số vốn ban đầu $10,000, bạn đã làm rất tốt!`), 100);
+            }
+
+            // Xóa input
+            document.getElementById('orderQty').value = '';
+            document.getElementById('prodQty').value = '';
+
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('weekStat').innerText = state.week <= state.maxWeeks ? state.week : "END";
+            
+            let cashEl = document.getElementById('cashStat');
+            cashEl.innerText = formatMoney(state.cash);
+            cashEl.style.color = state.cash < 2000 ? 'var(--danger)' : 'var(--success)';
+
+            document.getElementById('demandStat').innerText = state.week <= state.maxWeeks ? state.demand + " máy" : "-";
+
+            document.getElementById('compCount').innerText = state.components;
+            document.getElementById('incomingCount').innerText = state.incomingComponents;
+            document.getElementById('laptopCount').innerText = state.laptops;
+
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isAutoPlaying = false;
+        async function autoPlay() {
+            if (isAutoPlaying || state.week > state.maxWeeks) return;
+            isAutoPlaying = true;
+            document.getElementById('aiBtn').innerText = "🤖 AI ĐANG ĐIỀU HÀNH...";
+            document.getElementById('aiBtn').style.opacity = '0.7';
+            
+            while(state.week <= state.maxWeeks && state.cash >= 0) {
+                // Áp dụng thuật toán: JIT + Pipeline 60
+                let prodQty = Math.max(0, state.demand - state.laptops);
+                if (prodQty > state.components) prodQty = state.components; 
+                
+                let compAfterProd = state.components - prodQty;
+                let orderQty = 0;
+                
+                if (state.week <= 11) {
+                    orderQty = Math.max(0, 60 - compAfterProd - state.incomingComponents);
+                } else {
+                    orderQty = 0; // Tuần cuối xả kho
+                }
+
+                // AI tự động điều chỉnh nếu không đủ tiền (Tránh phá sản/lỗi)
+                let maxAffordableOrder = Math.floor((state.cash - (prodQty * CONSTANTS.PROD_COST)) / CONSTANTS.COMP_COST);
+                if (orderQty > maxAffordableOrder) {
+                    orderQty = Math.max(0, maxAffordableOrder);
+                }
+
+                // Giả lập AI tự điền số vào ô input
+                document.getElementById('orderQty').value = orderQty;
+                document.getElementById('prodQty').value = prodQty;
+                
+                // Thêm log tạm thời
+                let aiLogEntry = document.createElement('div');
+                aiLogEntry.className = 'log-entry';
+                aiLogEntry.style.color = '#a78bfa';
+                aiLogEntry.innerHTML = `<em>🤖 AI đang gõ dữ liệu cho Tuần ${state.week}...</em>`;
+                document.getElementById('logContent').prepend(aiLogEntry);
+                
+                // Đợi 1.5 giây để người dùng quan sát số liệu AI nhập
+                await new Promise(r => setTimeout(r, 1500));
+                
+                // Thực thi
+                let currentWeek = state.week;
+                endWeek();
+                if (state.week === currentWeek) {
+                    break; // Nếu bị lỗi (alert), dừng vòng lặp AI ngay lập tức
+                }
+                
+                // Đợi 2 giây để người dùng đọc log trước khi qua tuần kế tiếp
+                await new Promise(r => setTimeout(r, 2000));
+            }
+            isAutoPlaying = false;
+            document.getElementById('aiBtn').innerText = "🤖 AI ĐÃ HOÀN TẤT";
+            document.getElementById('aiBtn').style.opacity = '1';
+        }
+
+        function toggleGuide() {
+            let guide = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerHTML = '📖 Ẩn Cẩm nang Chiến thuật';
+                btn.style.background = 'rgba(255,255,255,0.15)';
+                btn.style.color = 'white';
+            } else {
+                guide.style.display = 'none';
+                btn.innerHTML = '📖 Xem Cẩm nang Chiến thuật & Công thức';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        // Init UI
+        window.onload = renderUI;
+    </script>
+</body>
+</html>

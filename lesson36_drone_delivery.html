@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 36: Giao hàng Bằng Drone (Drone-Assisted Routing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0369a1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s; flex: 1;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(14, 165, 233, 0.5);}
+
+        .map-area { position: relative; width: 100%; height: 300px; background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden;}
+        
+        .road { position: absolute; top: 150px; left: 0; right: 0; height: 60px; background: #334155; border-top: 2px dashed #94a3b8; border-bottom: 2px dashed #94a3b8; }
+        
+        /* Houses */
+        .house { position: absolute; width: 40px; height: 40px; background: var(--warning); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; z-index: 2;}
+        .house::after { content: "🏠"; font-size: 1.5rem; }
+        #h1 { top: 90px; left: 15%; }
+        #h2 { top: 220px; left: 30%; background: var(--primary);} /* Drone target */
+        #h3 { top: 90px; left: 45%; }
+        #h4 { top: 220px; left: 60%; background: var(--primary);} /* Drone target */
+        #h5 { top: 90px; left: 75%; }
+        #h6 { top: 220px; left: 90%; background: var(--primary);} /* Drone target */
+
+        /* Vehicles */
+        .truck { position: absolute; width: 60px; height: 30px; background: white; border-radius: 4px; z-index: 10; top: 165px; left: -60px; transition: left 1s linear; display: flex; justify-content: center; align-items: center; font-size: 1rem;}
+        .drone { position: absolute; width: 30px; height: 30px; background: transparent; font-size: 1.5rem; z-index: 15; top: 150px; left: -60px; transition: all 1s linear; display: none;}
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6; margin-top: 20px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 36: Giao hàng Bằng Drone (Mothership)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Tương lai của Logistics Chặng Cuối (Last-Mile Delivery) đã bắt đầu.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Cần giao 6 kiện hàng cho 6 căn nhà (Màu Vàng và Màu Xanh).<br>
+            Bạn vừa đầu tư một chiếc <strong>Xe Tải Mẹ (Mothership)</strong> có chở theo 1 chiếc <strong>Drone</strong> trên nóc.<br>
+            <em>So sánh sự khác biệt khi Xe tải tự đi giao cả 6 căn, so với việc Xe tải giao nhà Vàng, và phóng Drone bay đi giao nhà Xanh CÙNG LÚC!</em>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt" onclick="runSim('truck')">🚚 Giao Theo Cách Truyền Thống</button>
+            <button class="btn-opt" style="background: linear-gradient(135deg, var(--primary), #0284c7); color: white; border: none;" onclick="runSim('drone')">🛸 Kích Hoạt Mô Hình Xe Mẹ - Drone</button>
+        </div>
+
+        <div class="map-area">
+            <div class="road"></div>
+            <div class="house" id="h1"></div>
+            <div class="house" id="h2"></div>
+            <div class="house" id="h3"></div>
+            <div class="house" id="h4"></div>
+            <div class="house" id="h5"></div>
+            <div class="house" id="h6"></div>
+
+            <div class="truck" id="truck">🚛</div>
+            <div class="drone" id="drone">🚁</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">THỜI GIAN HOÀN THÀNH</div><div class="stat-value" id="timeStat" style="color: var(--warning)">0 Phút</div></div>
+            <div><div style="color: var(--text-muted);">HIỆU SUẤT TĂNG THÊM</div><div class="stat-value" id="effStat" style="color: var(--success)">0%</div></div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Công nghệ Tương lai (Flying Sidekick TSP)</h3>
+            <p>Bài toán Người Chào Hàng (TSP) truyền thống đã lỗi thời khi Amazon, UPS và Google Wing phát minh ra mô hình <strong>Flying Sidekick</strong> (Xe tải mang theo Drone).</p>
+            <ul>
+                <li><strong>Cơ chế Song song (Parallel Routing):</strong> Xe tải không cần dừng lại chờ Drone. Xe tải phóng Drone đi giao nhà số 2, trong khi xe tải tiếp tục chạy đi giao nhà số 3. Sau khi giao xong nhà số 2, Drone sẽ tự động bay theo tọa độ và hạ cánh chính xác xuống nóc chiếc xe tải ĐANG CHẠY ở nhà số 3 để sạc pin và nhận gói hàng tiếp theo.</li>
+                <li><strong>Giải quyết điểm yếu của cả hai:</strong> Drone bay rất nhanh, vượt mọi tắc đường, nhưng pin yếu và không mang được hàng nặng. Xe tải chở được nhiều hàng nặng, pin trâu, nhưng đi chậm và hay kẹt xe. Việc kết hợp chúng biến Xe tải thành "Kho lưu động di chuyển" và Drone thành "Vệ tinh đánh chặn". Thời gian giao hàng chặng cuối (Last-Mile) giảm đi 50%, một cuộc cách mạng tuyệt đối về tốc độ!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+        function addLog(msg) { logs.unshift(`<div class="log-entry">${msg}</div>`); document.getElementById('logContent').innerHTML = logs.join(''); }
+
+        function reset() {
+            document.getElementById('truck').style.left = '-60px';
+            document.getElementById('truck').style.top = '165px';
+            document.getElementById('drone').style.display = 'none';
+            document.getElementById('drone').style.left = '-60px';
+            document.getElementById('drone').style.top = '150px';
+            logs = []; document.getElementById('logContent').innerHTML = '';
+        }
+
+        async function runSim(mode) {
+            reset();
+            let trk = document.getElementById('truck');
+            let drn = document.getElementById('drone');
+
+            if (mode === 'truck') {
+                addLog(`🚚 Xe tải bắt đầu hành trình đơn độc giao 6 căn nhà.`);
+                
+                let stops = [15, 30, 45, 60, 75, 90]; // % positions
+                for(let i=0; i<stops.length; i++) {
+                    trk.style.left = `calc(${stops[i]}% - 30px)`;
+                    // Nếu là nhà dưới đường (h2, h4, h6) thì xe tải phải tấp lề dưới
+                    if(i % 2 !== 0) trk.style.top = '190px';
+                    else trk.style.top = '130px';
+                    
+                    await new Promise(r => setTimeout(r, 1000));
+                    addLog(`📍 Đã giao xong Nhà số ${i+1}. Mất 10 phút.`);
+                }
+                
+                document.getElementById('timeStat').innerText = "60 Phút";
+                document.getElementById('effStat').innerText = "Tiêu chuẩn";
+                document.getElementById('effStat').style.color = "var(--text-muted)";
+                addLog(`🏁 HOÀN THÀNH. Tổng thời gian: <strong>60 Phút</strong>. Rất tốn kém xăng xe.`);
+
+            } else {
+                drn.style.display = 'block';
+                addLog(`🚀 Hệ thống Xe Mẹ - Drone được kích hoạt. Tác chiến song song!`);
+
+                let stopsTrk = [15, 45, 75]; // Xe tải chỉ đi các nhà Vàng
+                let stopsDrn = [30, 60, 90]; // Drone bay vào các nhà Xanh
+                
+                for(let i=0; i<3; i++) {
+                    // Xe và Drone cùng xuất phát từ điểm cũ tới điểm mới
+                    trk.style.left = `calc(${stopsTrk[i]}% - 30px)`;
+                    trk.style.top = '130px'; // Lề trên
+                    
+                    drn.style.left = `calc(${stopsDrn[i]}% - 15px)`;
+                    drn.style.top = '220px'; // Bay vào nhà dưới
+                    
+                    await new Promise(r => setTimeout(r, 1000));
+                    addLog(`⚡ CÙNG LÚC: Xe tải giao nhà Vàng #${i*2 + 1} | Drone thả hàng nhà Xanh #${i*2 + 2}.`);
+                    
+                    // Drone bay về cập bến xe tải
+                    drn.style.left = `calc(${stopsTrk[i]}% - 15px)`;
+                    drn.style.top = '120px';
+                    await new Promise(r => setTimeout(r, 500));
+                    addLog(`🚁 Drone đã hạ cánh lên xe tải để nhận gói hàng tiếp theo!`);
+                }
+
+                document.getElementById('timeStat').innerText = "30 Phút";
+                document.getElementById('timeStat').style.color = "var(--success)";
+                document.getElementById('effStat').innerText = "+100% Nhanh hơn";
+                document.getElementById('effStat').style.color = "var(--primary)";
+                addLog(`🏁 HOÀN THÀNH ĐỈNH CAO. Tổng thời gian: <strong>30 Phút</strong>. Cắt giảm 50% thời gian giao hàng!`);
+            }
+        }
+    </script>
+</body>
+</html>

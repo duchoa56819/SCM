@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 91: Tồn Kho Ký Gửi (Consignment)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .flow-diagram { margin: 15px 0; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px;}
+        .step { font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main); text-align: left; border-left: 3px solid var(--warning); padding-left: 10px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--success); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 91: Tồn Kho Ký Gửi (Consignment)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Nghệ thuật Đặt hàng ở nhà người khác nhưng Vẫn là Của mình.</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="margin-top:0; color:white;">Mua Đứt Bán Đoạn (Truyền Thống)</h3>
+                <div class="flow-diagram">
+                    <div class="step">1. Bệnh viện nhập 100 cái Máy tạo nhịp tim ($10k/cái).</div>
+                    <div class="step">2. Bệnh viện lập tức trả $1 Triệu Đô cho Hãng y tế.</div>
+                    <div class="step" style="color:var(--danger)">3. RỦI RO: Nếu 3 năm không có bệnh nhân mổ, 100 máy hết hạn, Bệnh viện mất trắng 1 triệu Đô. Vốn bị chôn vùi.</div>
+                </div>
+            </div>
+            <div class="card" style="border-color: var(--success);">
+                <h3 style="margin-top:0; color:white;">Tồn Kho Ký Gửi (Consignment)</h3>
+                <div class="flow-diagram">
+                    <div class="step">1. Hãng y tế tự mang 100 máy đến Đặt vào tủ của Bệnh viện.</div>
+                    <div class="step" style="color:var(--success)">2. Bệnh viện CHƯA trả đồng nào. (Quyền sở hữu vẫn thuộc Hãng Y tế).</div>
+                    <div class="step">3. Khi bác sĩ xé bọc 1 cái máy để mổ cho bệnh nhân, lúc đó Bệnh viện mới thanh toán $10k cho Hãng.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #10b981;">📚 Cẩm nang Consignment Inventory</h3>
+            <p>Mô hình Ký gửi là đỉnh cao của việc Hợp tác chia sẻ rủi ro trong Supply Chain.</p>
+            <ul>
+                <li><strong>Lợi ích của Nhà Bán Lẻ (Bệnh viện / Siêu thị):</strong> Không phải bỏ tiền mặt ra mua hàng trữ kho (Zero Capital Tied Up). Cải thiện Vòng quay tiền mặt (Cash flow) rực rỡ. Triệt tiêu hoàn toàn rủi ro hàng ế, hàng hết hạn sử dụng.</li>
+                <li><strong>Lợi ích của Nhà Cung Cấp (Hãng Y Tế):</strong> Nghe có vẻ hãng Y tế bị thiệt vì phải chôn vốn. Nhưng đổi lại, họ chiếm được <strong>Khoảng không gian Độc quyền</strong> trong tủ của Bệnh viện. Bác sĩ cần mổ gấp sẽ luôn thò tay lấy máy của hãng họ thay vì hãng đối thủ. Nó khóa chặt (Lock-in) khách hàng một cách tuyệt đối!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

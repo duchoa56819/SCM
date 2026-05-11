@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 97: Định Luật Căn Bậc Hai Của Tồn Kho</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .wh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 15px auto; width: 150px; height: 150px;}
+        .wh-small { background: var(--danger); border-radius: 4px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 0.9rem;}
+        
+        .wh-big { width: 150px; height: 150px; margin: 15px auto; background: var(--success); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.5rem;}
+
+        .btn-action { width: 100%; padding: 15px; font-size: 1.2rem; font-weight: 900; background: linear-gradient(135deg, var(--success), #047857); color: white; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 97: Định Luật Căn Bậc Hai (Square Root Law)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự màu nhiệm của Toán học khi gom Kho bãi.</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="margin-top:0; color:white;">4 Kho Nhỏ (Phân Tán)</h3>
+                <div class="wh-grid" id="oldWH">
+                    <div class="wh-small">100<br>SP</div>
+                    <div class="wh-small">100<br>SP</div>
+                    <div class="wh-small">100<br>SP</div>
+                    <div class="wh-small">100<br>SP</div>
+                </div>
+                <div style="font-size:1.5rem; font-weight:bold; color:var(--danger);">Tổng Tồn Kho: 400 SP</div>
+            </div>
+            
+            <div class="card" style="border-color: var(--success);">
+                <h3 style="margin-top:0; color:white;">1 Kho Lớn (Tập Trung)</h3>
+                <div id="newWH" style="display:none;">
+                    <div class="wh-big">200 SP</div>
+                    <div style="font-size:1.5rem; font-weight:bold; color:var(--success);">Tổng Tồn Kho: 200 SP</div>
+                    <div style="color:var(--success); font-weight:bold; margin-top:10px;">TIẾT KIỆM ĐƯỢC 50% TỒN KHO!</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-action" onclick="merge()">🔨 GỘP 4 KHO THÀNH 1 KHO</button>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Định Luật Maillard</h3>
+            <p>Tại sao 4 kho gộp lại không ra 400 SP mà lại tụt xuống chỉ còn 200 SP?</p>
+            <ul>
+                <li><strong>Hiện tượng Gộp Rủi ro (Risk Pooling):</strong> Tồn kho an toàn (Safety Stock) được sinh ra để đề phòng "Khách hàng mua bất ngờ". Khi bạn có 4 kho riêng biệt ở 4 tỉnh, bạn phải chuẩn bị sẵn 100 SP dự phòng ở MỖI TỈNH.</li>
+                <li><strong>Sức mạnh của Căn Bậc Hai:</strong> Toán học Thống kê chỉ ra rằng, xác suất để cả 4 tỉnh cùng bị đột biến mua hàng trong cùng 1 ngày là CỰC KỲ THẤP. Sự thiếu hụt ở tỉnh này sẽ được bù đắp bởi sự dư thừa ở tỉnh kia.</li>
+                <li><strong>Công thức:</strong> <code>Tồn kho mới = Tồn kho cũ x Căn bậc 2 của (Số kho mới / Số kho cũ)</code> = <code>400 x Căn(1/4) = 400 x 0.5 = 200</code>.</li>
+                <li><strong>Kết luận:</strong> Centralization (Tập trung hóa) giúp giải phóng một lượng Vốn lưu động khổng lồ ra khỏi đống hàng hóa dự phòng.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function merge() {
+            document.getElementById('newWH').style.display = 'block';
+            document.getElementById('oldWH').style.opacity = '0.3';
+        }
+    </script>
+</body>
+</html>

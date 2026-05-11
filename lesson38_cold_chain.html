@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 38: Chuỗi Cung Ứng Lạnh (Cold Chain Logistics)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #38bdf8; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #7dd3fc, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .pack-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .pack-card { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s;}
+        .pack-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .pack-card.selected { border-color: var(--primary); background: rgba(56, 189, 248, 0.1); box-shadow: 0 0 20px rgba(56,189,248,0.3);}
+        .pack-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;}
+        .pack-limit { color: var(--warning); font-weight: bold; margin-bottom: 10px;}
+        .pack-price { color: var(--success); font-weight: bold; font-size: 1.2rem;}
+
+        .temp-gauge { background: rgba(0,0,0,0.5); height: 30px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; position: relative; overflow: hidden;}
+        .temp-fill { background: linear-gradient(to right, #38bdf8, #10b981, #f59e0b, #ef4444); width: 0%; height: 100%; transition: width 1s linear;}
+        .temp-marker { position: absolute; top: 0; bottom: 0; width: 2px; background: white; z-index: 10;}
+        .temp-text { position: absolute; width: 100%; text-align: center; line-height: 30px; font-weight: bold; z-index: 20; text-shadow: 0 0 5px black;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0c4a6e); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 38: Chuỗi Cung Ứng Lạnh (Cold Chain)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cuộc đua sinh tử bảo vệ Vaccine ở nhiệt độ Âm 70 độ C xuyên lục địa.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Bạn cần chuyển lô Vaccine Pfizer trị giá <strong>$100,000</strong>. Yêu cầu bảo quản ngặt nghèo: Nhiệt độ siêu lạnh. Thời gian bay dự kiến là 24 Giờ.<br>
+            NHƯNG rủi ro kẹt Hải quan hoặc hoãn chuyến bay có thể khiến thời gian kéo dài ngẫu nhiên lên tới <strong>80 Giờ</strong>.<br>
+            <em>Hãy chọn Giải pháp Đóng gói (Packaging) để bảo vệ lô hàng, sau đó bấm Gửi hàng!</em>
+        </div>
+
+        <div class="pack-options">
+            <div class="pack-card selected" id="pkg1" onclick="selectPkg(1, 30, 200)">
+                <div class="pack-title">1. Thùng Xốp (EPS) + Đá khô</div>
+                <div class="pack-limit">Chịu đựng: 30 Giờ</div>
+                <div class="pack-price">Phí: $200</div>
+            </div>
+            <div class="pack-card" id="pkg2" onclick="selectPkg(2, 72, 800)">
+                <div class="pack-title">2. Thùng Chân không (VIP)</div>
+                <div class="pack-limit">Chịu đựng: 72 Giờ</div>
+                <div class="pack-price">Phí: $800</div>
+            </div>
+            <div class="pack-card" id="pkg3" onclick="selectPkg(3, 999, 3000)">
+                <div class="pack-title">3. Container Lạnh Chủ Động</div>
+                <div class="pack-limit">Chịu đựng: Vô hạn (Cắm điện)</div>
+                <div class="pack-price">Phí: $3,000</div>
+            </div>
+        </div>
+
+        <div style="font-weight: bold; margin-bottom: 5px;">BIỂU ĐỒ TĂNG NHIỆT (Vượt vạch đỏ là Hỏng):</div>
+        <div class="temp-gauge">
+            <div class="temp-fill" id="tempFill"></div>
+            <div class="temp-text" id="tempText">-70°C (An toàn)</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">GIỜ CHUẨN</div><div class="stat-value">24h</div></div>
+            <div><div style="color: var(--text-muted);">SỰ CỐ DELAY</div><div class="stat-value" id="delayStat" style="color: var(--warning)">?</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG THỜI GIAN</div><div class="stat-value" id="totalTimeStat" style="color: var(--primary)">?</div></div>
+        </div>
+
+        <button class="action-btn" id="btnShip" onclick="runShipment()">🛫 PHÓNG MÁY BAY CHỞ HÀNG!</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Logistics Dược phẩm (Pharma Cold Chain)</h3>
+            <p>Vận chuyển hàng lạnh không đơn thuần là bỏ vào tủ lạnh. Nó là bài toán đánh đổi giữa <strong>Chi phí Bao bì (Packaging Cost)</strong> và <strong>Chi phí Rủi ro (Risk Cost)</strong>.</p>
+            <ul>
+                <li><strong>Passive Packaging (Đóng gói thụ động - EPS, VIP):</strong> Dùng đá khô (Dry Ice) hoặc Gel lạnh để giữ nhiệt. Nó giống như cục pin, sẽ cạn dần theo thời gian. Nếu kẹt hải quan quá lâu (Delay), đá tan hết, hàng hóa trị giá hàng trăm ngàn Đô la sẽ bốc hơi. Mua Thùng Xốp rẻ ($200) nhưng rủi ro cực cao. Mua Thùng VIP chân không ($800) bảo vệ được 3 ngày là mức Cân bằng (Sweet spot) mà nhiều hãng dược lựa chọn.</li>
+                <li><strong>Active Packaging (Đóng gói chủ động - Envirotainer):</strong> Đây là những chiếc Container nhỏ có gắn động cơ máy nén lạnh riêng và cắm điện trên máy bay. Chi phí thuê cực đắt ($3,000+), nhưng nhiệt độ được khóa chặt ở -70°C vĩnh viễn (miễn là có điện). Dùng khi lô hàng quá đắt tiền và không được phép sai sót dù chỉ 1%.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let pkgLimit = 30;
+        let pkgCost = 200;
+
+        function selectPkg(id, limit, cost) {
+            document.getElementById('pkg1').classList.remove('selected');
+            document.getElementById('pkg2').classList.remove('selected');
+            document.getElementById('pkg3').classList.remove('selected');
+            
+            document.getElementById('pkg'+id).classList.add('selected');
+            pkgLimit = limit;
+            pkgCost = cost;
+        }
+
+        async function runShipment() {
+            document.getElementById('btnShip').disabled = true;
+            let logs = document.getElementById('logContent');
+            logs.innerHTML = '';
+            
+            let delay = Math.floor(Math.random() * 60); // Random delay 0 - 60 hours
+            let totalTime = 24 + delay;
+
+            document.getElementById('delayStat').innerText = '+' + delay + 'h';
+            document.getElementById('totalTimeStat').innerText = totalTime + 'h';
+
+            logs.innerHTML += `<div class="log-entry">🛫 Máy bay cất cánh. Bạn đã chọn gói Bao bì giới hạn <strong style="color:var(--warning)">${pkgLimit} Giờ</strong>.</div>`;
+            await new Promise(r => setTimeout(r, 1000));
+
+            if (delay > 0) {
+                logs.innerHTML = `<div class="log-entry">🚨 SỰ CỐ: Bão tuyết và kẹt Hải quan! Hàng bị ngâm thêm <strong style="color:var(--danger)">${delay} Giờ</strong>.</div>` + logs.innerHTML;
+            }
+
+            // Animation
+            let fill = document.getElementById('tempFill');
+            let text = document.getElementById('tempText');
+            
+            // max scale 100 hours
+            let fillPct = Math.min((totalTime / 100) * 100, 100);
+            fill.style.width = fillPct + '%';
+
+            await new Promise(r => setTimeout(r, 1000));
+
+            if (totalTime > pkgLimit) {
+                // Spoilage
+                text.innerText = "NHIỆT ĐỘ TĂNG! HỎNG HÀNG!";
+                text.style.color = "var(--danger)";
+                logs.innerHTML = `<div class="log-entry"><strong style="color:var(--danger)">❌ THẢM HỌA!</strong> Thời gian phơi bãi (${totalTime}h) vượt quá sức chịu đựng của Bao bì (${pkgLimit}h). Lô Vaccine trị giá $100,000 đã hỏng hoàn toàn. Lỗi do bạn tiết kiệm tiền đóng gói!</div>` + logs.innerHTML;
+            } else {
+                // Success
+                text.innerText = "-70°C (AN TOÀN)";
+                text.style.color = "white";
+                logs.innerHTML = `<div class="log-entry"><strong style="color:var(--success)">✅ XUẤT SẮC!</strong> Bao bì xịn đã cứu lô hàng. Dù bị Delay nhưng vẫn nằm trong giới hạn chịu đựng (${totalTime}h < ${pkgLimit}h). Khách hàng an toàn nhận Vaccine!</div>` + logs.innerHTML;
+            }
+
+            document.getElementById('btnShip').disabled = false;
+        }
+    </script>
+</body>
+</html>

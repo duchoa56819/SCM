@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 7: Vận Tải Đa Phương Thức & Carbon (Multimodal Transportation)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            --primary: #06b6d4; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #083344, #0f172a); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 1100px; width: 100%; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #22d3ee, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .stat-item { text-align: center; border-right: 1px solid var(--border); }
+        .stat-item:last-child { border-right: none; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--success); margin-top: 5px; }
+        
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+        input[type="number"] { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--primary); color: white; border-radius: 8px; font-size: 1.1rem; margin-top: 10px; box-sizing: border-box; text-align: center;}
+        
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0284c7); color: white; cursor: pointer; transition: all 0.3s; text-transform: uppercase; width: 100%;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 200px; overflow-y: auto; border: 1px solid var(--border); }
+        .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+        
+        .demand-box { background: rgba(255,255,255,0.05); border: 1px dashed var(--warning); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 7: Vận Tải Đa Phương Thức & Thuế Carbon</h1>
+            <p style="color: var(--text-muted);">Bạn phải cân bằng giữa Chi phí, Tốc độ giao hàng và Lượng xả thải Carbon.</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item"><div style="color: var(--text-muted);">TUẦN</div><div class="stat-value" id="weekStat" style="color: white">1 / 12</div></div>
+            <div class="stat-item"><div style="color: var(--text-muted);">QUỸ LOGISTICS</div><div class="stat-value" id="cashStat" style="color: #60a5fa">$50,000</div></div>
+            <div class="stat-item"><div style="color: var(--text-muted);">ĐÃ XẢ THẢI (TẤN)</div><div class="stat-value" id="carbonStat" style="color: var(--warning)">0</div></div>
+            <div class="stat-item"><div style="color: var(--text-muted);">HẠN MỨC (QUOTA)</div><div class="stat-value" style="color: var(--danger)">500</div></div>
+        </div>
+
+        <div class="demand-box">
+            <h3 style="color: var(--warning); margin-top: 0; margin-bottom: 10px;">LÔ HÀNG CẦN CHUYỂN TUẦN NÀY:</h3>
+            <div style="display: flex; justify-content: space-around; font-size: 1.2rem;">
+                <div>📦 <strong>Hàng Hỏa Tốc (Urgent):</strong> <span id="urgentDem" style="color: var(--danger); font-weight: bold; font-size: 1.5rem;">2</span> lô <br><span style="font-size: 0.85rem; color: var(--text-muted);">(Deadline: 1 Tuần)</span></div>
+                <div>📦 <strong>Hàng Tiêu Chuẩn (Standard):</strong> <span id="standardDem" style="color: var(--success); font-weight: bold; font-size: 1.5rem;">8</span> lô <br><span style="font-size: 0.85rem; color: var(--text-muted);">(Deadline: 4 Tuần)</span></div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0; margin-top: 10px;"><em>Luật: Nếu hàng đến trễ deadline, bạn bị phạt đền bù $1,000 cho mỗi lô hàng / mỗi tuần trễ. Nếu xả vượt 500 tấn Carbon, đóng Thuế $200 cho mỗi tấn dôi dư.</em></p>
+        </div>
+
+        <div class="grid-3">
+            <!-- MÁY BAY -->
+            <div class="panel" style="border-top: 4px solid var(--danger);">
+                <h2 style="color: var(--danger); margin-top: 0;">✈️ Đường Hàng Không</h2>
+                <div class="info-row"><span>Thời gian giao:</span> <strong style="color: var(--success)">1 Tuần</strong></div>
+                <div class="info-row"><span>Cước phí:</span> <strong style="color: var(--danger)">$1,000/lô</strong></div>
+                <div class="info-row"><span>Xả thải Carbon:</span> <strong style="color: var(--danger)">20 tấn/lô</strong></div>
+                <input type="number" id="airQty" placeholder="Số lô hàng..." min="0">
+            </div>
+
+            <!-- TÀU HỎA -->
+            <div class="panel" style="border-top: 4px solid var(--warning);">
+                <h2 style="color: var(--warning); margin-top: 0;">🚂 Đường Sắt Liên Vận</h2>
+                <div class="info-row"><span>Thời gian giao:</span> <strong>2 Tuần</strong></div>
+                <div class="info-row"><span>Cước phí:</span> <strong>$400/lô</strong></div>
+                <div class="info-row"><span>Xả thải Carbon:</span> <strong style="color: var(--warning)">8 tấn/lô</strong></div>
+                <input type="number" id="railQty" placeholder="Số lô hàng..." min="0">
+            </div>
+
+            <!-- TÀU BIỂN -->
+            <div class="panel" style="border-top: 4px solid var(--success);">
+                <h2 style="color: var(--success); margin-top: 0;">🚢 Đường Biển</h2>
+                <div class="info-row"><span>Thời gian giao:</span> <strong style="color: var(--danger)">4 Tuần</strong></div>
+                <div class="info-row"><span>Cước phí:</span> <strong style="color: var(--success)">$100/lô</strong></div>
+                <div class="info-row"><span>Xả thải Carbon:</span> <strong style="color: var(--success)">2 tấn/lô</strong></div>
+                <input type="number" id="oceanQty" placeholder="Số lô hàng..." min="0">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="endWeek()" style="flex: 1.5;">VẬN ĐƠN ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="air">Chiến thuật 1: VIP (Chỉ đi Máy bay)</option>
+                    <option value="ocean">Chiến thuật 2: Siêu rẻ (Chỉ đi Tàu biển)</option>
+                    <option value="multi">Chiến thuật 3: Đa phương thức (Phân loại hàng)</option>
+                </select>
+                <button id="aiBtn" class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success);">🤖 GỌI AI</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #22d3ee; margin-top: 0;">📚 Cẩm nang Vận tải Bền vững (Green Logistics)</h3>
+            <p>Bài toán này mô phỏng áp lực thực tế của các tập đoàn đa quốc gia: Vừa phải tiết kiệm tiền, vừa phải đúng hạn, và giờ đây còn bị áp "Thuế Carbon" (Carbon Tax/Emission Trading System).</p>
+            <ul>
+                <li><strong>Chiến thuật 1 (100% Máy bay):</strong> Giao siêu nhanh, không bao giờ trễ. Nhưng phí vận chuyển khổng lồ. Chưa kể lượng Carbon tạo ra sẽ phá vỡ hạn mức 500 tấn chỉ trong vài tuần đầu, khiến bạn nợ hàng chục ngàn đô la tiền phạt môi trường. Phá sản!</li>
+                <li><strong>Chiến thuật 2 (100% Tàu biển):</strong> Rẻ vô địch, thân thiện với môi trường. Nhưng Tàu biển mất 4 tuần! Những lô hàng Urgent (Deadline 1 tuần) sẽ bị trễ 3 tuần. Mỗi tuần trễ đền bù $1,000, khiến tiền phạt trễ hạn còn đắt hơn tiền thuê máy bay!</li>
+                <li><strong>Chiến thuật 3 (Đa phương thức - Phân loại hàng):</strong> Lọc ra. Hàng Urgent bắt buộc đi Máy bay (hoặc Tàu hỏa nếu deadline dài hơn xíu). Còn hàng Standard (Deadline 4 tuần) thì ném hết lên Tàu biển. Đây là sự cân bằng hoàn hảo giữa Cost (Tiền) - Speed (Tốc độ) - Environment (Môi trường).</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { week: 1, maxWeeks: 12, cash: 50000, carbon: 0, pendingUrgent: 0, pendingStandard: 0, logs: [] };
+        
+        let inTransitAir = [];   // Arrives in 1 wk
+        let inTransitRail = [];  // Arrives in 2 wks
+        let inTransitOcean = []; // Arrives in 4 wks
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>T${state.week}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function generateDemand() {
+            state.pendingUrgent = 2; // Always 2 urgent
+            state.pendingStandard = 8; // Always 8 standard
+            if(state.week <= 12) {
+                document.getElementById('urgentDem').innerText = state.pendingUrgent;
+                document.getElementById('standardDem').innerText = state.pendingStandard;
+            }
+        }
+
+        function endWeek() {
+            if (state.week > state.maxWeeks) return;
+            
+            let a = parseInt(document.getElementById('airQty').value) || 0;
+            let r = parseInt(document.getElementById('railQty').value) || 0;
+            let o = parseInt(document.getElementById('oceanQty').value) || 0;
+
+            let totalAssigned = a + r + o;
+            if (totalAssigned < (state.pendingUrgent + state.pendingStandard) && state.week <= 12) {
+                alert("Bạn phải gán đủ phương thức vận chuyển cho toàn bộ lô hàng trong tuần này!");
+                return;
+            }
+
+            // Tính tiền cước và carbon
+            let cost = (a * 1000) + (r * 400) + (o * 100);
+            let cb = (a * 20) + (r * 8) + (o * 2);
+            
+            state.cash -= cost;
+            state.carbon += cb;
+
+            // Logic: Khách hàng Urgent sẽ lấy những lô giao nhanh nhất (ưu tiên Air -> Rail -> Ocean)
+            let remainingA = a; let remainingR = r; let remainingO = o;
+            
+            let urgentDeliveredTime = [];
+            for(let i=0; i<state.pendingUrgent; i++) {
+                if(remainingA > 0) { urgentDeliveredTime.push(1); remainingA--; }
+                else if(remainingR > 0) { urgentDeliveredTime.push(2); remainingR--; }
+                else { urgentDeliveredTime.push(4); remainingO--; }
+            }
+
+            let standardDeliveredTime = [];
+            for(let i=0; i<state.pendingStandard; i++) {
+                if(remainingA > 0) { standardDeliveredTime.push(1); remainingA--; }
+                else if(remainingR > 0) { standardDeliveredTime.push(2); remainingR--; }
+                else { standardDeliveredTime.push(4); remainingO--; }
+            }
+
+            // Tính tiền đền bù (Urgent deadline=1, Standard deadline=4)
+            let penalty = 0;
+            let lateUrgent = 0;
+            for(let time of urgentDeliveredTime) {
+                if(time > 1) { penalty += (time - 1) * 1000; lateUrgent++; }
+            }
+            // Standard deadline is 4, so max time is 4 (Ocean). Never late.
+            
+            state.cash -= penalty;
+
+            let logMsg = `Gửi ${a}✈️, ${r}🚂, ${o}🚢. Cước: ${format(cost)}. Xả ${cb}T Carbon. `;
+            if(lateUrgent > 0) {
+                logMsg += `<span style="color:var(--danger)">Có ${lateUrgent} lô Urgent bị gửi chậm, Đền bù: ${format(penalty)}!</span>`;
+            } else {
+                logMsg += `<span style="color:var(--success)">Tất cả hàng đúng hạn!</span>`;
+            }
+            addLog(logMsg);
+
+            state.week++;
+            if(state.week > state.maxWeeks) {
+                // Kiểm tra thuế Carbon
+                if(state.carbon > 500) {
+                    let over = state.carbon - 500;
+                    let tax = over * 200;
+                    state.cash -= tax;
+                    addLog(`🚨 Xả quá hạn mức ${over} Tấn Carbon! Bị phạt thuế môi trường: ${format(tax)}!`, 'var(--danger)');
+                } else {
+                    addLog(`🌱 Đạt chuẩn Môi trường! Không bị phạt Thuế Carbon.`, 'var(--success)');
+                }
+                addLog(`🎉 KẾT THÚC! QUỸ CÒN LẠI: ${format(state.cash)}`, 'var(--primary)');
+                document.getElementById('weekStat').innerText = "END";
+            } else {
+                generateDemand();
+                document.getElementById('weekStat').innerText = `${state.week} / 12`;
+            }
+
+            document.getElementById('cashStat').innerText = format(state.cash);
+            document.getElementById('carbonStat').innerText = state.carbon;
+            document.getElementById('carbonStat').style.color = state.carbon > 500 ? 'var(--danger)' : 'var(--warning)';
+            
+            document.getElementById('airQty').value = '';
+            document.getElementById('railQty').value = '';
+            document.getElementById('oceanQty').value = '';
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        generateDemand();
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.week > state.maxWeeks) return;
+            isPlaying = true;
+            let strat = document.getElementById('aiStrategy').value;
+
+            while(state.week <= state.maxWeeks) {
+                let a=0, r=0, o=0;
+                
+                if(strat === 'air') {
+                    a = 10;
+                } else if(strat === 'ocean') {
+                    o = 10;
+                } else if(strat === 'multi') {
+                    a = 2; // Urgent đi Air
+                    o = 8; // Standard đi Ocean
+                }
+
+                document.getElementById('airQty').value = a;
+                document.getElementById('railQty').value = r;
+                document.getElementById('oceanQty').value = o;
+                
+                await new Promise(r => setTimeout(r, 600));
+                endWeek();
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

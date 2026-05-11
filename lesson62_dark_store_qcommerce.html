@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 62: Dark Store & Q-Commerce (Giao siêu tốc)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f43f5e; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #4c0519, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .map-area { position: relative; width: 100%; height: 350px; background: #0f172a; border: 2px solid #475569; border-radius: 12px; overflow: hidden; margin-bottom: 20px;}
+        
+        /* City rings */
+        .ring-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; background: rgba(239, 68, 68, 0.2); border: 2px dashed rgba(239, 68, 68, 0.5); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 1;}
+        .ring-suburb { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 400px; height: 400px; background: rgba(59, 130, 246, 0.1); border: 2px dashed rgba(59, 130, 246, 0.5); border-radius: 50%; z-index: 0;}
+        
+        .label { position: absolute; font-weight: bold; font-size: 0.9rem; text-align: center; width: 100%; pointer-events: none;}
+        
+        .location-btn { position: absolute; padding: 10px 15px; font-weight: bold; border-radius: 8px; cursor: pointer; border: 2px solid white; transition: all 0.2s; z-index: 10;}
+        .location-btn:hover { transform: scale(1.1); }
+        .loc-out { background: var(--primary); top: 30px; left: 30px; }
+        .loc-in { background: var(--warning); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .loc-in:hover { transform: translate(-50%, -50%) scale(1.1); }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 900; color: white; margin-top: 5px; }
+
+        .result-box { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 62: Dark Store & Q-Commerce</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cuộc chiến Giao Hàng Siêu Tốc (Dưới 15 Phút) đốt tiền tỷ của E-Commerce.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Khách hàng (Tập trung ở Lõi Trung Tâm Đô Thị) đang Đói và Đặt Đồ Ăn/Siêu thị trên App. Cam kết (SLA) của bạn là: <strong>GIAO DƯỚI 15 PHÚT, nếu quá hạn đền tiền rủi ro $50,000!</strong><br>
+            <em>Trò chơi: Nhấn chọn 1 trong 2 địa điểm đặt Kho hàng. Đánh đổi giữa Tiền thuê Đất (Real Estate) và Tiền đền bù Giao hàng trễ. Đâu mới là chiến lược của Thời đại Mới?</em>
+        </div>
+
+        <div class="map-area">
+            <div class="ring-suburb">
+                <div class="label" style="top: 20px; color: #3b82f6;">Ngoại Ô (Đất Rộng, Rẻ)</div>
+            </div>
+            <div class="ring-center">
+                <div class="label" style="top: 20px; color: #ef4444;">Lõi Đô Thị (Tắc Đường)</div>
+                <div style="font-size: 2rem; position: absolute; z-index: 2; pointer-events: none;">👥</div>
+            </div>
+
+            <!-- Buttons -->
+            <button class="location-btn loc-out" onclick="runSim('out')">🏢 Kho Truyền Thống (Ngoại Ô)</button>
+            <button class="location-btn loc-in" onclick="runSim('in')">🦇 Đặt Dark Store (Trong Hẻm Nhỏ)</button>
+        </div>
+
+        <div class="dashboard">
+            <div><div style="color: var(--text-muted);">TIỀN THUÊ MẶT BẰNG</div><div class="stat-value" id="rentStat">$0</div></div>
+            <div><div style="color: var(--text-muted);">TỐC ĐỘ GIAO HÀNG</div><div class="stat-value" id="timeStat">0 Phút</div></div>
+            <div><div style="color: var(--text-muted);">THIỆT HẠI VÌ CHẬM TRỄ</div><div class="stat-value" id="penaltyStat">$0</div></div>
+        </div>
+
+        <div class="result-box" id="resBox" style="display: none;"></div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #fb7185;">📚 Cẩm nang Dark Store & Quick Commerce</h3>
+            <p>Thương mại nhanh (Q-Commerce) như ShopeeFood, Baemin, GrabMart đã tái định nghĩa lại cấu trúc Không Gian của chuỗi cung ứng.</p>
+            <ul>
+                <li><strong>Cái chết của Mega-Warehouse (Kho khổng lồ ngoại ô):</strong> Hàng thập kỷ, quy tắc là "Thuê đất thật xa ngoại ô cho rẻ" (Ví dụ: Tiền thuê chỉ $10,000). Sau đó dùng xe tải to chở vào thành phố. Nhưng xe tải to không thể lách qua kẹt xe. Giao hàng mất 45 phút. Trong khi khách hàng gen Z thì không có sự kiên nhẫn. Sự cố này gây thiệt hại hủy đơn lên tới $50,000!</li>
+                <li><strong>Sự trỗi dậy của Dark Store (Cửa hàng Bóng tối):</strong> Dark Store không phải là Kho Khổng Lồ, mà là một căn nhà cấp 4 cũ kỹ hoặc tầng hầm chung cư lụp xụp nằm <strong>Ngay Giữa Lõi Đô Thị</strong>. Nó được phủ bạt kín (Dark), không tiếp khách vãng lai, bên trong chỉ chứa những mặt hàng bán chạy nhất.</li>
+                <li><strong>Ma thuật Kinh tế học:</strong> Tiền thuê hầm chung cư đắt gấp 3 lần đất ngoại ô ($30,000). Nhưng đổi lại, shipper chỉ cần chạy xe máy 5 phút là tới tay khách hàng. Tiền phạt bằng $0. Cuối cùng, <strong>Sự đắt đỏ của Mặt Bằng đã tự chi trả cho sự Tiết Kiệm của Khâu Vận Chuyển Chặng Cuối (Last-Mile)</strong>. Tổng chi phí thấp hơn, và bạn thống trị thị trường!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runSim(mode) {
+            let rent, time, pen, eval;
+            
+            document.getElementById('resBox').style.display = 'block';
+
+            if (mode === 'out') {
+                rent = 10000;
+                time = 45;
+                pen = 50000;
+                
+                document.getElementById('rentStat').innerText = "$" + rent.toLocaleString();
+                document.getElementById('rentStat').style.color = "var(--success)";
+                
+                document.getElementById('timeStat').innerText = time + " Phút";
+                document.getElementById('timeStat').style.color = "var(--danger)";
+                
+                document.getElementById('penaltyStat').innerText = "$" + pen.toLocaleString();
+                document.getElementById('penaltyStat').style.color = "var(--danger)";
+
+                document.getElementById('resBox').innerHTML = `<b style="color:var(--danger)">THẤT BẠI KÉP:</b> Bạn tưởng mình khôn ngoan tiết kiệm được tiền thuê mặt bằng. Nhưng kẹt xe Lõi Đô Thị đã giết chết tốc độ giao hàng của bạn. Bạn mất hết Khách hàng và tốn tổng cộng <b style="color:var(--danger)">$60,000</b>.`;
+                document.getElementById('resBox').style.borderColor = "var(--danger)";
+
+            } else {
+                rent = 30000;
+                time = 10;
+                pen = 0;
+                
+                document.getElementById('rentStat').innerText = "$" + rent.toLocaleString();
+                document.getElementById('rentStat').style.color = "var(--warning)";
+                
+                document.getElementById('timeStat').innerText = time + " Phút";
+                document.getElementById('timeStat').style.color = "var(--success)";
+                
+                document.getElementById('penaltyStat').innerText = "$" + pen.toLocaleString();
+                document.getElementById('penaltyStat').style.color = "var(--success)";
+
+                document.getElementById('resBox').innerHTML = `<b style="color:var(--success)">CHIẾN LƯỢC ĐỈNH CAO:</b> Chấp nhận trả tiền mặt bằng đắt hơn, nhưng bạn lọt vào trung tâm tập khách hàng. Tốc độ Giao hỏa tốc 10 phút đè bẹp mọi đối thủ. Tổng chi phí chỉ có <b style="color:var(--success)">$30,000</b>.`;
+                document.getElementById('resBox').style.borderColor = "var(--success)";
+            }
+        }
+    </script>
+</body>
+</html>

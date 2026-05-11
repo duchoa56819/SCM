@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 83: CRP (Continuous Replenishment)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 83: Bổ Sung Liên Tục (CRP)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Nhà cung cấp tự động bơm hàng khi siêu thị vơi đi.</p>
+        </header>
+
+        <div class="box-area">
+            <h2 style="color:white; margin-top:0;">Dữ liệu Máy tính tiền (POS)</h2>
+            <div style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 20px; text-align:left;">
+                1. Khách hàng cầm chai Dầu gội P&G ra quầy thu ngân quét mã vạch.<br>
+                2. Dữ liệu "âm 1 chai" không chỉ báo về cho Siêu thị Walmart, mà nó được truyền TỰ ĐỘNG, TRỰC TIẾP (Real-time qua EDI) sang thẳng hệ thống máy chủ của nhà máy P&G.<br>
+                3. Máy chủ P&G tổng hợp: "Hôm nay Walmart bán được 10,000 chai". Sáng mai, P&G tự điều xe tải chở đúng 10,000 chai tới đổ vào kho Walmart, không cần ai phải viết giấy đặt hàng (Purchase Order).
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang CRP (Continuous Replenishment)</h3>
+            <p>Đây là vũ khí tối thượng giúp triệt tiêu hoàn toàn Hiệu ứng Roi Da (Bullwhip Effect).</p>
+            <ul>
+                <li>Trong mô hình truyền thống, thông tin bị méo mó vì truyền qua nhiều màng lọc (Nhân viên siêu thị báo cáo lên Giám đốc, Giám đốc gọi điện cho Sales của P&G, Sales làm báo giá...).</li>
+                <li>Bằng cách Chia sẻ Dữ liệu (Information Sharing), Nhà cung cấp nhìn thấy trực tiếp Bức Tranh Tiêu Dùng cuối cùng. Họ làm chủ cuộc chơi bổ sung hàng hóa (Vendor Managed Inventory - VMI). Cả 2 bên đều thắng rực rỡ nhờ tồn kho chạm đáy!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

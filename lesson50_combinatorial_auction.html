@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 50: Đấu giá Tổ hợp (Combinatorial Auctions)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0369a1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: var(--panel-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        th, td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(0,0,0,0.5); color: var(--primary); font-weight: 800;}
+        td:first-child { text-align: left; font-weight: bold; color: var(--text-muted); }
+        
+        .radio-lbl { cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;}
+        .radio-lbl input { accent-color: var(--success); transform: scale(1.5);}
+        .price-tag { font-size: 1.2rem; font-weight: bold; }
+        
+        .package-row { background: rgba(16, 185, 129, 0.1); border-top: 2px solid var(--success); }
+        .package-row td { padding: 20px; }
+
+        .stats-bar { display: grid; grid-template-columns: 1fr; gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 3rem; font-weight: 900; color: white; margin-top: 5px; text-shadow: 0 0 15px rgba(255,255,255,0.2);}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 50: Đấu giá Tổ hợp (Combinatorial Auctions)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự kỳ diệu của "Giá trọn gói" trong ngành Vận tải tỷ Đô.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn cần tìm Xe tải chở hàng cho 2 Tuyến đường:<br>
+            - Tuyến 1: Hà Nội ➔ Đà Nẵng.<br>
+            - Tuyến 2: Đà Nẵng ➔ Hà Nội.<br>
+            Có 2 nhà xe tham gia đấu thầu là <strong>Hải Âu (Xe ở Hà Nội)</strong> và <strong>Phương Trang (Xe ở Đà Nẵng)</strong>. Hãy chọn nhà thầu sao cho <strong>Tổng chi phí là Rẻ Nhất!</strong>
+        </div>
+
+        <table>
+            <tr>
+                <th>CÁC NHÀ XE ĐẤU THẦU</th>
+                <th>Tuyển 1 (HN ➔ ĐN)</th>
+                <th>Tuyến 2 (ĐN ➔ HN)</th>
+            </tr>
+            <tr>
+                <td>Nhà xe Hải Âu</td>
+                <td>
+                    <label class="radio-lbl">
+                        <input type="radio" name="lane1" value="500" onchange="calc()" checked>
+                        <span class="price-tag">$500</span>
+                    </label>
+                </td>
+                <td>
+                    <label class="radio-lbl">
+                        <input type="radio" name="lane2" value="800" onchange="calc()">
+                        <span class="price-tag">$800</span>
+                        <div style="font-size:0.7rem; color:var(--text-muted)">Xe phải chạy về không</div>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>Nhà xe Phương Trang</td>
+                <td>
+                    <label class="radio-lbl">
+                        <input type="radio" name="lane1" value="900" onchange="calc()">
+                        <span class="price-tag">$900</span>
+                        <div style="font-size:0.7rem; color:var(--text-muted)">Xe phải chạy ra không</div>
+                    </label>
+                </td>
+                <td>
+                    <label class="radio-lbl">
+                        <input type="radio" name="lane2" value="600" onchange="calc()" checked>
+                        <span class="price-tag">$600</span>
+                    </label>
+                </td>
+            </tr>
+            <tr class="package-row">
+                <td colspan="3">
+                    <strong style="color:var(--success)">🌟 GÓI COMBO: PHƯƠNG TRANG NHẬN THẦU CẢ 2 TUYẾN</strong><br>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">"Nếu anh cho em chạy cả đi lẫn về, em sẽ không tính phí xe chạy rỗng!"</span><br><br>
+                    <label class="radio-lbl">
+                        <input type="radio" name="combo" id="comboCheck" value="800" onchange="calcCombo()">
+                        <span class="price-tag" style="color:var(--success); font-size: 1.5rem;">CHỈ $800 TRỌN GÓI!</span>
+                    </label>
+                </td>
+            </tr>
+        </table>
+
+        <div class="stats-bar">
+            <div style="color: var(--text-muted); font-size: 1.2rem; font-weight: bold;">TỔNG CƯỚC VẬN TẢI</div>
+            <div class="stat-value" id="totCost">$1,100</div>
+            <div id="evalMsg" style="font-weight:bold; height: 20px;">Bạn đang chọn mua lẻ từng tuyến.</div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Bidding (Đấu thầu Vận tải)</h3>
+            <p>Trong kinh doanh, 1 + 1 có thể bằng 1.5. Đó là nền tảng của <strong>Combinatorial Bidding (Đấu thầu Tổ hợp)</strong>.</p>
+            <ul>
+                <li><strong>Cạm bẫy Đấu thầu Đơn lẻ (Cherry-picking):</strong> Ban đầu, Hải Âu rẻ nhất tuyến 1 ($500). Phương Trang rẻ nhất tuyến 2 ($600). Nếu phòng mua sắm nhắm mắt chọn "Giá rẻ nhất mỗi tuyến", tổng chi phí là <strong>$1,100</strong>. Lý do là cả 2 xe đều phải chạy rỗng 1 chiều (Empty Miles / Deadhead) và họ cộng luôn phí chạy rỗng vào giá thầu của bạn!</li>
+                <li><strong>Sự kỳ diệu của Package Bids (Gói thầu):</strong> Nếu bạn cho phép họ gộp 2 tuyến lại, Phương Trang có thể chạy 1 vòng tròn khép kín (Continuous Move). Xe có hàng cả lúc đi lẫn lúc về. Mọi chi phí lãng phí biến mất. Nhờ vậy, Phương Trang dám đưa ra mức giá điên rồ là <strong>$800 cho cả 2 tuyến</strong> (Rẻ hơn tận $300).</li>
+                <li><strong>Logistics thông minh:</strong> Các phần mềm TMS (Transportation Management System) hiện đại không bao giờ đấu thầu từng chuyến đơn lẻ. Chúng tối ưu hóa toàn bộ mạng lưới và ưu tiên các Gói Combo để vắt kiệt lãng phí di chuyển trên đường. Tiết kiệm hàng tỷ Đô cho các tập đoàn toàn cầu!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function calc() {
+            // Uncheck combo if individual lanes are clicked
+            document.getElementById('comboCheck').checked = false;
+            
+            let l1 = parseInt(document.querySelector('input[name="lane1"]:checked').value);
+            let l2 = parseInt(document.querySelector('input[name="lane2"]:checked').value);
+            let total = l1 + l2;
+            
+            let tc = document.getElementById('totCost');
+            tc.innerText = "$" + total.toLocaleString();
+            
+            let eval = document.getElementById('evalMsg');
+            
+            if(total === 1100) {
+                eval.innerText = "Bạn đã chọn mức giá lẻ TỐT NHẤT ($1,100). Nhưng hãy nhìn vào Combo kìa!";
+                eval.style.color = "var(--warning)";
+                tc.style.color = "var(--warning)";
+            } else {
+                eval.innerText = "Lựa chọn quá đắt đỏ! Bạn đang chọn nhà xe có chi phí chạy rỗng cao.";
+                eval.style.color = "var(--danger)";
+                tc.style.color = "var(--danger)";
+            }
+        }
+
+        function calcCombo() {
+            // Uncheck individual lanes if combo is clicked
+            let rads1 = document.querySelectorAll('input[name="lane1"]');
+            for(let r of rads1) r.checked = false;
+            let rads2 = document.querySelectorAll('input[name="lane2"]');
+            for(let r of rads2) r.checked = false;
+
+            let tc = document.getElementById('totCost');
+            tc.innerText = "$800";
+            tc.style.color = "var(--success)";
+
+            let eval = document.getElementById('evalMsg');
+            eval.innerText = "🏆 XUẤT SẮC! TIẾT KIỆM ĐƯỢC $300 NHỜ HIỆU ỨNG VÒNG TRÒN KHÉP KÍN!";
+            eval.style.color = "var(--success)";
+        }
+        
+        window.onload = calc;
+    </script>
+</body>
+</html>

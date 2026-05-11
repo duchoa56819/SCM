@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 69: Agile vs Lean Supply Chain</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px;}
+        .card h2 { margin-top: 0; color: white; text-align: center;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 69: Chuỗi Cung Ứng Lean vs Agile</h1>
+            <p style="text-align: center; color: var(--text-muted);">Toyota (Tinh gọn) đối đầu với Zara (Linh hoạt).</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--primary);">
+                <h2>🚗 LEAN (Tinh Gọn)</h2>
+                <div style="font-weight:bold; color:var(--primary); text-align:center;">Phù hợp: Sản phẩm thiết yếu (Oto, Gạo)</div>
+                <ul style="color:var(--text-muted); font-size:0.95rem;">
+                    <li>Mục tiêu: Chi phí thấp nhất (Low Cost).</li>
+                    <li>Sản xuất hàng loạt quy mô lớn (Economies of Scale).</li>
+                    <li>Loại bỏ hoàn toàn rác thải (Zero Waste).</li>
+                    <li>Lịch trình sản xuất cứng nhắc, ít biến đổi.</li>
+                </ul>
+            </div>
+            <div class="card" style="border-color: var(--danger);">
+                <h2>👗 AGILE (Linh Hoạt)</h2>
+                <div style="font-weight:bold; color:var(--danger); text-align:center;">Phù hợp: Sản phẩm Trendy (Thời trang, Công nghệ)</div>
+                <ul style="color:var(--text-muted); font-size:0.95rem;">
+                    <li>Mục tiêu: Tốc độ phản hồi nhanh nhất (Speed & Responsiveness).</li>
+                    <li>Sản xuất lô nhỏ (Small batch) để bắt trend.</li>
+                    <li>Sẵn sàng chấp nhận chi phí vận tải đắt (Máy bay) để kịp có hàng.</li>
+                    <li>Thiết kế tại TBN, lên kệ toàn cầu trong 15 ngày!</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Lựa chọn Mạng lưới</h3>
+            <p>Fisher Model định nghĩa: Sản phẩm chức năng (Functional) cần Lean. Sản phẩm sáng tạo (Innovative) cần Agile.</p>
+            <ul>
+                <li>Nếu bạn bán Muối (Functional): Nhu cầu muôn đời không đổi. Đừng chơi trò máy bay giao tốc hành. Hãy đóng tàu thủy, sản xuất khổng lồ để ép giá thành xuống cực rẻ. (Lean).</li>
+                <li>Nếu bạn bán Áo khoác mùa đông theo trend TikTok (Innovative): Nếu chậm 1 tháng là qua mùa, hàng thành rác. Hãy dùng máy bay, sản xuất lô nhỏ, bán giá đắt để bù chi phí vận hành. (Agile).</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

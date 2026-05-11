@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 12: Lý thuyết Điểm Nghẽn (Theory of Constraints)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f97316; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #431407, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb923c, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+        
+        .line-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 30px 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; position: relative;}
+        
+        .machine { width: 100px; height: 100px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2;}
+        .machine-title { font-weight: bold; font-size: 1.1rem; }
+        .dice { font-size: 2.5rem; margin-top: 5px; }
+        
+        .buffer { width: 80px; height: 60px; background: rgba(245, 158, 11, 0.2); border: 2px dashed var(--warning); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--warning); font-weight: bold; z-index: 1;}
+        
+        .arrow { font-size: 1.5rem; color: var(--text-muted); }
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #c2410c); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4); }
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 200px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+        
+        .slider-container { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 12: Trò chơi Đổ Xúc Xắc (Theory of Constraints)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Biến động thống kê và sự sụp đổ của hệ thống Tồn kho Zero (JIT).</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Dây chuyền có 3 Trạm liên tiếp. Năng lực làm việc mỗi ngày của MỖI trạm được quyết định bằng cách <strong>đổ 1 viên xúc xắc (Từ 1 đến 6 sản phẩm)</strong>. Trung bình mỗi trạm làm được 3.5 sản phẩm/ngày.<br>
+            <strong>Luật:</strong> Trạm sau không thể làm nhiều hơn số phôi có sẵn từ Trạm trước truyền qua.<br>
+            Bạn dự tính chạy 20 ngày, trung bình làm 3.5 sp/ngày -> Mục tiêu kỳ vọng là <strong>70 Sản phẩm</strong>. Hãy xem thực tế chạy được bao nhiêu!
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">NGÀY</div><div class="stat-value" id="dayStat">1 / 20</div></div>
+            <div><div style="color: var(--text-muted);">MỤC TIÊU (LÝ THUYẾT)</div><div class="stat-value" style="color: var(--text-muted)">70</div></div>
+            <div><div style="color: var(--text-muted);">THỰC TẾ LÀM ĐƯỢC</div><div class="stat-value" id="totalStat" style="color: var(--success)">0</div></div>
+        </div>
+
+        <div class="slider-container">
+            <div style="flex: 1; font-weight: bold; color: var(--warning);">Dung lượng Tồn kho Đệm (Buffer Size): <span id="bufValue">0 (Không gian 0 - JIT)</span></div>
+            <input type="range" id="bufferSlider" min="0" max="20" value="0" style="flex: 1;" onchange="updateBufferLimit()" oninput="document.getElementById('bufValue').innerText = this.value">
+        </div>
+
+        <div class="line-container">
+            <!-- M1 -->
+            <div class="machine">
+                <div class="machine-title">Trạm 1</div>
+                <div class="dice" id="m1Dice">🎲</div>
+            </div>
+            
+            <div class="arrow">➔</div>
+            
+            <div class="buffer">
+                <div style="font-size: 0.8rem;">WIP 1</div>
+                <div id="wip1" style="font-size: 1.5rem;">0</div>
+            </div>
+            
+            <div class="arrow">➔</div>
+
+            <!-- M2 -->
+            <div class="machine" style="background: linear-gradient(135deg, #8b5cf6, #5b21b6);">
+                <div class="machine-title">Trạm 2</div>
+                <div class="dice" id="m2Dice">🎲</div>
+            </div>
+            
+            <div class="arrow">➔</div>
+            
+            <div class="buffer">
+                <div style="font-size: 0.8rem;">WIP 2</div>
+                <div id="wip2" style="font-size: 1.5rem;">0</div>
+            </div>
+
+            <div class="arrow">➔</div>
+
+            <!-- M3 -->
+            <div class="machine" style="background: linear-gradient(135deg, #10b981, #047857);">
+                <div class="machine-title">Trạm 3</div>
+                <div class="dice" id="m3Dice">🎲</div>
+            </div>
+        </div>
+
+        <button class="action-btn" onclick="autoPlay()" id="playBtn">▶ Chạy tự động 20 Ngày</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #fb923c; margin-top: 0;">📚 Cẩm nang Lý thuyết Điểm nghẽn (Goldratt)</h3>
+            <p>Trò chơi này dựa trên cuốn sách quản trị huyền thoại <strong>"The Goal"</strong> của Eliyahu M. Goldratt.</p>
+            <ul>
+                <li><strong>Khi Buffer = 0 (Làm tới đâu chuyển tới đó):</strong> Mặc dù công suất trung bình mỗi trạm là 3.5, nhưng khi Trạm 1 quay được số 1 (Yếu), Trạm 2 dù quay được số 6 (Mạnh) cũng đành ngồi chơi xơi nước vì chỉ có 1 phôi truyền qua. Trạm 2 bị <em>Đói hàng (Starvation)</em>. Lợi ích của số 6 bị mất vĩnh viễn, trong khi hậu quả của số 1 được truyền đi. Kết quả sau 20 ngày chỉ đạt khoảng ~45-50 sản phẩm (Thấp hơn xa con số 70).</li>
+                <li><strong>Khi Tăng Buffer (Kho đệm WIP):</strong> Nếu bạn cho phép tồn kho đệm lớn (Ví dụ Buffer = 10). Khi Trạm 1 yếu, Trạm 2 vẫn có thể rút phôi từ kho đệm ra làm. Kho đệm hấp thụ "Biến động thống kê", giúp hệ thống chạy trơn tru và đạt sản lượng cao hơn rất nhiều (Lên tới ~60-65 sản phẩm).</li>
+                <li><strong>Bài học:</strong> Hệ thống Toyota (Just-in-Time) với tồn kho bằng 0 CHỈ hoạt động nếu dây chuyền hoàn hảo 100%. Trong đời thực, có vô vàn sự cố (máy hư, kẹt xe). Việc cắt giảm tồn kho một cách mù quáng (Buffer = 0) sẽ bóp nghẹt toàn bộ nhà máy! Cần phải có một lượng Buffer hợp lý.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { day: 1, maxDays: 20, wip1: 0, wip2: 0, total: 0, bufferLimit: 0, logs: [] };
+        const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>Ngày ${state.day}:</strong> ${msg}</div>`); }
+
+        function updateBufferLimit() {
+            state.bufferLimit = parseInt(document.getElementById('bufferSlider').value);
+        }
+
+        function rollDice() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function runDay() {
+            if(state.day > state.maxDays) return;
+
+            let c1 = rollDice();
+            let c2 = rollDice();
+            let c3 = rollDice();
+
+            document.getElementById('m1Dice').innerText = DICE_FACES[c1-1];
+            document.getElementById('m2Dice').innerText = DICE_FACES[c2-1];
+            document.getElementById('m3Dice').innerText = DICE_FACES[c3-1];
+
+            // M1 produces into WIP1 (Limited by Buffer size)
+            let m1Actual = c1;
+            if (state.wip1 + m1Actual > state.bufferLimit && state.bufferLimit !== 20) { // Assume 20 is infinite for this sim length
+                m1Actual = Math.max(0, state.bufferLimit - state.wip1);
+                if (m1Actual < c1) addLog(`Trạm 1 bị <strong>Nghẽn (Blocked)</strong>! Công suất ${c1} nhưng chỉ chạy được ${m1Actual} vì Buffer đầy.`, 'var(--warning)');
+            }
+            state.wip1 += m1Actual;
+
+            // M2 processes from WIP1 to WIP2
+            let m2Actual = Math.min(c2, state.wip1);
+            if (m2Actual < c2) addLog(`Trạm 2 bị <strong>Đói hàng (Starvation)</strong>! Năng lực ${c2} nhưng chỉ có ${state.wip1} phôi.`, 'var(--warning)');
+            
+            // Check WIP2 limit
+            if (state.wip2 + m2Actual > state.bufferLimit && state.bufferLimit !== 20) {
+                let m2Limited = Math.max(0, state.bufferLimit - state.wip2);
+                if (m2Limited < m2Actual) {
+                    addLog(`Trạm 2 bị <strong>Nghẽn (Blocked)</strong> vì Buffer 2 đầy.`, 'var(--warning)');
+                    m2Actual = m2Limited;
+                }
+            }
+            state.wip1 -= m2Actual;
+            state.wip2 += m2Actual;
+
+            // M3 processes from WIP2 to Final
+            let m3Actual = Math.min(c3, state.wip2);
+            if (m3Actual < c3) addLog(`Trạm 3 bị <strong>Đói hàng (Starvation)</strong>! Năng lực ${c3} nhưng chỉ có ${state.wip2} phôi.`, 'var(--warning)');
+            state.wip2 -= m3Actual;
+            state.total += m3Actual;
+
+            addLog(`Xúc xắc: [${c1}, ${c2}, ${c3}]. Trạm 3 hoàn thiện được ${m3Actual} sp.`, 'white');
+
+            state.day++;
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('dayStat').innerText = state.day <= state.maxDays ? `${state.day} / 20` : "END";
+            document.getElementById('wip1').innerText = state.wip1;
+            document.getElementById('wip2').innerText = state.wip2;
+            document.getElementById('totalStat').innerText = state.total;
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying) return;
+            if(state.day > state.maxDays) {
+                // Reset
+                state = { day: 1, maxDays: 20, wip1: 0, wip2: 0, total: 0, bufferLimit: state.bufferLimit, logs: [] };
+                renderUI();
+            }
+            isPlaying = true;
+            document.getElementById('playBtn').innerText = "Đang chạy...";
+            
+            while(state.day <= state.maxDays) {
+                runDay();
+                await new Promise(r => setTimeout(r, 300));
+            }
+            isPlaying = false;
+            document.getElementById('playBtn').innerText = "▶ Chạy lại từ đầu";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 88: Tính Kinh Tế Theo Phạm Vi (Economies of Scope)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .van { width: 100%; height: 100px; background: #334155; border-radius: 8px; position: relative; margin: 20px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed var(--text-muted);}
+        
+        .item-box { width: 30px; height: 30px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; margin: 2px; font-size: 1.2rem;}
+        .ib-book { background: #3b82f6; }
+        .ib-elec { background: #10b981; }
+        .ib-food { background: #f59e0b; }
+
+        .cost-lbl { font-size: 1.8rem; font-weight: bold;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 88: Tính Kinh Tế Của Phạm Vi</h1>
+            <p style="text-align: center; color: var(--text-muted);">Economies of Scope: Tại sao Amazon bán TẤT CẢ mọi thứ?</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="margin-top:0; color:white;">Chỉ Bán Sách (Cửa Hàng X)</h3>
+                <div style="font-size:0.9rem; color:var(--text-muted); text-align:left;">Chi phí thuê xe tải chạy 1 chuyến tuyến Quận 1 là $100. Hôm nay tuyến đó chỉ có 10 đơn mua Sách.</div>
+                
+                <div class="van">
+                    <div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div>
+                    <div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div>
+                    <div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div>
+                    <div class="item-box ib-book">📘</div>
+                </div>
+                
+                <div style="color:var(--text-muted); margin-bottom:5px;">Chi phí Giao 1 đơn hàng (Sách):</div>
+                <div class="cost-lbl" style="color:var(--danger);">$10 / Đơn</div>
+            </div>
+            
+            <div class="card" style="border-color: var(--success);">
+                <h3 style="margin-top:0; color:white;">Bán Mọi Thứ (Amazon)</h3>
+                <div style="font-size:0.9rem; color:var(--text-muted); text-align:left;">Vẫn tốn $100 thuê xe chạy tuyến Quận 1. Nhưng ngoài 10 quyển Sách, xe còn chở thêm 10 Tivi và 30 gói Thực Phẩm. (Tổng 50 đơn hàng trên cùng 1 xe).</div>
+                
+                <div class="van" style="flex-wrap: wrap; padding: 5px; height: auto;">
+                    <div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div>
+                    <div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div>
+                    <div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div><div class="item-box ib-book">📘</div>
+                    <div class="item-box ib-book">📘</div>
+                    
+                    <div class="item-box ib-elec">💻</div><div class="item-box ib-elec">💻</div><div class="item-box ib-elec">💻</div>
+                    <div class="item-box ib-elec">💻</div><div class="item-box ib-elec">💻</div><div class="item-box ib-elec">💻</div>
+                    <div class="item-box ib-elec">💻</div><div class="item-box ib-elec">💻</div><div class="item-box ib-elec">💻</div>
+                    <div class="item-box ib-elec">💻</div>
+
+                    <div class="item-box ib-food">🍎</div><div class="item-box ib-food">🍎</div><div class="item-box ib-food">🍎</div>
+                    <div class="item-box ib-food">🍎</div><div class="item-box ib-food">🍎</div><div class="item-box ib-food">🍎</div>
+                    <div class="item-box ib-food">🍎</div><div class="item-box ib-food">🍎</div><div class="item-box ib-food">🍎</div>
+                    <div class="item-box ib-food">🍎</div>
+                </div>
+
+                <div style="color:var(--text-muted); margin-bottom:5px;">Chi phí Giao 1 đơn hàng (Sách):</div>
+                <div class="cost-lbl" style="color:var(--success);">$2 / Đơn</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Economies of Scope</h3>
+            <p>Economies of Scale (Theo Quy mô) là sản xuất Cùng Một Thứ với số lượng lớn để giảm giá. <strong>Economies of Scope (Theo Phạm vi)</strong> là sản xuất/phân phối <strong>Nhiều Thứ Khác Nhau</strong> nhưng dùng chung một Cơ Sở Hạ Tầng (Infrastructure) để giảm giá.</p>
+            <ul>
+                <li>Nếu Amazon chỉ bán Sách, họ sẽ lỗ sấp mặt tiền vận chuyển. Tại sao? Vì mật độ đơn hàng quá thưa (Drop density). Một chiếc xe tải chạy cả ngày chỉ rải được vài cuốn sách.</li>
+                <li>Bí quyết Mạng Lưới (Network Effect): Khi bán thêm Điện thoại, Tã lót, Bỉm sữa... Amazon có thể lấp đầy 100% không gian thùng xe tải. Cùng 1 chuyến đi ngang qua ngôi nhà A, người giao hàng quăng xuống 3 cái hộp khác nhau. Cước phí $100 được chia đều cho cả 50 món đồ. Kết quả: Tiền ship mỗi món giảm cực mạnh. Đối thủ chuyên biệt (Niche Market) sẽ không bao giờ có thể cạnh tranh nổi về giá cước giao hàng!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 89: FIFO, LIFO & FEFO</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column;}
+        
+        .storage { height: 150px; border: 2px dashed #475569; margin: 15px 0; position: relative; display: flex; flex-direction: column-reverse; padding: 5px; gap: 5px; background: rgba(0,0,0,0.3);}
+        
+        .box { padding: 5px; background: var(--primary); color: white; border-radius: 4px; font-weight: bold; font-size: 0.9rem;}
+        .box-old { background: var(--danger); }
+        .box-new { background: var(--success); }
+        .box-exp { background: var(--warning); color: black;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 89: Chiến Thuật Lấy Hàng (FIFO, LIFO, FEFO)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bạn ưu tiên bốc thùng hàng nào ra khỏi kho trước?</p>
+        </header>
+
+        <div class="grid-3">
+            <div class="card" style="border-color: var(--primary);">
+                <h3 style="margin-top:0; color:white;">FIFO<br><span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted)">Nhập Trước, Xuất Trước</span></h3>
+                <div class="storage">
+                    <div class="box box-old">Lô 1 (Cũ nhất)</div>
+                    <div class="box">Lô 2</div>
+                    <div class="box box-new">Lô 3 (Mới nhất)</div>
+                </div>
+                <div style="font-size:0.85rem; color:var(--text-muted); text-align:left;">
+                    ➔ <b>Lấy Lô 1 bán trước.</b><br>
+                    Áp dụng: Hàng tiêu dùng (FMCG), Quần áo. Lô hàng cũ không bị kẹt lại dưới đáy kho.
+                </div>
+            </div>
+            
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="margin-top:0; color:white;">LIFO<br><span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted)">Nhập Sau, Xuất Trước</span></h3>
+                <div class="storage">
+                    <div class="box box-old">Lô 1 (Nằm dưới đáy)</div>
+                    <div class="box">Lô 2</div>
+                    <div class="box box-new">Lô 3 (Nằm trên cùng)</div>
+                </div>
+                <div style="font-size:0.85rem; color:var(--text-muted); text-align:left;">
+                    ➔ <b>Lấy Lô 3 bán trước.</b><br>
+                    Áp dụng: Đống cát đá, Than, Gạch xây dựng. Rất khó đào xuống đáy để lấy lô 1.
+                </div>
+            </div>
+
+            <div class="card" style="border-color: var(--warning);">
+                <h3 style="margin-top:0; color:white;">FEFO<br><span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted)">Hết Hạn Trước, Xuất Trước</span></h3>
+                <div class="storage">
+                    <div class="box">Lô 1 (HSD: T12)</div>
+                    <div class="box box-exp">Lô 2 (HSD: T8) 🔥</div>
+                    <div class="box box-new">Lô 3 (HSD: T11)</div>
+                </div>
+                <div style="font-size:0.85rem; color:var(--text-muted); text-align:left;">
+                    ➔ <b>Lấy Lô 2 bán trước.</b><br>
+                    Áp dụng: Sữa, Vắc xin. Mặc dù Lô 1 vào kho trước, nhưng Lô 2 lại CẬN DATE hơn!
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Bốc Dỡ Hàng</h3>
+            <ul>
+                <li><strong>Góc độ Tài chính:</strong> Kế toán rất quan tâm đến FIFO hay LIFO vì nó làm thay đổi Báo Cáo Lợi Nhuận (Nếu vật giá leo thang, dùng LIFO sẽ lấy giá vốn mới đắt tiền để tính lợi nhuận, giúp Công ty tránh được tiền Thuế).</li>
+                <li><strong>Sự màu nhiệm của FEFO:</strong> Rất nhiều Siêu thị áp dụng nhầm FIFO cho đồ ăn tươi sống. Hậu quả là nhân viên cứ lấy thùng Sữa nào nhập vào hôm qua mang ra bán trước. Nhưng họ không biết Nhà phân phối vừa "đẩy" cho họ lô Sữa Cận Date. Nếu dùng FEFO, Barcode sẽ tự động cảnh báo: "Hãy bốc lô Sữa số 2 đi bán ngay, nó chỉ còn 5 ngày nữa là hỏng!".</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

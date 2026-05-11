@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 55: Tối Ưu Tồn Kho Đa Cấp (MEIO & Risk Pooling)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .network-card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        .network-card h2 { margin-top: 0; border-bottom: 1px dashed var(--border); padding-bottom: 10px; font-size: 1.2rem;}
+        
+        .node-row { display: flex; justify-content: space-around; margin: 20px 0;}
+        .node { background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 8px; padding: 10px; width: 60px;}
+        .node-name { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;}
+        .node-inv { font-size: 1.5rem; font-weight: bold; color: var(--primary);}
+        .node-dem { font-size: 0.9rem; color: var(--danger); margin-top: 5px; height: 15px;}
+
+        .central-node { background: rgba(59, 130, 246, 0.2); border: 2px solid var(--primary); width: 100px; margin: 0 auto; padding: 15px;}
+
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+
+        .stat-result { font-size: 1.1rem; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); margin-top: 15px;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 55: Gộp Rủi Ro (Risk Pooling & MEIO)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Thuật toán ma thuật giúp giảm một nửa Tồn kho mà không hề đứt hàng.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn cung cấp Phụ tùng Y tế cho 3 Bệnh viện: Bắc, Trung, Nam. Nhu cầu trung bình mỗi tháng là 10 cái/vùng, nhưng dao động cực mạnh ngẫu nhiên (từ 0 đến 20).<br>
+            - <strong>Mô hình A (Phân tán):</strong> Bạn đặt 3 cái kho nhỏ cạnh 3 bệnh viện. Mỗi kho chứa 20 cái dự phòng.<br>
+            - <strong>Mô hình B (Tập trung):</strong> Bạn dẹp 3 kho nhỏ, gom hàng về 1 Kho Tổng (Central Hub).<br>
+            <em>Bấm nút chạy qua từng Tháng. Bạn sẽ thấy Phép màu Toán học khi những lúc Miền Bắc hết hàng thì Miền Nam lại đang ế ẩm. Gộp lại sẽ triệt tiêu rủi ro!</em>
+        </div>
+
+        <button class="action-btn" onclick="runMonth()">🎲 BỐC THĂM NHU CẦU THÁNG TIẾP THEO</button>
+
+        <div class="grid-2">
+            <!-- Decentralized -->
+            <div class="network-card">
+                <h2>🏢 Mô hình A: Phân Tán (Decentralized)</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Tổng Vốn Tồn Kho ban đầu: <b style="color:white">60 Phụ tùng</b> (20x3)</div>
+                
+                <div class="node-row">
+                    <div class="node" id="dA"><div class="node-name">Kho Bắc</div><div class="node-inv" id="invA">20</div><div class="node-dem" id="demA"></div></div>
+                    <div class="node" id="dB"><div class="node-name">Kho Trung</div><div class="node-inv" id="invB">20</div><div class="node-dem" id="demB"></div></div>
+                    <div class="node" id="dC"><div class="node-name">Kho Nam</div><div class="node-inv" id="invC">20</div><div class="node-dem" id="demC"></div></div>
+                </div>
+
+                <div class="stat-result" id="resDecent">Chưa có giao dịch.</div>
+            </div>
+
+            <!-- Centralized -->
+            <div class="network-card">
+                <h2>🏭 Mô hình B: Tập Trung (Risk Pooling)</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Tổng Vốn Tồn Kho ban đầu: <b style="color:var(--success)">35 Phụ tùng</b> (Tiết kiệm 40% vốn)</div>
+                
+                <div class="node central-node" id="dCent">
+                    <div class="node-name">KHO TỔNG</div>
+                    <div class="node-inv" id="invCent" style="font-size: 2.5rem;">35</div>
+                    <div class="node-dem" id="demCent" style="height: auto;"></div>
+                </div>
+
+                <div class="stat-result" id="resCent">Chưa có giao dịch.</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Tối ưu hóa Mạng lưới (MEIO)</h3>
+            <p>MEIO (Multi-Echelon Inventory Optimization) là cấp độ cao nhất của Quản trị Tồn kho. Phá vỡ tư duy "Chia đều hàng cho các tỉnh".</p>
+            <ul>
+                <li><strong>Hiệu ứng Triệt tiêu Phương sai (Variance Cancellation):</strong> Khi Miền Bắc có biến cố (nhu cầu vọt lên 25), thông thường bạn sẽ bị Cháy hàng (Stockout) vì kho Bắc chỉ có 20. Nhưng theo quy luật xác suất, cực kỳ hiếm khi cả 3 miền cùng bị biến cố vọt lên 25 trong CÙNG MỘT THÁNG. Thông thường, khi Bắc vọt lên 25, thì Nam và Trung lại thấp lẹt đẹt (ví dụ 5).</li>
+                <li><strong>Căn bậc 2 của Rủi ro:</strong> Toán học chứng minh rằng: Độ lệch chuẩn của Tổng sẽ NHỎ HƠN Tổng các độ lệch chuẩn ($ \sigma_{Tổng} = \sqrt{\sigma_1^2 + \sigma_2^2 + \sigma_3^2} $). Do đó, một cái Kho Tổng (Central Hub) không cần chứa 60 cái. Nó chỉ cần chứa khoảng 35 cái là đủ sức cân mọi "Cơn bão" nhu cầu từ các tỉnh bay về.</li>
+                <li><strong>Lợi ích:</strong> Cắt giảm ngay lập tức 40% chi phí Tồn kho (Working Capital) mà tỷ lệ đáp ứng đơn hàng (Service Level) lại vượt trội hơn mô hình kho nhỏ lẻ. Đổi lại, bạn tốn thêm chút phí ship hỏa tốc từ Kho Tổng về Tỉnh. (Sự đánh đổi kinh điển giữa Transport Cost và Inventory Cost).</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runMonth() {
+            // Generate random demands around mean=10, sd=6, bounded [0, 25]
+            let demA = Math.max(0, Math.min(25, Math.round(10 + (Math.random()*2-1 + Math.random()*2-1)*6)));
+            let demB = Math.max(0, Math.min(25, Math.round(10 + (Math.random()*2-1 + Math.random()*2-1)*6)));
+            let demC = Math.max(0, Math.min(25, Math.round(10 + (Math.random()*2-1 + Math.random()*2-1)*6)));
+
+            // Update Decentralized
+            document.getElementById('demA').innerText = "-" + demA;
+            document.getElementById('demB').innerText = "-" + demB;
+            document.getElementById('demC').innerText = "-" + demC;
+
+            let outA = 20 - demA;
+            let outB = 20 - demB;
+            let outC = 20 - demC;
+
+            let failDecent = 0;
+            if (outA < 0) { document.getElementById('dA').style.borderColor = 'red'; failDecent++; } else document.getElementById('dA').style.borderColor = 'var(--border)';
+            if (outB < 0) { document.getElementById('dB').style.borderColor = 'red'; failDecent++; } else document.getElementById('dB').style.borderColor = 'var(--border)';
+            if (outC < 0) { document.getElementById('dC').style.borderColor = 'red'; failDecent++; } else document.getElementById('dC').style.borderColor = 'var(--border)';
+
+            let resDecent = document.getElementById('resDecent');
+            if (failDecent > 0) {
+                resDecent.innerHTML = `<span style="color:var(--danger)">🚨 THẢM HỌA: ${failDecent} Vùng bị cháy hàng! Khách khiếu nại.</span>`;
+            } else {
+                resDecent.innerHTML = `<span style="color:white">✅ An toàn (Nhưng tốn 60 cái tồn kho đọng vốn).</span>`;
+            }
+
+            // Update Centralized
+            let totalDem = demA + demB + demC;
+            document.getElementById('demCent').innerHTML = `<span style="color:var(--text-muted)">Tổng:</span> -${totalDem}`;
+            
+            let outCent = 35 - totalDem;
+            let resCent = document.getElementById('resCent');
+
+            if (outCent < 0) {
+                document.getElementById('dCent').style.borderColor = 'red';
+                resCent.innerHTML = `<span style="color:var(--danger)">🚨 Cháy kho tổng (Hiếm khi xảy ra).</span>`;
+            } else {
+                document.getElementById('dCent').style.borderColor = 'var(--success)';
+                resCent.innerHTML = `<span style="color:var(--success)">🏆 XUẤT SẮC: Các vùng bù đắp rủi ro cho nhau. Kho Tổng cân hết mọi đơn với mức Tồn kho siêu rẻ!</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

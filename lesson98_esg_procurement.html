@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 98: Mua Sắm Dựa Trên Rủi Ro ESG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { background: rgba(0,0,0,0.5); padding: 30px; border-radius: 12px; margin-bottom: 20px; text-align: center;}
+        
+        .btn-action { padding: 15px 30px; font-size: 1.2rem; font-weight: 900; background: linear-gradient(135deg, var(--danger), #991b1b); color: white; border: none; border-radius: 12px; cursor: pointer; animation: pulse 1.5s infinite;}
+        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.05);} 100% {transform: scale(1);} }
+
+        .news-flash { background: white; color: black; padding: 20px; border-radius: 8px; border-left: 8px solid var(--danger); text-align: left; margin-top: 20px; display: none;}
+        
+        .stock-fall { color: var(--danger); font-size: 2rem; font-weight: bold; margin-top: 10px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 98: Mua Sắm Bền Vững (ESG Procurement)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Giá rẻ là cái bẫy chết người của các Giám đốc Mua sắm (CPO).</p>
+        </header>
+
+        <div class="box-area">
+            <h2 style="color:white; margin-top:0;">Đề Xuất Mua Vải Cotton</h2>
+            <div style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 20px;">
+                Nhà cung cấp X chào giá: <b style="color:var(--success)">$2 / mét vuông</b> (Rẻ hơn 50% so với thị trường).<br>
+                Tiết kiệm dự kiến cho Công ty bạn: <strong>$10 Triệu Đô / Năm</strong>.
+            </div>
+            
+            <button class="btn-action" onclick="signContract()" id="btnSign">✍️ KÝ HỢP ĐỒNG NGAY KẺO LỠ!</button>
+            
+            <div class="news-flash" id="news">
+                <div style="font-weight:900; color:var(--danger); font-size:1.2rem;">📰 BREAKING NEWS (3 Tháng Sau):</div>
+                <div style="font-size:0.95rem; margin-top:5px;">"Phóng sự điều tra của BBC phát hiện Nhà cung cấp X sử dụng <strong>Lao động Trẻ em (Child Labor)</strong> và đổ chất thải độc hại ra dòng sông để có mức giá siêu rẻ. Hãng thời trang của bạn bị tẩy chay trên toàn cầu!"</div>
+                <div class="stock-fall">Cổ phiếu công ty bốc hơi: -$2 TỶ USD 📉</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang ESG (Môi trường - Xã hội - Quản trị)</h3>
+            <p>Trọng tâm của Ngành Thu mua (Sourcing) hiện đại không còn nằm ở Cắt giảm Chi phí (Cost Reduction), mà nằm ở Quản trị Rủi ro (Risk Management).</p>
+            <ul>
+                <li><strong>Bóng ma Supply Chain:</strong> Những công ty lớn như Nike, Apple từng khốn đốn khi báo chí phanh phui các xưởng sản xuất cấp 2, cấp 3 (Tier 2/3 Suppliers) của họ vi phạm nhân quyền hoặc bóc lột sức lao động. Dù đó không phải nhà máy của Apple, nhưng Apple là người phải chịu trách nhiệm thương hiệu!</li>
+                <li><strong>Sourcing Hiện đại:</strong> Trước khi ký hợp đồng rẻ mạt, Procurement phải gửi đoàn Audit (Đánh giá) xuống tận xưởng để kiểm tra hệ thống PCCC, tiền lương làm thêm giờ của công nhân, và lượng phát thải Carbon.</li>
+                <li>Hệ quả: Bạn tiết kiệm được $10 Triệu tiền mua vải, nhưng làm bốc hơi $2 Tỷ Đô la Vốn hóa thị trường. Hãy nhớ: Mua sai 1 ly, đi 1 tập đoàn!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function signContract() {
+            document.getElementById('btnSign').style.display = 'none';
+            document.getElementById('news').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

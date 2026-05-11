@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 44: Lý thuyết Xếp hàng (Queuing Theory)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #06b6d4; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #083344, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #22d3ee, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 15px; font-size: 1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s; flex: 1;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);}
+
+        .warehouse-view { background: rgba(0,0,0,0.4); border: 2px solid #475569; border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; display: flex;}
+        
+        .queue-lane { flex: 1; border-right: 2px dashed var(--border); padding-right: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; overflow: hidden;}
+        
+        .docks { width: 120px; display: flex; flex-direction: column; gap: 20px; padding-left: 20px;}
+        .dock { height: 60px; background: rgba(255,255,255,0.1); border: 2px solid var(--primary); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-weight: bold;}
+        
+        .truck { font-size: 2rem; animation: driveIn 0.5s; }
+        @keyframes driveIn { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 44: Lý thuyết Phục vụ (Queuing Theory)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Khoa học đằng sau việc bớt kẹt xe, giảm hàng đợi siêu thị và giải phóng bến cảng.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Kho của bạn có <strong>1 Cửa dỡ hàng (Dock)</strong>. Xe tải đến một cách ngẫu nhiên (Poisson) trung bình 4 chiếc/giờ. Tốc độ dỡ hàng của công nhân là 5 chiếc/giờ.<br>
+            - Bạn nghĩ 5 lớn hơn 4, nên sẽ không có ai phải đợi? <strong>SAI!</strong> Vì xe đến ngẫu nhiên, có lúc 3 xe ập đến cùng lúc, gây ra hàng đợi cực dài (Chờ trung bình 48 phút).<br>
+            <em>Giải pháp: Giám đốc cấp ngân sách để cải thiện. Bạn sẽ mua Máy nâng xịn (Ép 1 công nhân làm nhanh hơn) hay Thuê thêm người để mở Cửa dỡ hàng số 2?</em>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt active" id="btnBase" onclick="runSim('base')">Hiện tại (M/M/1)<br><span style="font-size:0.8rem; font-weight:normal;">1 Cửa - Tốc độ 5 xe/h</span></button>
+            <button class="btn-opt" id="btnFast" onclick="runSim('fast')">Phương án 1 (M/M/1 Nhanh)<br><span style="font-size:0.8rem; font-weight:normal;">1 Cửa - Tốc độ ép lên 6 xe/h</span></button>
+            <button class="btn-opt" id="btnDual" onclick="runSim('dual')">Phương án 2 (M/M/2)<br><span style="font-size:0.8rem; font-weight:normal;">Mở 2 Cửa - Tốc độ giữ 5 xe/h</span></button>
+        </div>
+
+        <div class="warehouse-view">
+            <div class="queue-lane" id="queueLane">
+                <!-- Trucks waiting -->
+            </div>
+            <div class="docks">
+                <div class="dock" id="dock1">CỬA 1<br>Đang Dỡ</div>
+                <div class="dock" id="dock2" style="display: none;">CỬA 2<br>Đang Dỡ</div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">SỐ XE XẾP HÀNG (Lq)</div><div class="stat-value" id="qStat" style="color: var(--danger)">3.2 Xe</div></div>
+            <div><div style="color: var(--text-muted);">THỜI GIAN CHỜ (Wq)</div><div class="stat-value" id="wStat" style="color: var(--danger)">48 Phút</div></div>
+            <div><div style="color: var(--text-muted);">ĐÁNH GIÁ</div><div class="stat-value" id="evalStat" style="color: white">Kẹt Cứng</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #22d3ee;">📚 Cẩm nang Queuing Theory (M/M/s Model)</h3>
+            <p>Con người rất kém trong việc trực giác hóa rủi ro phi tuyến tính của hàng đợi. Hệ thống bắt đầu sụp đổ và thời gian chờ tăng vọt theo cấp số nhân khi công suất (Utilization) vượt qua mức 80%.</p>
+            <ul>
+                <li><strong>Mô hình M/M/1 Hiện tại:</strong> Tốc độ dỡ = 5, Tốc độ đến = 4. Hệ thống chạy ở mức 80% công suất (Utilization). Chỉ một chút xáo trộn ngẫu nhiên là xe tải phải xếp hàng dài. </li>
+                <li><strong>Phương án 1 (Ép nhân viên làm nhanh hơn):</strong> Tăng tốc độ dỡ lên 6 xe/giờ. Hàng đợi giảm từ 3.2 xe xuống 1.3 xe. Tốt, nhưng bạn đang vắt kiệt sức lao động của 1 người, rủi ro đình công rất cao.</li>
+                <li><strong>Phương án 2 (Mở thêm 1 Server - Cửa số 2):</strong> Đây là phép màu của Toán học. Khi bạn mở 2 cửa (Mỗi cửa dỡ 5 xe/h), thời gian chờ trung bình giảm thê thảm từ 48 phút xuống chỉ còn <strong>2.7 Phút</strong>! Số xe phải xếp hàng bên ngoài gần như bằng 0 (0.15 xe). <strong>Bài học: Trong Logistics, tăng cường tính song song (Parallel Servers) luôn mang lại sức bật khủng khiếp hơn việc cố gắng thúc đẩy tính tuyến tính (Faster Single Server)!</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function drawQueue(count) {
+            let html = '';
+            for(let i=0; i<Math.round(count); i++) {
+                html += '<div class="truck">🚛</div>';
+            }
+            if (count > 0 && Math.round(count) === 0) html += '<div class="truck" style="opacity:0.3">🚛</div>';
+            document.getElementById('queueLane').innerHTML = html;
+        }
+
+        function runSim(mode) {
+            document.getElementById('btnBase').classList.remove('active');
+            document.getElementById('btnFast').classList.remove('active');
+            document.getElementById('btnDual').classList.remove('active');
+            
+            if (mode === 'base') {
+                document.getElementById('btnBase').classList.add('active');
+                document.getElementById('dock2').style.display = 'none';
+                
+                drawQueue(3.2); // Formula M/M/1
+                document.getElementById('qStat').innerText = "3.2 Xe";
+                document.getElementById('qStat').style.color = "var(--danger)";
+                document.getElementById('wStat').innerText = "48 Phút";
+                document.getElementById('wStat').style.color = "var(--danger)";
+                document.getElementById('evalStat').innerText = "Kẹt cứng";
+                document.getElementById('evalStat').style.color = "var(--danger)";
+            } 
+            else if (mode === 'fast') {
+                document.getElementById('btnFast').classList.add('active');
+                document.getElementById('dock2').style.display = 'none';
+                
+                drawQueue(1.3);
+                document.getElementById('qStat').innerText = "1.3 Xe";
+                document.getElementById('qStat').style.color = "var(--warning)";
+                document.getElementById('wStat').innerText = "20 Phút";
+                document.getElementById('wStat').style.color = "var(--warning)";
+                document.getElementById('evalStat').innerText = "Khá hơn";
+                document.getElementById('evalStat').style.color = "var(--warning)";
+            }
+            else {
+                // Dual
+                document.getElementById('btnDual').classList.add('active');
+                document.getElementById('dock2').style.display = 'flex';
+                
+                drawQueue(0.15); // M/M/2 formula result
+                document.getElementById('qStat').innerText = "0.15 Xe";
+                document.getElementById('qStat').style.color = "var(--success)";
+                document.getElementById('wStat').innerText = "2.7 Phút";
+                document.getElementById('wStat').style.color = "var(--success)";
+                document.getElementById('evalStat').innerText = "Trống trải (Đỉnh)";
+                document.getElementById('evalStat').style.color = "var(--primary)";
+            }
+        }
+
+        window.onload = () => runSim('base');
+    </script>
+</body>
+</html>

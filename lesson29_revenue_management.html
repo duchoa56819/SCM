@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 29: Quản trị Doanh thu & Cước phí (Revenue Management)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #3b0764, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #7e22ce); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .control-box { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 50%; text-align: left; font-weight: bold; font-size: 1.1rem;}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--primary);}
+        .slider-val { width: 15%; font-size: 1.8rem; font-weight: 900; color: var(--warning); text-align: right;}
+
+        .flight-map { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;}
+        .slot { width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #666; transition: all 0.3s;}
+        .slot.early { background: var(--success); color: white; }
+        .slot.late { background: var(--warning); color: black; }
+        .slot.empty { background: var(--danger); color: white; }
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #581c87); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 29: Quản trị Doanh thu (Yield Management)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bí mật của ngành Hàng không: Tại sao 2 người ngồi cạnh nhau lại mua vé với giá chênh nhau gấp 3 lần?</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Máy bay chở hàng của bạn có <strong>100 Vị trí (Slots)</strong>. Chuyến bay sẽ cất cánh sau 10 ngày.<br>
+            ✈️ <strong>Khách Hàng Đặt Sớm (Early Birds):</strong> Sẵn sàng mua toàn bộ 100 slot để giữ chỗ, nhưng họ ép giá siêu rẻ: <strong>$50/Slot</strong>.<br>
+            🚨 <strong>Khách Hàng Khẩn Cấp (Last-minute):</strong> Sẽ xuất hiện vào ngày cuối cùng trước khi cất cánh. Họ sẵn sàng trả <strong>$150/Slot</strong>. Rủi ro: Không biết có bao nhiêu người loại này sẽ xuất hiện (Từ 10 đến 50 người).<br>
+            <em>Mục tiêu: Kéo thanh trượt để Quyết định giữ lại bao nhiêu ghế (Protection Level) cho nhóm Khách Khẩn Cấp để tối đa hóa Doanh thu chuyến bay!</em>
+        </div>
+
+        <div class="control-box">
+            <h2 style="margin-top: 0; color: var(--primary);">MỨC BẢO VỆ CHỖ (PROTECTION LEVEL)</h2>
+            <div class="slider-group">
+                <div class="slider-label">Số chỗ để dành cho Khách Khẩn Cấp ($150):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Bạn sẽ từ chối bán số chỗ này cho khách Đặt Sớm $50)</span></div>
+                <input type="range" id="reserveSlider" min="0" max="100" value="0" oninput="updateSlider()">
+                <div class="slider-val" id="valReserve">0</div>
+            </div>
+            <div style="text-align: left; font-size: 0.9rem; color: var(--success);">➔ Sẽ bán ngay <strong id="valEarly">100</strong> chỗ cho khách Đặt Sớm với giá $50.</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">ĐÃ BÁN GIÁ RẺ</div><div class="stat-value" id="soldEarly" style="color: var(--success)">0</div></div>
+            <div><div style="color: var(--text-muted);">ĐÃ BÁN GIÁ CAO</div><div class="stat-value" id="soldLate" style="color: var(--warning)">0</div></div>
+            <div><div style="color: var(--text-muted);">GHẾ TRỐNG LỖ</div><div class="stat-value" id="emptySlots" style="color: var(--danger)">0</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG DOANH THU</div><div class="stat-value" id="revenue" style="color: white">$0</div></div>
+        </div>
+
+        <div class="flight-map" id="flightMap">
+            <!-- 100 slots -->
+        </div>
+
+        <button class="action-btn" onclick="runFlight()">🛫 CHỐT ĐƠN VÀ CẤT CÁNH ➔</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #c084fc; margin-top: 0;">📚 Cẩm nang Yield Management (Quy tắc Littlewood)</h3>
+            <p><strong>Revenue Management</strong> được phát minh bởi American Airlines vào những năm 1980, sinh ra hàng tỷ Đô la lợi nhuận bổ sung mỗi năm mà không tốn thêm 1 giọt xăng nào.</p>
+            <ul>
+                <li><strong>Cạm bẫy Bán sạch (0% Reserve):</strong> Tâm lý "Thà bán rẻ còn hơn ghế trống bay lên trời" khiến bạn bán 100 ghế với giá $50 (Thu $5,000). Ngày mai, có 30 người cần bay gấp sẵn sàng trả $150, bạn đành nói "Hết chỗ". Bạn mất trắng cơ hội ăn phần chênh lệch.</li>
+                <li><strong>Cạm bẫy Giữ quá nhiều (60% Reserve):</strong> Bạn giữ lại tới 60 ghế để chờ khách xịn $150. Nhưng đến giờ bay, chỉ có 30 khách xịn xuất hiện. 30 ghế còn lại bị bỏ trống (Empty). Chỗ trống trên máy bay là thứ hàng hóa thiu thối nhanh nhất thế giới: Khi cửa máy bay đóng lại, giá trị của nó = 0. Bạn lỗ thê thảm.</li>
+                <li><strong>Quy tắc Littlewood:</strong> Số lượng ghế tối ưu cần giữ lại phụ thuộc vào tỷ lệ giá <code>(Giá rẻ / Giá cao)</code> và Xác suất phân phối khách hàng. Trong game này, mức Reserve tối ưu thường nằm quanh vùng <strong>30 đến 40 ghế</strong>. Đó là cách bạn vừa lấp đầy máy bay bằng giá nền, vừa vắt kiệt túi tiền của khách hàng trễ giờ!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function initMap() {
+            let html = '';
+            for(let i=0; i<100; i++) {
+                html += `<div class="slot" id="slot_${i}"></div>`;
+            }
+            document.getElementById('flightMap').innerHTML = html;
+        }
+
+        function updateSlider() {
+            let res = parseInt(document.getElementById('reserveSlider').value);
+            document.getElementById('valReserve').innerText = res;
+            document.getElementById('valEarly').innerText = 100 - res;
+        }
+
+        function runFlight() {
+            let reserve = parseInt(document.getElementById('reserveSlider').value);
+            let earlySold = 100 - reserve;
+            
+            // Random late demand between 10 and 50
+            let lateDemand = Math.floor(Math.random() * 41) + 10; 
+            
+            let lateSold = Math.min(reserve, lateDemand);
+            let empty = reserve - lateSold;
+
+            let revEarly = earlySold * 50;
+            let revLate = lateSold * 150;
+            let totalRev = revEarly + revLate;
+
+            document.getElementById('soldEarly').innerText = earlySold;
+            document.getElementById('soldLate').innerText = lateSold;
+            document.getElementById('emptySlots').innerText = empty;
+            document.getElementById('revenue').innerText = '$' + totalRev.toLocaleString();
+
+            // Visualize
+            for(let i=0; i<100; i++) {
+                let slot = document.getElementById('slot_'+i);
+                slot.className = 'slot';
+                
+                if (i < earlySold) {
+                    slot.classList.add('early');
+                } else if (i < earlySold + lateSold) {
+                    slot.classList.add('late');
+                } else {
+                    slot.classList.add('empty');
+                }
+            }
+
+            // Log
+            let logs = document.getElementById('logContent');
+            let msg = `<div class="log-entry">
+                <strong>Chuyến bay cất cánh!</strong> 
+                Để dành ${reserve} chỗ. Nhu cầu khẩn cấp thực tế là ${lateDemand} người. 
+                Bán được ${lateSold} vé VIP ($150). Bay rỗng ${empty} ghế. 
+                <strong>Tổng thu: <span style="color:var(--success)">$${totalRev.toLocaleString()}</span></strong>
+            </div>`;
+            logs.innerHTML = msg + logs.innerHTML;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { initMap(); updateSlider(); };
+    </script>
+</body>
+</html>

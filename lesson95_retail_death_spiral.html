@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 95: Vòng Xoáy Tử Thần Bán Lẻ (Retail Death Spiral)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .cycle-container { display: flex; flex-direction: column; align-items: center; margin: 30px 0; gap: 15px;}
+        .cycle-node { background: var(--panel-bg); border: 2px solid var(--danger); padding: 15px 30px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 0 15px rgba(239,68,68,0.2); width: 80%; text-align: center; transition: all 0.5s; opacity: 0.3;}
+        .cycle-arrow { color: var(--danger); font-size: 1.5rem; opacity: 0.3; transition: all 0.5s;}
+
+        .btn-action { width: 100%; max-width: 300px; padding: 15px; font-size: 1.1rem; font-weight: 900; background: linear-gradient(135deg, var(--danger), #991b1b); color: white; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 95: Vòng Xoáy Tử Thần Bán Lẻ</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự sụp đổ mang tính hệ thống của các gã khổng lồ (Sears, Toys R Us).</p>
+        </header>
+
+        <div style="text-align:center;">
+            <button class="btn-action" onclick="nextStep()" id="btnStep">⏳ NHÌN CÔNG TY SỤP ĐỔ TỪ TỪ</button>
+        </div>
+
+        <div class="cycle-container">
+            <div class="cycle-node" id="n1">1. Dự báo sai => Nhập sai hàng => Ế ẩm (Overstock)</div>
+            <div class="cycle-arrow" id="a1">⬇️</div>
+            <div class="cycle-node" id="n2">2. Bán phá giá (Markdown) để dọn kho => Lợi nhuận Bốc hơi</div>
+            <div class="cycle-arrow" id="a2">⬇️</div>
+            <div class="cycle-node" id="n3">3. Hết tiền vốn => Nhập lắt nhắt mùa sau => Cháy hàng xịn (Out-of-Stock)</div>
+            <div class="cycle-arrow" id="a3">⬇️</div>
+            <div class="cycle-node" id="n4">4. Khách hàng thất vọng bỏ sang đối thủ => Doanh thu rơi tự do</div>
+            <div class="cycle-arrow" id="a4">🔄 Vòng lặp quay lại Bước 1 (Nhưng nghèo hơn)</div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Retail Death Spiral</h3>
+            <p>Hàng tồn kho giống như ung thư, nếu không xử lý đúng, nó sẽ di căn ra toàn bộ dòng tiền của công ty.</p>
+            <ul>
+                <li><strong>Căn bệnh hệ thống:</strong> Một khi bạn kẹt tiền vào đống hàng cũ (Dead stock), bạn sẽ bị mù quáng đâm đầu vào giảm giá. Khi lợi nhuận bị bào mòn, bộ phận Sourcing không còn ngân sách để mua bộ sưu tập mùa Thu cực chất mới ra mắt. Hệ quả: Cửa hàng của bạn toàn đồ Sale xấu xí, không có hàng Mới, khách hàng bước vào và quay lưng đi ra mãi mãi.</li>
+                <li><strong>Cách bẻ gãy Vòng xoáy:</strong> Zara bẻ gãy nó bằng nguyên tắc: <em>Chấp nhận sản xuất thiếu (Thiếu hàng còn hơn thừa hàng)</em>. Cứ 2 tuần đổi mẫu mới 1 lần. Nếu ế, lập tức đốt bỏ hoặc dọn sạch không nuối tiếc để nhường chỗ, nhường VỐN cho lô hàng hot trend tiếp theo!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let step = 1;
+        function nextStep() {
+            if(step <= 4) {
+                document.getElementById('n' + step).style.opacity = '1';
+                document.getElementById('n' + step).style.transform = 'scale(1.05)';
+                if(step < 4) document.getElementById('a' + step).style.opacity = '1';
+                step++;
+            }
+            if(step > 4) {
+                document.getElementById('btnStep').style.display = 'none';
+                document.getElementById('a4').style.opacity = '1';
+                document.getElementById('a4').style.color = 'var(--danger)';
+                document.getElementById('a4').style.fontWeight = 'bold';
+            }
+        }
+    </script>
+</body>
+</html>

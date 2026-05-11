@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 92: Băng Chuyền Phân Loại Tự Động (Sortation)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;}
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .sim-area { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px; position: relative; height: 200px; overflow: hidden; border: 1px solid var(--border);}
+        
+        .conveyor { position: absolute; top: 80px; left: -100%; width: 300%; height: 40px; background: #334155; border-top: 4px dashed var(--warning); border-bottom: 4px dashed var(--warning); animation: beltMove 5s linear infinite;}
+        @keyframes beltMove { from { transform: translateX(0); } to { transform: translateX(100px); } }
+
+        .pkg { position: absolute; top: 60px; left: 0; width: 40px; height: 40px; background: #d97706; border-radius: 4px; border: 2px solid #b45309; transition: all 0.5s; z-index: 10;}
+        
+        .chute { position: absolute; bottom: 10px; width: 80px; height: 60px; background: rgba(255,255,255,0.1); border: 2px solid; border-radius: 8px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 5px; font-weight: bold;}
+        
+        .btn-action { width: 100%; padding: 15px; font-size: 1.2rem; font-weight: 900; background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 92: Băng Chuyền Phân Loại Tự Động</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cách FedEx chia 1 triệu bưu kiện đi 50 tỉnh thành trong 1 đêm.</p>
+        </header>
+
+        <div class="sim-area">
+            <div class="conveyor"></div>
+            
+            <div class="chute" style="left: 20%; border-color: var(--success); color: var(--success);">Hà Nội</div>
+            <div class="chute" style="left: 50%; border-color: var(--primary); color: var(--primary);">Đà Nẵng</div>
+            <div class="chute" style="left: 80%; border-color: var(--danger); color: var(--danger);">TP.HCM</div>
+            
+            <div class="pkg" id="p1" style="left: -50px;"></div>
+        </div>
+
+        <button class="btn-action" onclick="runSort()">🚀 KHỞI ĐỘNG HỆ THỐNG CROSS-BELT SORTER</button>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Phân loại Tự động (Automated Sortation)</h3>
+            <p>Trái tim của các Hub Giao hàng khổng lồ (Shopee, Amazon) không phải là chỗ để chứa hàng, mà là "Máy Phân Loại".</p>
+            <ul>
+                <li><strong>Vấn đề của Con người:</strong> Cầm cục hàng lên, nhìn địa chỉ, đi bộ đến bao tải ghi chữ "Đà Nẵng" thả vào. Quá trình này mất 5-10 giây/kiện. Và con người sẽ mỏi mắt, ném nhầm kiện hàng Hà Nội vào xe đi Cà Mau.</li>
+                <li><strong>Hệ thống Tilt-Tray / Cross-Belt:</strong> Bưu kiện chạy trên băng chuyền tốc độ 2.5 m/s. Camera chớp nhoáng chụp mã vạch trong 0.1s. Ngay khi kiện hàng chạy ngang qua máng trượt (Chute) của Đà Nẵng, khay chứa tự động <em>Nghiêng (Tilt)</em> hất cục hàng lọt tọt xuống túi.</li>
+                <li><strong>Năng suất:</strong> Lên tới <strong>20,000 kiện hàng / giờ</strong>. Lỗi sai gần như bằng 0. Đây là lý do bạn mua hàng lúc 10h đêm mà 9h sáng hôm sau đã thấy shipper gọi cửa!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runSort() {
+            let pkg = document.getElementById('p1');
+            pkg.style.transition = 'none';
+            pkg.style.left = '-50px';
+            pkg.style.top = '60px';
+            
+            setTimeout(() => {
+                pkg.style.transition = 'left 2s linear, top 0.3s ease-in';
+                pkg.style.left = '52%'; // Move to Da Nang
+                
+                setTimeout(() => {
+                    // Tilt drop
+                    pkg.style.top = '140px'; 
+                }, 2000);
+            }, 50);
+        }
+    </script>
+</body>
+</html>

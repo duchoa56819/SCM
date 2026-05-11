@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 30: Điểm Tách Biệt (Decoupling Point - ATO vs MTS)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #14b8a6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #042f2e, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #5eead4, #0d9488); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .pipeline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.4); padding: 30px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; position: relative;}
+        
+        .stage { width: 22%; background: rgba(255,255,255,0.05); border: 2px solid var(--text-muted); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; z-index: 2;}
+        .stage:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .stage.selected { border-color: var(--warning); background: rgba(245, 158, 11, 0.2); box-shadow: 0 0 20px rgba(245,158,11,0.5);}
+        .stage-title { font-weight: bold; margin-bottom: 5px; font-size: 1.1rem; }
+        .stage-time { color: var(--primary); font-size: 0.9rem; margin-bottom: 10px;}
+        
+        .buffer-icon { font-size: 2.5rem; display: none; }
+        .stage.selected .buffer-icon { display: block; animation: bounce 1s infinite; }
+        
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .line { position: absolute; top: 50%; left: 10%; right: 10%; height: 4px; background: var(--text-muted); z-index: 1; transform: translateY(-5px);}
+        .line-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--warning); width: 0%; transition: width 0.5s;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0f766e); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+        
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-top: 5px;}
+        .bg-push { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger);}
+        .bg-pull { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success);}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 30: Vị trí Điểm Tách Biệt (Decoupling Point)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Khách hàng muốn máy tính giao ngay lập tức, nhưng CFO lại muốn Tồn kho bằng không. Phải làm sao?</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Quy trình sản xuất Laptop có 4 Công đoạn. Tổng thời gian là 10 Ngày.<br>
+            Bạn phải chọn <strong>1 Công đoạn làm Điểm Tồn Kho Đệm (Decoupling Point)</strong>.<br>
+            - Phía TRƯỚC điểm này: Sản xuất đẩy (PUSH) dựa trên dự báo, tạo ra hàng lưu kho.<br>
+            - Phía SAU điểm này: Sản xuất kéo (PULL) chỉ chạy khi Khách Hàng thực sự đặt cọc tiền.<br>
+            <em>Hãy Click chọn 1 Công đoạn bên dưới làm Kho Đệm để xem kết quả!</em>
+        </div>
+
+        <div class="pipeline">
+            <div class="line"><div class="line-fill" id="progressLine"></div></div>
+            
+            <div class="stage selected" id="st1" onclick="selectPoint(1)">
+                <div class="buffer-icon">📦</div>
+                <div class="stage-title">1. Linh kiện Thô</div>
+                <div class="stage-time">Thời gian: 0 ngày</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">(Vỏ nhựa, Ốc vít)</div>
+            </div>
+            
+            <div class="stage" id="st2" onclick="selectPoint(2)">
+                <div class="buffer-icon">📦</div>
+                <div class="stage-title">2. Khung Máy Base</div>
+                <div class="stage-time">Mất: 4 Ngày</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">(Lắp ráp mainboard)</div>
+            </div>
+            
+            <div class="stage" id="st3" onclick="selectPoint(3)">
+                <div class="buffer-icon">📦</div>
+                <div class="stage-title">3. Lắp CPU & RAM</div>
+                <div class="stage-time">Mất: 4 Ngày</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">(Gắn chip tùy chọn)</div>
+            </div>
+            
+            <div class="stage" id="st4" onclick="selectPoint(4)">
+                <div class="buffer-icon">📦</div>
+                <div class="stage-title">4. Thành phẩm Cuối</div>
+                <div class="stage-time">Mất: 2 Ngày</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">(Đóng hộp, Dán tem)</div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div>
+                <div style="color: var(--text-muted);">THỜI GIAN GIAO HÀNG (LEAD TIME)</div>
+                <div class="stat-value" id="ltStat" style="color: var(--warning)">10 Ngày</div>
+                <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 5px;">Khách hàng chờ mòn mỏi</div>
+            </div>
+            <div>
+                <div style="color: var(--text-muted);">CHI PHÍ LƯU KHO ($)</div>
+                <div class="stat-value" id="invStat" style="color: var(--success)">$50,000</div>
+                <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 5px;">Kho chứa toàn ốc vít rẻ tiền</div>
+            </div>
+        </div>
+
+        <button class="action-btn" onclick="runSim()">ÁP DỤNG MÔ HÌNH NÀY ➔</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #14b8a6; margin-top: 0;">📚 Cẩm nang Ranh giới Push-Pull</h3>
+            <p><strong>Decoupling Point (Điểm tách biệt)</strong> là nơi hàng hóa được "tích trữ" chờ lệnh của Khách. Trước điểm này, nhà máy sản xuất theo dự báo (Push). Sau điểm này, nhà máy sản xuất theo đơn hàng thực tế (Pull).</p>
+            <ul>
+                <li><strong>Make-to-Order MTO (Tồn kho ở Bước 1):</strong> Bạn chỉ trữ ốc vít. Khi có đơn mới bắt đầu rèn khung, lắp chip. Chi phí kho siêu rẻ (ốc vít không bao giờ ế). NHƯNG khách hàng phải đợi 10 ngày mới có Laptop. Đa số khách hàng sẽ bỏ đi mua hãng khác.</li>
+                <li><strong>Make-to-Stock MTS (Tồn kho ở Bước 4):</strong> Bạn làm sẵn hàng ngàn cái Laptop xịn cất trong kho. Khách đặt phát là giao ngay lập tức (0 Ngày). Tuyệt vời! NHƯNG nếu khách không mua màu Đỏ mà đòi màu Xanh, kho laptop màu Đỏ của bạn trở thành rác công nghệ lỗi thời. Chi phí đọng vốn lên tới hàng triệu Đô. Bán lẻ truyền thống hay chết vì lỗi này.</li>
+                <li><strong>Assemble-to-Order ATO (Tồn kho ở Bước 2/3 - Tùy biến muộn / Postponement):</strong> Chiến lược của DELL: Họ sản xuất hàng loạt các Khung máy cơ bản (Không màu, Không chip) và trữ ở Bước 2. Khi khách đặt "Đỏ 16GB", họ mới sơn và gắn RAM. Giao hàng mất 6 ngày (Chấp nhận được), mà Tồn kho lại là hàng cơ bản chưa phân biệt, dùng chung cho mọi cấu hình (Risk Pooling). Hoàn hảo!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentPoint = 1;
+
+        function selectPoint(p) {
+            currentPoint = p;
+            for(let i=1; i<=4; i++) {
+                document.getElementById('st'+i).classList.remove('selected');
+            }
+            document.getElementById('st'+p).classList.add('selected');
+            
+            let fillPct = ((p-1) / 3) * 100;
+            document.getElementById('progressLine').style.width = fillPct + '%';
+
+            calculateStats();
+        }
+
+        function calculateStats() {
+            let lt = 0;
+            let inv = 0;
+            
+            // Times: 1->0, 2->4, 3->4, 4->2. Total 10.
+            // If point is P, Lead Time to customer = sum of times from P+1 to 4
+            if(currentPoint === 1) { lt = 4+4+2; inv = 50; } // MTO
+            if(currentPoint === 2) { lt = 4+2; inv = 200; }  // ATO Base
+            if(currentPoint === 3) { lt = 2; inv = 800; }    // ATO Late
+            if(currentPoint === 4) { lt = 0; inv = 2000; }   // MTS
+
+            let ltColor = lt > 5 ? 'var(--danger)' : (lt > 0 ? 'var(--warning)' : 'var(--success)');
+            let invColor = inv > 1000 ? 'var(--danger)' : (inv > 100 ? 'var(--warning)' : 'var(--success)');
+
+            document.getElementById('ltStat').innerText = lt + ' Ngày';
+            document.getElementById('ltStat').style.color = ltColor;
+            
+            document.getElementById('invStat').innerText = '$' + inv.toLocaleString() + ',000';
+            document.getElementById('invStat').style.color = invColor;
+        }
+
+        function runSim() {
+            let logs = document.getElementById('logContent');
+            let type = "";
+            let msg = "";
+
+            if(currentPoint === 1) {
+                type = "Make-to-Order (MTO)";
+                msg = `Bạn chọn trữ Linh kiện thô. Chi phí kho cực rẻ ($50k). Nhưng Khách hàng đặt mua phải chờ <strong>10 Ngày</strong>. Hầu hết bỏ đi mua Macbook!`;
+            } else if (currentPoint === 2) {
+                type = "Assemble-to-Order (ATO Sớm)";
+                msg = `Bạn trữ Khung máy Base. Khi có đơn mới lắp Chip. Giao hàng trong <strong>6 Ngày</strong>. Chi phí đọng vốn $200k. Một giải pháp cân bằng.`;
+            } else if (currentPoint === 3) {
+                type = "Assemble-to-Order (Tùy biến muộn - Postponement)";
+                msg = `Bạn gắn sẵn CPU, chỉ chờ dán nhãn là xuất. Giao hàng thần tốc <strong>2 Ngày</strong>. Chi phí kho khá cao ($800k). Rất phù hợp với Thương mại điện tử.`;
+            } else {
+                type = "Make-to-Stock (MTS)";
+                msg = `Bạn đóng gói sẵn thành phẩm lưu kho. Giao hàng tức thời <strong>0 Ngày</strong>! NHƯNG chi phí đọng vốn lên tới $2 Triệu Đô. Rủi ro hàng tồn kho ế ẩm (Lỗi thời chip) là cực kỳ khủng khiếp!`;
+            }
+
+            let logHtml = `<div class="log-entry">
+                <strong style="color:var(--primary)">Mô hình: ${type}</strong><br>
+                ${msg}
+            </div>`;
+            logs.innerHTML = logHtml + logs.innerHTML;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { selectPoint(1); };
+    </script>
+</body>
+</html>

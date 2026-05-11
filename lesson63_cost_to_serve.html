@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 63: Phân tích Chi phí Phục vụ (Cost-to-Serve)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .client-card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; position: relative;}
+        .client-card h2 { margin-top: 0; text-align: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; color: white;}
+        
+        .row-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);}
+        .row-item span { color: var(--text-muted); }
+        .row-item strong { color: white; }
+        .val-pos { color: var(--success) !important; }
+        .val-neg { color: var(--danger) !important; }
+
+        .hidden-costs { display: none; margin-top: 15px; border-top: 2px solid var(--danger); padding-top: 15px; background: rgba(239, 68, 68, 0.05); border-radius: 8px;}
+
+        .profit-box { margin-top: 20px; text-align: center; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid var(--border);}
+        .profit-lbl { font-size: 0.9rem; color: var(--text-muted); font-weight: bold;}
+        .profit-val { font-size: 2rem; font-weight: 900;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--warning), #b45309); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);}
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 63: Phân tích Cost-to-Serve (CTS)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Không phải Khách hàng nào mang lại Doanh thu lớn cũng là Khách hàng Tốt.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Cuối năm, Phòng Sales tổ chức tiệc vinh danh. Họ khoe 2 Khách hàng B2B lớn nhất năm: Đại lý A và Đại lý B.<br>
+            Cả hai đều mua đơn hàng <strong>$100,000</strong>. Giá vốn hàng (COGS) là $70,000. Lợi nhuận Gộp Kế toán ghi nhận là <strong>$30,000</strong> cho mỗi người. Cả công ty vỗ tay rầm rộ.<br>
+            <em>Hành động: Bạn (Giám đốc Chuỗi Cung Ứng) nhếch mép cười. Bấm nút bên dưới để "Bóc trần sự thật Tảng Băng Chìm" đằng sau 2 khách hàng này.</em>
+        </div>
+
+        <button class="action-btn" id="btnReveal" onclick="revealCosts()">🔥 BÓC TRẦN LỢI NHUẬN THỰC TẾ (NET PROFIT)</button>
+
+        <div class="grid-2">
+            <!-- Client A -->
+            <div class="client-card" id="cardA">
+                <h2>ĐẠI LÝ A (Khách Truyền Thống)</h2>
+                <div class="row-item"><span>Doanh thu mua hàng:</span> <strong>$100,000</strong></div>
+                <div class="row-item"><span>Giá vốn hàng (COGS):</span> <strong>-$70,000</strong></div>
+                <div class="row-item" style="font-weight: bold; font-size: 1.1rem; border-bottom: none;"><span>LỢI NHUẬN GỘP:</span> <strong class="val-pos">$30,000</strong></div>
+                
+                <div class="hidden-costs" id="hidA">
+                    <div style="font-size:0.8rem; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">CÁC CHI PHÍ HOẠT ĐỘNG LOGISTICS CHÌM</div>
+                    <div class="row-item"><span>Nhặt hàng nguyên Pallet:</span> <strong class="val-neg">-$100</strong></div>
+                    <div class="row-item"><span>Giao hàng xe tải thường:</span> <strong class="val-neg">-$400</strong></div>
+                    <div class="row-item"><span>Thanh toán đúng hạn (Lãi vay):</span> <strong class="val-neg">-$0</strong></div>
+                    <div class="row-item"><span>Trả hàng lỗi (Reverse):</span> <strong class="val-neg">-$0</strong></div>
+                </div>
+
+                <div class="profit-box" id="profBoxA" style="display:none;">
+                    <div class="profit-lbl">LỢI NHUẬN RÒNG THỰC TẾ</div>
+                    <div class="profit-val val-pos" id="profValA">+$29,500</div>
+                </div>
+            </div>
+
+            <!-- Client B -->
+            <div class="client-card" id="cardB">
+                <h2>ĐẠI LÝ B (Khách Khó Tính)</h2>
+                <div class="row-item"><span>Doanh thu mua hàng:</span> <strong>$100,000</strong></div>
+                <div class="row-item"><span>Giá vốn hàng (COGS):</span> <strong>-$70,000</strong></div>
+                <div class="row-item" style="font-weight: bold; font-size: 1.1rem; border-bottom: none;"><span>LỢI NHUẬN GỘP:</span> <strong class="val-pos">$30,000</strong></div>
+                
+                <div class="hidden-costs" id="hidB">
+                    <div style="font-size:0.8rem; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">CÁC CHI PHÍ HOẠT ĐỘNG LOGISTICS CHÌM</div>
+                    <div class="row-item"><span>Nhặt lẻ lắt nhắt từng món:</span> <strong class="val-neg">-$8,000</strong></div>
+                    <div class="row-item"><span>Ép giao hỏa tốc nhiều lần:</span> <strong class="val-neg">-$12,000</strong></div>
+                    <div class="row-item"><span>Chậm trả tiền 90 ngày:</span> <strong class="val-neg">-$3,000</strong></div>
+                    <div class="row-item"><span>Đòi đổi trả rườm rà:</span> <strong class="val-neg">-$9,000</strong></div>
+                </div>
+
+                <div class="profit-box" id="profBoxB" style="display:none;">
+                    <div class="profit-lbl">LỢI NHUẬN RÒNG THỰC TẾ</div>
+                    <div class="profit-val val-neg" id="profValB">-$2,000 (LỖ!)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Phân tích CTS (Cost-to-Serve)</h3>
+            <p>Trọng tài lớn nhất của kinh doanh không phải là phòng Sales, mà là phòng Chuỗi Cung Ứng. Nếu không có CTS, công ty của bạn có thể phá sản ngay giữa lúc đang tăng trưởng Doanh thu bùng nổ!</p>
+            <ul>
+                <li><strong>Căn bệnh mù quáng về Doanh Thu:</strong> Phòng Sales thường nhận hoa hồng dựa trên Doanh thu ($100k). Họ sẵn sàng hứa hẹn mọi thứ với Đại lý B: "Cứ mua đi, tôi cho giao hàng từng hộp nhỏ, giao hỏa tốc miễn phí, chậm trả 90 ngày vô tư, và đổi trả thoải mái".</li>
+                <li><strong>Sự bóc lột của Logistics (Tảng băng chìm):</strong> Việc lấy hàng "lắt nhắt" từng cái (Broken-case picking) tốn công sức gấp 80 lần việc xúc nguyên một Pallet bằng xe nâng. Đổi trả hàng hóa (Reverse Logistics) tốn chi phí gấp 3 lần chiều giao đi. Càng chiều chuộng Đại lý B, chi phí Vận hành (OPEX) càng thủng nóc.</li>
+                <li><strong>Gáo nước lạnh từ CTS:</strong> Sau khi trừ sạch các chi phí phục vụ chìm, sự thật phơi bày: Cùng doanh số 100 ngàn đô, Đại lý A mang về <strong>Lãi Thực 29,500 Đô</strong>. Trong khi đó, Đại lý B đang âm thầm <strong>Hút Máu Công Ty lỗ mất 2,000 Đô</strong>! Giải pháp của Giám đốc SCM là gì? Lập tức phạt tiền Đại lý B nếu đòi giao hỏa tốc, hoặc bắt buộc phải mua sỉ theo kiện, nếu không thì CẮT HỢP ĐỒNG!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function revealCosts() {
+            let btn = document.getElementById('btnReveal');
+            btn.style.display = 'none';
+
+            // Show hidden costs
+            document.getElementById('hidA').style.display = 'block';
+            document.getElementById('hidB').style.display = 'block';
+            
+            // Show profit boxes
+            document.getElementById('profBoxA').style.display = 'block';
+            document.getElementById('profBoxB').style.display = 'block';
+
+            // Visual impact
+            document.getElementById('cardA').style.borderColor = 'var(--success)';
+            document.getElementById('cardB').style.borderColor = 'var(--danger)';
+            document.getElementById('cardB').style.background = 'rgba(239, 68, 68, 0.1)';
+        }
+    </script>
+</body>
+</html>

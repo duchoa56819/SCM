@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 96: DIM Weight Pricing</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { background: rgba(0,0,0,0.4); padding: 30px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: center; align-items: flex-end; height: 250px;}
+        
+        .package { background: rgba(245, 158, 11, 0.2); border: 2px dashed var(--warning); display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; transition: all 1s ease-in-out;}
+        .pkg-big { width: 250px; height: 250px; }
+        .pkg-small { width: 100px; height: 100px; }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; width: 100%;}
+        .stat-card { background: var(--panel-bg); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border);}
+        .stat-val { font-size: 1.5rem; font-weight: bold; margin-top: 5px; color: white;}
+
+        .btn-action { width: 100%; padding: 15px; font-size: 1.2rem; font-weight: 900; background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--danger); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 96: Trọng lượng Thể tích (DIM Weight)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự trừng phạt của FedEx khi bạn gửi "Không khí".</p>
+        </header>
+
+        <div class="box-area">
+            <div class="package pkg-big" id="theBox">📦 Gối Bông (Nguyên bản)</div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div style="color:var(--text-muted); font-size:0.9rem;">Cân Nặng Thực Tế (Actual)</div>
+                <div class="stat-val" style="color:var(--success);">1 KG</div>
+            </div>
+            <div class="stat-card" style="border-color:var(--danger);">
+                <div style="color:var(--danger); font-size:0.9rem;">Cân Nặng Thể Tích (DIM) - (Dài x Rộng x Cao / 5000)</div>
+                <div class="stat-val" id="dimVal" style="color:var(--danger);">25 KG (Tính Tiền Mức Này!)</div>
+            </div>
+        </div>
+
+        <button class="btn-action" onclick="vacuumPack()">🗜️ HÚT CHÂN KHÔNG (TỐI ƯU ĐÓNG GÓI)</button>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #f87171;">📚 Cẩm nang DIM Weight (Dimensional Weight Pricing)</h3>
+            <p>Trọng lượng thể tích là chiêu bài lợi hại nhất của ngành chuyển phát nhanh (Courier) để bảo vệ không gian trên máy bay.</p>
+            <ul>
+                <li><strong>Cái bẫy của Không khí:</strong> Nếu bạn bán một cái gối bông siêu nhẹ (1kg) nhưng đóng trong cái thùng tivi khổng lồ, máy bay của FedEx sẽ bị lấp đầy không gian mà tải trọng thì chưa hết 1/10. Họ sẽ lỗ nặng!</li>
+                <li><strong>Luật của Hãng Vận tải:</strong> "Họ lấy cái nào LỚN HƠN giữa Cân thực tế và Cân thể tích". Trong ví dụ trên, gối nặng 1kg, nhưng thể tích quy đổi là 25kg. Bạn phải trả tiền cước cho mức 25kg!</li>
+                <li><strong>Giải pháp SCM (Cube Utilization):</strong> Bộ phận đóng gói E-commerce phải chế tạo máy cắt mép thùng tự động vừa khít với sản phẩm, hoặc dùng máy ép hút chân không xẹp cái gối bông lại. Bạn vừa cứu được màng túi của công ty, vừa cứu trái đất vì máy bay chở được nhiều hàng hơn!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function vacuumPack() {
+            let box = document.getElementById('theBox');
+            box.className = 'package pkg-small';
+            box.innerText = '📦 Ép Nhỏ';
+            
+            document.getElementById('dimVal').innerText = "1.5 KG (Đã Tiết Kiệm $90 Cước!)";
+            document.getElementById('dimVal').style.color = "var(--success)";
+            document.getElementById('dimVal').parentElement.style.borderColor = "var(--success)";
+        }
+    </script>
+</body>
+</html>

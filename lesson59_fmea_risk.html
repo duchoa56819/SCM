@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 59: Ma trận Đánh giá Rủi ro (FMEA)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f43f5e; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #4c0519, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .fmea-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px;}
+        
+        .fmea-row { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 20px;}
+        .fmea-row.active { border-color: var(--primary); background: rgba(244, 63, 94, 0.1); }
+        
+        .event-info { flex: 1; }
+        .event-name { font-weight: bold; font-size: 1.1rem; color: white;}
+        .event-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;}
+        
+        .score-inputs { display: flex; gap: 10px; }
+        .score-box { text-align: center; }
+        .score-lbl { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); margin-bottom: 5px;}
+        .score-val { background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--border); border-radius: 6px; width: 40px; height: 40px; text-align: center; font-size: 1.2rem; font-weight: bold;}
+        .score-val:focus { outline: none; border-color: var(--primary); }
+        
+        .rpn-box { width: 80px; text-align: center; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;}
+        .rpn-lbl { font-size: 0.8rem; font-weight: bold; color: var(--text-muted);}
+        .rpn-val { font-size: 1.5rem; font-weight: 900; color: white; margin-top: 5px;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #9f1239); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4); }
+
+        .result-panel { display: none; background: rgba(0,0,0,0.4); border: 2px solid var(--warning); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; animation: fadeIn 0.5s;}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 59: Ma Trận Đánh Giá Rủi Ro (FMEA)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Công cụ quyền lực của Lean Six Sigma (Lỗi lặt vặt giết chết bạn trước cả Tận thế).</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Giám đốc yêu cầu bạn đánh giá 3 Sự cố Rủi ro tiềm ẩn của một lô hàng iPhone chuẩn bị xuất xưởng.<br>
+            Bạn phải dùng phương pháp <strong>FMEA (Failure Mode and Effects Analysis)</strong> để chấm điểm 3 tiêu chí (Thang điểm 1-10):<br>
+            1. <b>S (Severity) - Mức độ nghiêm trọng:</b> 1=Không sao, 10=Thảm họa/Người dùng chết.<br>
+            2. <b>O (Occurrence) - Tần suất xảy ra:</b> 1=Cực hiếm, 10=Ngày nào cũng bị.<br>
+            3. <b>D (Detection) - ĐỘ KHÓ PHÁT HIỆN:</b> 1=Dễ dàng phát hiện ngay lập tức, 10=Vô phương cứu chữa (Khách khui hộp mới biết).<br>
+            <em>Hãy nhập các con số (VD: 9, 3, 5) để tính RPN (Risk Priority Number = S × O × D). RPN càng cao, rủi ro càng khủng khiếp!</em>
+        </div>
+
+        <div class="fmea-grid">
+            <!-- Event 1 -->
+            <div class="fmea-row">
+                <div class="event-info">
+                    <div class="event-name">🔥 Sự cố 1: Kho hàng bốc cháy toàn bộ</div>
+                    <div class="event-desc">Làm cháy sạch hàng trăm tỷ. (Sự việc hiếm, và ai cũng thấy khói).</div>
+                </div>
+                <div class="score-inputs">
+                    <div class="score-box"><div class="score-lbl">S (Nghiêm trọng)</div><input type="number" class="score-val" id="s1" value="10" min="1" max="10" oninput="calc()"></div>
+                    <div class="score-box"><div class="score-lbl">O (Tần suất)</div><input type="number" class="score-val" id="o1" value="1" min="1" max="10" oninput="calc()"></div>
+                    <div class="score-box"><div class="score-lbl">D (Khó phát hiện)</div><input type="number" class="score-val" id="d1" value="1" min="1" max="10" oninput="calc()"></div>
+                </div>
+                <div class="rpn-box">
+                    <div class="rpn-lbl">RPN</div>
+                    <div class="rpn-val" id="rpn1">10</div>
+                </div>
+            </div>
+
+            <!-- Event 2 -->
+            <div class="fmea-row">
+                <div class="event-info">
+                    <div class="event-name">🌧️ Sự cố 2: Tàu biển bị kẹt bão trễ 2 ngày</div>
+                    <div class="event-desc">Khách khó chịu chút xíu. Thường xuyên bị mùa mưa. Định vị GPS sẽ báo trước.</div>
+                </div>
+                <div class="score-inputs">
+                    <div class="score-box"><div class="score-lbl">S</div><input type="number" class="score-val" id="s2" value="3" min="1" max="10" oninput="calc()"></div>
+                    <div class="score-box"><div class="score-lbl">O</div><input type="number" class="score-val" id="o2" value="8" min="1" max="10" oninput="calc()"></div>
+                    <div class="score-box"><div class="score-lbl">D</div><input type="number" class="score-val" id="d2" value="2" min="1" max="10" oninput="calc()"></div>
+                </div>
+                <div class="rpn-box">
+                    <div class="rpn-lbl">RPN</div>
+                    <div class="rpn-val" id="rpn2">48</div>
+                </div>
+            </div>
+
+            <!-- Event 3 -->
+            <div class="fmea-row">
+                <div class="event-info">
+                    <div class="event-name">🏷️ Sự cố 3: Dán nhầm Nhãn mác (Barcode)</div>
+                    <div class="event-desc">Hộp là iPhone 16 Pro, dán nhãn 16 Thường. Bị quẹt nhầm hàng ngày. Rất khó biết trừ khi bóc hộp.</div>
+                </div>
+                <div class="score-inputs">
+                    <div class="score-box"><div class="score-lbl">S</div><input type="number" class="score-val" id="s3" value="5" min="1" max="10" oninput="calc()"></div>
+                    <div class="score-box"><div class="score-lbl">O</div><input type="number" class="score-val" id="o3" value="9" min="1" max="10" oninput="calc()"></div>
+                    <div class="score-box"><div class="score-lbl">D</div><input type="number" class="score-val" id="d3" value="9" min="1" max="10" oninput="calc()"></div>
+                </div>
+                <div class="rpn-box" style="border: 2px solid var(--danger);">
+                    <div class="rpn-lbl" style="color:var(--danger)">RPN ĐỈNH</div>
+                    <div class="rpn-val" id="rpn3" style="color:var(--danger)">405</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="action-btn" onclick="reveal()">CHẨN ĐOÁN RỦI RO & HIỂN THỊ KẾT QUẢ</button>
+
+        <div class="result-panel" id="resultPanel">
+            <h2 style="margin-top:0; color: var(--warning);">Mối đe dọa lớn nhất là: DÁN NHẦM NHÃN MÁC!</h2>
+            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;">Bạn có bất ngờ khi "Cháy kho hàng" (Mức độ nghiêm trọng S=10) lại có điểm RPN chưa bằng 1/10 so với cái lỗi ngớ ngẩn "Dán sai tem" không?</p>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #fb7185;">📚 Cẩm nang Phân tích Lỗi (FMEA)</h3>
+            <p>Con người rất hay bị đánh lừa bởi nỗi sợ. Chúng ta sợ Rơi máy bay, Sợ Cháy nhà, Sợ NCC phá sản. Những sự cố này có S (Nghiêm trọng) = 10, nhưng Tần suất (O) cực hiếm, và ai cũng thấy ngay lập tức (D=1). Nó ít gây tổn thất âm ỉ.</p>
+            <ul>
+                <li><strong>Cái gai khó nhổ nhất - Detection (Độ khó phát hiện):</strong> Yếu tố giết chết chuỗi cung ứng chính là những lỗi ngầm (D cao). Việc dán sai tem trên dây chuyền (Sự cố 3) khiến máy quét Barcode bị mù. Hàng rớt vào thùng sai, lên xe sai, giao đến nhà khách sai. Khi khách lên Twitter bóc phốt, bạn phải thu hồi hàng trăm ngàn sản phẩm, đền bù, và bị kiện. Mức độ lan tỏa của nó là vô tận.</li>
+                <li><strong>Hành động (Action Plan):</strong> Bạn không rảnh để đi mua "Bảo hiểm cháy nổ" cấp độ 10. Mà bạn phải chi 100 ngàn Đô la lắp **Hệ thống Camera AI tự quét đối chiếu tem nhãn** để kéo chỉ số D (Detection) của Sự cố 3 từ 9 xuống 1. Khi rủi ro được phát hiện ngay tại chỗ, RPN sẽ sụp đổ, và chuỗi cung ứng của bạn được cứu!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function calc() {
+            let s1 = document.getElementById('s1').value || 1;
+            let o1 = document.getElementById('o1').value || 1;
+            let d1 = document.getElementById('d1').value || 1;
+            document.getElementById('rpn1').innerText = s1 * o1 * d1;
+
+            let s2 = document.getElementById('s2').value || 1;
+            let o2 = document.getElementById('o2').value || 1;
+            let d2 = document.getElementById('d2').value || 1;
+            document.getElementById('rpn2').innerText = s2 * o2 * d2;
+
+            let s3 = document.getElementById('s3').value || 1;
+            let o3 = document.getElementById('o3').value || 1;
+            let d3 = document.getElementById('d3').value || 1;
+            document.getElementById('rpn3').innerText = s3 * o3 * d3;
+        }
+
+        function reveal() {
+            document.getElementById('resultPanel').style.display = 'block';
+        }
+
+        window.onload = calc;
+    </script>
+</body>
+</html>

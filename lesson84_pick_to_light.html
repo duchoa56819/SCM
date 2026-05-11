@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 84: Công Nghệ Nhặt Hàng (Pick-to-Light vs Voice)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 84: Gamification trong Nhà Kho</h1>
+            <p style="text-align: center; color: var(--text-muted);">Pick-to-Light và Voice Picking giải phóng đôi tay công nhân.</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--warning);">
+                <h2 style="color:var(--warning); margin-top:0;">💡 Pick-to-Light</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted); text-align: left;">
+                    Thay vì cầm tờ giấy tìm mã hàng "XJ-209", công nhân bước vào kho. Dưới mỗi kệ hàng có gắn đèn LED. Hệ thống tự động nhá sáng đèn ở ô chứa hàng, kèm theo con số "3". Công nhân chỉ việc lao tới chỗ có đèn sáng, bốc 3 món, rồi bấm nút tắt đèn. Xong! (Tốc độ kinh hoàng, cực kỳ ít lỗi).
+                </div>
+            </div>
+            <div class="card" style="border-color: var(--primary);">
+                <h2 style="color:var(--primary); margin-top:0;">🎧 Voice Picking</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted); text-align: left;">
+                    Đeo tai nghe và nói chuyện với Hệ thống AI. "Tới lối đi số 4, kệ số 2". Công nhân đi tới và đọc 2 số cuối của mã vạch để xác nhận. Sau đó AI ra lệnh "Lấy 5 kiện". Cả hai tay và đôi mắt của công nhân hoàn toàn được giải phóng (Hands-free, Eyes-free).
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Lấy hàng (Order Picking)</h3>
+            <p>Order Picking chiếm tới 50% toàn bộ chi phí vận hành của một nhà kho khổng lồ.</p>
+            <ul>
+                <li>Sự tiến hóa từ Paper-based (Cầm tờ giấy dò dẫm) sang Scanner (Cầm máy tít mã) vẫn có nhược điểm là làm vướng 1 tay của công nhân.</li>
+                <li>Logistics 4.0 giải quyết việc này bằng ánh sáng và âm thanh. Biến công việc chân tay trong kho thành một trò chơi phản xạ nhanh nhạy, giảm thời gian training nhân viên mới từ 2 tuần xuống còn 30 phút!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

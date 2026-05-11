@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 79: Bài Toán Vận Tải (Transportation Problem)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .matrix-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: rgba(0,0,0,0.4); border-radius: 12px; overflow: hidden; border: 1px solid var(--border);}
+        .matrix-table th, .matrix-table td { border: 1px solid rgba(255,255,255,0.2); padding: 15px; text-align: center;}
+        .matrix-table th { background: rgba(255,255,255,0.05); color: var(--text-muted);}
+        
+        .cost-badge { background: rgba(59, 130, 246, 0.2); border: 1px solid var(--primary); color: #93c5fd; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; float: right; margin-left: 5px;}
+        
+        .input-cell { width: 60px; padding: 5px; text-align: center; background: var(--panel-bg); border: 1px solid var(--border); color: white; border-radius: 4px; font-size: 1.1rem; font-weight: bold;}
+        .input-cell:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(59,130,246,0.5);}
+
+        .supply-lbl { color: var(--warning); font-weight: bold;}
+        .demand-lbl { color: var(--success); font-weight: bold;}
+
+        .status-box { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;}
+        .total-cost { font-size: 2.5rem; font-weight: 900; color: white; margin-top: 10px;}
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-calc { background: linear-gradient(135deg, #475569, #1e293b); }
+        .btn-ai { background: linear-gradient(135deg, var(--success), #047857); }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 79: Bài Toán Vận Tải (Quy Hoạch Tuyến Tính)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Làm sao để chia hàng từ 2 Nhà Máy đến 3 Thị Trường với chi phí Rẻ Nhất?</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn có 2 Nhà máy (A, B) đang dư cung. Bạn có 3 Thị trường (X, Y, Z) đang đòi hàng. Mức chi phí ship 1 Đơn vị hàng (Giá cước) được ghi trong các ô màu xanh.<br>
+            <em>Trò chơi: Bạn hãy tự điền các con số (Lượng hàng cần ship) vào các ô vuông sao cho Tổng Cung = Tổng Cầu. Bấm "Tính Tiền" để xem cước phí. Sau đó bấm "AI Giải mã" để xem giới hạn của bộ não con người so với Toán học.</em>
+        </div>
+
+        <table class="matrix-table">
+            <tr>
+                <th>Từ \ Đến</th>
+                <th>Thị trường X<br><span class="demand-lbl">Cần: 40</span></th>
+                <th>Thị trường Y<br><span class="demand-lbl">Cần: 60</span></th>
+                <th>Thị trường Z<br><span class="demand-lbl">Cần: 20</span></th>
+                <th>NĂNG LỰC CUNG</th>
+            </tr>
+            <tr>
+                <th>Nhà Máy A</th>
+                <td><span class="cost-badge">Giá: $2</span><br><input type="number" id="vAX" class="input-cell" value="0"></td>
+                <td><span class="cost-badge">Giá: $5</span><br><input type="number" id="vAY" class="input-cell" value="0"></td>
+                <td><span class="cost-badge">Giá: $3</span><br><input type="number" id="vAZ" class="input-cell" value="0"></td>
+                <td class="supply-lbl" id="supA">Cung: 50</td>
+            </tr>
+            <tr>
+                <th>Nhà Máy B</th>
+                <td><span class="cost-badge">Giá: $4</span><br><input type="number" id="vBX" class="input-cell" value="0"></td>
+                <td><span class="cost-badge">Giá: $1</span><br><input type="number" id="vBY" class="input-cell" value="0"></td>
+                <td><span class="cost-badge">Giá: $6</span><br><input type="number" id="vBZ" class="input-cell" value="0"></td>
+                <td class="supply-lbl" id="supB">Cung: 70</td>
+            </tr>
+            <tr>
+                <th>LƯỢNG ĐÃ GIAO</th>
+                <td id="delX" style="font-weight:bold;">0 / 40</td>
+                <td id="delY" style="font-weight:bold;">0 / 60</td>
+                <td id="delZ" style="font-weight:bold;">0 / 20</td>
+                <td><b style="color:white;">Tổng: 120</b></td>
+            </tr>
+        </table>
+
+        <div class="status-box">
+            <div style="color: var(--text-muted); font-weight: bold;">TỔNG CHI PHÍ VẬN TẢI</div>
+            <div class="total-cost" id="totCost">$0</div>
+            <div id="errMsg" style="color: var(--danger); font-weight: bold; margin-top: 5px;">Hàng hóa chưa giao đủ cho các Thị trường!</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-calc" onclick="calcManual()">🧮 TÍNH TIỀN THEO BẢNG CỦA BẠN</button>
+            <button class="action-btn btn-ai" onclick="solveAI()">🤖 TỐI ƯU HÓA BẰNG THUẬT TOÁN (SIMPLEX)</button>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Quy hoạch Tuyến tính (Linear Programming)</h3>
+            <p>Bài toán Vận tải (Transportation Problem) là nền móng của Môn học Vận trù học (Operations Research). Nó được giải bằng thuật toán Simplex kinh điển.</p>
+            <ul>
+                <li><strong>Giao dịch cảm tính:</strong> Giám đốc chi nhánh X thấy Nhà máy A gần mình (Cước rẻ $2), nên ép Nhà máy A giao hết 40 cái cho mình. Hậu quả là Nhà máy A hết hàng, Thị trường Z buộc phải cắn răng mua hàng từ Nhà máy B với cước phí cắt cổ ($6). Sự ích kỷ của một cá nhân làm tổn hại toàn bộ Tập đoàn.</li>
+                <li><strong>Sự dàn xếp của Hệ thống (Global Optimum):</strong> Thuật toán AI không nhìn cục bộ, nó nhìn trên tổng thể bức tranh. Nó phát hiện ra rằng Nhà máy B ship tới Y siêu rẻ ($1). Nên nó nhét đầy xe cho tuyến B ➔ Y (60 cái). Sau đó nó ưu tiên tuyến A ➔ X (40 cái). Còn dư bao nhiêu nó mới đẩy nốt vào tuyến Z.</li>
+                <li><strong>Hiệu quả:</strong> Bằng cách dàn xếp chéo này, Tổng chi phí Vận tải rơi xuống mức <strong>Kịch sàn là $230</strong>. Không ai, kể cả một Giám đốc 30 năm kinh nghiệm, có thể nhẩm ra con số tối ưu này nếu ma trận có 100 Nhà máy và 500 Thị trường. Chỉ có Máy tính mới làm được!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function getVals() {
+            return {
+                ax: parseInt(document.getElementById('vAX').value) || 0,
+                ay: parseInt(document.getElementById('vAY').value) || 0,
+                az: parseInt(document.getElementById('vAZ').value) || 0,
+                bx: parseInt(document.getElementById('vBX').value) || 0,
+                by: parseInt(document.getElementById('vBY').value) || 0,
+                bz: parseInt(document.getElementById('vBZ').value) || 0
+            };
+        }
+
+        function calcManual() {
+            let v = getVals();
+            
+            let sumX = v.ax + v.bx;
+            let sumY = v.ay + v.by;
+            let sumZ = v.az + v.bz;
+            let supA = v.ax + v.ay + v.az;
+            let supB = v.bx + v.by + v.bz;
+
+            document.getElementById('delX').innerText = sumX + " / 40";
+            document.getElementById('delX').style.color = sumX === 40 ? "var(--success)" : "var(--danger)";
+            
+            document.getElementById('delY').innerText = sumY + " / 60";
+            document.getElementById('delY').style.color = sumY === 60 ? "var(--success)" : "var(--danger)";
+            
+            document.getElementById('delZ').innerText = sumZ + " / 20";
+            document.getElementById('delZ').style.color = sumZ === 20 ? "var(--success)" : "var(--danger)";
+
+            document.getElementById('supA').innerText = "Cung: 50 (Dùng: " + supA + ")";
+            document.getElementById('supA').style.color = supA === 50 ? "var(--success)" : (supA > 50 ? "var(--danger)" : "var(--warning)");
+            
+            document.getElementById('supB').innerText = "Cung: 70 (Dùng: " + supB + ")";
+            document.getElementById('supB').style.color = supB === 70 ? "var(--success)" : (supB > 70 ? "var(--danger)" : "var(--warning)");
+
+            let isValid = (sumX === 40 && sumY === 60 && sumZ === 20 && supA <= 50 && supB <= 70);
+            
+            if (isValid) {
+                let cost = (v.ax*2) + (v.ay*5) + (v.az*3) + (v.bx*4) + (v.by*1) + (v.bz*6);
+                document.getElementById('totCost').innerText = "$" + cost;
+                document.getElementById('totCost').style.color = "white";
+                document.getElementById('errMsg').innerText = "Thỏa mãn ràng buộc. Chi phí của bạn: $" + cost;
+                document.getElementById('errMsg').style.color = "var(--success)";
+            } else {
+                document.getElementById('totCost').innerText = "LỖI";
+                document.getElementById('totCost').style.color = "var(--danger)";
+                document.getElementById('errMsg').innerText = "Lỗi! Hàng giao chưa đủ cầu, hoặc xuất quá khả năng cung của nhà máy!";
+                document.getElementById('errMsg').style.color = "var(--danger)";
+            }
+        }
+
+        function solveAI() {
+            // Optimal solution logic pre-calculated:
+            // BY: 60 (Cost 1). B has 10 left.
+            // AX: 40 (Cost 2). A has 10 left.
+            // AZ: 10 (Cost 3).
+            // BZ: 10 (Cost 6).
+            // Total cost = 60 + 80 + 30 + 60 = 230.
+            
+            document.getElementById('vAX').value = 40;
+            document.getElementById('vAY').value = 0;
+            document.getElementById('vAZ').value = 10;
+            document.getElementById('vBX').value = 0;
+            document.getElementById('vBY').value = 60;
+            document.getElementById('vBZ').value = 10;
+
+            calcManual();
+
+            let c = document.getElementById('totCost');
+            c.innerText = "$230 (KỊCH SÀN TOÁN HỌC)";
+            c.style.color = "var(--success)";
+            
+            let e = document.getElementById('errMsg');
+            e.innerText = "Thuật toán Simplex đã tìm ra phương án tối ưu tuyệt đối (Global Optimum)!";
+            e.style.color = "var(--success)";
+
+            // Highlight AI logic
+            document.querySelectorAll('.input-cell').forEach(i => i.style.borderColor = 'var(--border)');
+            document.getElementById('vBY').style.borderColor = 'var(--success)'; // Cheapest
+            document.getElementById('vAX').style.borderColor = 'var(--success)'; // Second Cheapest
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 77: Bài Toán Người Chào Hàng (TSP)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .canvas-area { position: relative; width: 100%; height: 400px; background: #0f172a; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; cursor: crosshair; box-shadow: inset 0 0 50px rgba(0,0,0,0.5);}
+        
+        svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; pointer-events: none;}
+        .line-user { stroke: var(--danger); stroke-width: 3; stroke-dasharray: 5,5; fill: none; }
+        .line-ai { stroke: var(--success); stroke-width: 4; fill: none; display: none;}
+
+        .node { position: absolute; width: 24px; height: 24px; background: white; border: 3px solid var(--primary); border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; font-size: 0.7rem; font-weight: bold; color: black; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);}
+        .node:hover { transform: translate(-50%, -50%) scale(1.2); }
+        .node-depot { background: var(--warning); border-color: #b45309; width: 30px; height: 30px;}
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;}
+        .stat-val { font-size: 2rem; font-weight: 900; margin-top: 5px; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-reset { background: linear-gradient(135deg, #475569, #1e293b); }
+        .btn-ai { background: linear-gradient(135deg, var(--success), #047857); }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 77: Bài Toán Người Chào Hàng (TSP)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Trò chơi tìm Đường Đi Ngắn Nhất làm đau đầu các Nhà Toán học thế kỷ 20.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Xe tải xuất phát từ Kho (Màu Cam) và phải đi giao hàng qua tất cả 7 Điểm (Màu Trắng), sau đó quay về Kho.<br>
+            <em>Trò chơi: Nhấn lần lượt vào các điểm để tự vẽ đường đi (Cố gắng tìm đường ngắn nhất). Sau đó bấm "AI Giải mã" để xem sự khác biệt giữa cảm tính của con người và Thuật toán Tối ưu!</em>
+        </div>
+
+        <div class="canvas-area" id="cArea">
+            <svg id="svgCanvas">
+                <polyline id="userPath" class="line-user" points="" />
+                <polyline id="aiPath" class="line-ai" points="" />
+            </svg>
+            <!-- Nodes will be injected here -->
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-reset" onclick="initGame()">🔄 TẠO BẢN ĐỒ MỚI & VẼ LẠI</button>
+            <button class="action-btn btn-ai" onclick="solveAI()">🤖 TÌM ĐƯỜNG NGẮN NHẤT BẰNG THUẬT TOÁN</button>
+        </div>
+
+        <div class="dashboard">
+            <div>
+                <div style="color: var(--danger); font-weight: bold;">ĐỘ DÀI CỦA BẠN (Tự vẽ)</div>
+                <div class="stat-val" id="userDist" style="color: var(--danger);">0 km</div>
+            </div>
+            <div>
+                <div style="color: var(--success); font-weight: bold;">ĐỘ DÀI CỦA AI (Tối ưu)</div>
+                <div class="stat-val" id="aiDist" style="color: var(--success); opacity: 0.3;">0 km</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Routing (Định tuyến)</h3>
+            <p>Bài toán Người Chào Hàng (Traveling Salesman Problem - TSP) là bài toán vĩ đại nhất trong Vận trù học SCM.</p>
+            <ul>
+                <li><strong>Lời nguyền Giai thừa (Factorial Curse):</strong> Nếu có 5 điểm giao hàng, bạn có 120 cách đi. Nếu có 10 điểm, bạn có 3.6 triệu cách. Nhưng nếu anh tài xế Shopee có 20 điểm cần giao? Có <strong>2,432,902,008,176,640,000</strong> cách để đi! Bộ não con người hoàn toàn gục ngã trước những con số này.</li>
+                <li><strong>Ảo giác Cảm tính (Heuristic Bias):</strong> Khi bạn tự click vẽ bản đồ, bạn thường mắc hội chứng "Thấy cái nào gần thì đi tới đó trước" (Nearest Neighbor). Việc này rất tốt ở đoạn đầu, nhưng thường đẩy bạn vào ngõ cụt ở đoạn cuối, buộc bạn phải đi một đường chéo vắt ngang bản đồ để về đích, làm tổng quãng đường tăng vọt!</li>
+                <li><strong>Sự thống trị của Thuật toán (Exact/Meta-heuristic solvers):</strong> AI không đi theo cảm tính. Nó có thể vẽ ra một đường đi đan chéo rất dị ở đoạn đầu, nhưng lại giúp tối ưu hóa tổng thể ở đoạn cuối (Không có đường dây nào tự vắt chéo qua nhau). Sự khác biệt 20% quãng đường này giúp FedEx, UPS tiết kiệm được <strong>Hàng tỷ Đô la tiền xăng</strong> mỗi năm!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const NODE_COUNT = 8; // 1 depot + 7 targets
+        let nodes = [];
+        let userRoute = [];
+        let userDistance = 0;
+
+        function initGame() {
+            let area = document.getElementById('cArea');
+            // Remove old nodes
+            document.querySelectorAll('.node').forEach(n => n.remove());
+            
+            document.getElementById('userPath').setAttribute('points', '');
+            document.getElementById('aiPath').setAttribute('points', '');
+            document.getElementById('aiPath').style.display = 'none';
+            document.getElementById('aiDist').style.opacity = '0.3';
+            
+            nodes = [];
+            userRoute = [];
+            userDistance = 0;
+            document.getElementById('userDist').innerText = '0 km';
+
+            let w = area.clientWidth;
+            let h = area.clientHeight;
+
+            // Generate Nodes
+            for(let i=0; i<NODE_COUNT; i++) {
+                let div = document.createElement('div');
+                div.className = i === 0 ? 'node node-depot' : 'node';
+                div.innerText = i === 0 ? 'KHO' : i;
+                
+                // Random position with padding
+                let pad = 40;
+                let nx = pad + Math.random()*(w - pad*2);
+                let ny = pad + Math.random()*(h - pad*2);
+                
+                div.style.left = nx + 'px';
+                div.style.top = ny + 'px';
+                
+                div.onclick = () => userClickNode(i);
+                
+                area.appendChild(div);
+                nodes.push({id: i, x: nx, y: ny, el: div});
+            }
+
+            // Auto click depot
+            userClickNode(0);
+        }
+
+        function getDist(n1, n2) {
+            let dx = n1.x - n2.x;
+            let dy = n1.y - n2.y;
+            return Math.sqrt(dx*dx + dy*dy);
+        }
+
+        function userClickNode(id) {
+            // Can't click same consecutively, unless it's to close the loop
+            if (userRoute.length > 0) {
+                let lastId = userRoute[userRoute.length - 1];
+                if (lastId === id && userRoute.length < NODE_COUNT) return;
+                
+                // If closing loop
+                if (id === 0 && userRoute.length === NODE_COUNT) {
+                    userRoute.push(0);
+                    updateUserPath();
+                    return;
+                }
+
+                // If clicking depot early
+                if (id === 0 && userRoute.length > 1 && userRoute.length < NODE_COUNT) {
+                    alert("Phải đi qua tất cả các điểm mới được quay về Kho!");
+                    return;
+                }
+
+                // Normal click
+                if (!userRoute.includes(id)) {
+                    userRoute.push(id);
+                    updateUserPath();
+                }
+            } else {
+                if (id !== 0) {
+                    alert("Phải xuất phát từ Kho (Màu Cam)!");
+                    return;
+                }
+                userRoute.push(0);
+                updateUserPath();
+            }
+        }
+
+        function updateUserPath() {
+            let pts = userRoute.map(id => `${nodes[id].x},${nodes[id].y}`).join(' ');
+            document.getElementById('userPath').setAttribute('points', pts);
+
+            // Calc dist
+            userDistance = 0;
+            for(let i=0; i<userRoute.length-1; i++){
+                userDistance += getDist(nodes[userRoute[i]], nodes[userRoute[i+1]]);
+            }
+            document.getElementById('userDist').innerText = Math.floor(userDistance) + ' km';
+            
+            // Auto close if 7 nodes selected
+            if (userRoute.length === NODE_COUNT) {
+                userRoute.push(0); // return to depot
+                updateUserPath();
+            }
+        }
+
+        function solveAI() {
+            // Nearest Neighbor Heuristic + 2-Opt (Simplified for quick solving)
+            // For 8 nodes, we can just brute force it
+            let bestRoute = [];
+            let bestDist = Infinity;
+
+            function permute(arr, l, r) {
+                if (l == r) {
+                    let route = [0, ...arr, 0];
+                    let d = 0;
+                    for(let i=0; i<route.length-1; i++) d += getDist(nodes[route[i]], nodes[route[i+1]]);
+                    if (d < bestDist) { bestDist = d; bestRoute = [...route]; }
+                } else {
+                    for (let i = l; i <= r; i++) {
+                        let temp = arr[l]; arr[l] = arr[i]; arr[i] = temp;
+                        permute(arr, l + 1, r);
+                        temp = arr[l]; arr[l] = arr[i]; arr[i] = temp; // backtrack
+                    }
+                }
+            }
+
+            let toPermute = [1,2,3,4,5,6,7];
+            permute(toPermute, 0, 6);
+
+            // Draw AI Route
+            let pts = bestRoute.map(id => `${nodes[id].x},${nodes[id].y}`).join(' ');
+            document.getElementById('aiPath').setAttribute('points', pts);
+            document.getElementById('aiPath').style.display = 'block';
+
+            document.getElementById('aiDist').innerText = Math.floor(bestDist) + ' km';
+            document.getElementById('aiDist').style.opacity = '1';
+
+            // Hide user path to show AI clearly
+            document.getElementById('userPath').style.opacity = '0.3';
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

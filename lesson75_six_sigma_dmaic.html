@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 75: Six Sigma DMAIC</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px;}
+        .step { background: var(--panel-bg); border: 2px solid var(--primary); padding: 15px; border-radius: 8px; text-align: center; flex: 1; font-weight: bold; color: white;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 75: Six Sigma (Mô hình DMAIC)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Hành trình triệt tiêu lỗi lầm xuống mức 3.4 lỗi / 1 triệu cơ hội.</p>
+        </header>
+
+        <div class="box-area">
+            <div class="step" style="background: #1e3a8a;">D<br><span style="font-size:0.8rem; font-weight:normal;">Define</span></div>
+            <div class="step" style="background: #1e40af;">M<br><span style="font-size:0.8rem; font-weight:normal;">Measure</span></div>
+            <div class="step" style="background: #1d4ed8;">A<br><span style="font-size:0.8rem; font-weight:normal;">Analyze</span></div>
+            <div class="step" style="background: #2563eb;">I<br><span style="font-size:0.8rem; font-weight:normal;">Improve</span></div>
+            <div class="step" style="background: #3b82f6;">C<br><span style="font-size:0.8rem; font-weight:normal;">Control</span></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Triệt tiêu Lỗi (Six Sigma)</h3>
+            <p>Do Motorola sáng tạo ra để cứu vãn chất lượng chip điện tử.</p>
+            <ul>
+                <li><strong>Define (Định nghĩa):</strong> Khách hàng đang kêu gào vì xe tải giao hàng trễ.</li>
+                <li><strong>Measure (Đo lường):</strong> Thu thập data: Tỷ lệ trễ là 18%, thời gian bốc vác trung bình là 3 giờ.</li>
+                <li><strong>Analyze (Phân tích):</strong> Dùng biểu đồ xương cá (Fishbone). Tìm ra gốc rễ: Hàng trong kho để quá bừa bộn, nhân viên tốn 2 tiếng chỉ để đi tìm hàng.</li>
+                <li><strong>Improve (Cải tiến):</strong> Tổ chức lại sơ đồ kho (Slotting), gán mã Barcode. Thời gian tìm hàng giảm xuống 15 phút!</li>
+                <li><strong>Control (Kiểm soát):</strong> Gắn Camera AI đếm số phút bốc vác mỗi ngày. Thưởng phạt phân minh để duy trì chuẩn mực!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

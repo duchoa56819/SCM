@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 80: Vessel Slow Steaming</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 80: Chạy Chậm (Slow Steaming)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cách các Hãng tàu Biển "bóp cò" giảm cung để cứu vãn giá cước.</p>
+        </header>
+
+        <div class="box-area">
+            <h2 style="color:white; margin-top:0; text-align:center;">Lý thuyết Khí Động Học Của Tàu Biển</h2>
+            <div style="font-size: 1rem; color: var(--text-muted); line-height: 1.5;">
+                <b style="color:var(--danger)">Tốc độ 24 Knots (Nhanh):</b> Tiêu tốn <b>200 tấn dầu / ngày</b>. Đi từ TQ sang Mỹ mất 14 ngày.<br><br>
+                <b style="color:var(--success)">Tốc độ 18 Knots (Chậm):</b> Tiêu tốn <b>80 tấn dầu / ngày</b>. Đi từ TQ sang Mỹ mất 21 ngày.
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Slow Steaming</h3>
+            <p>Khủng hoảng 2008 giáng một đòn chí tử vào ngành vận tải biển. Thừa tàu, thiếu hàng, giá cước rơi tự do. Tập đoàn Maersk đã sáng tạo ra một chiêu bài chấn động: Slow Steaming (Cố tình chạy chậm lại).</p>
+            <ul>
+                <li><strong>Lợi ích số 1 (Nhiên liệu):</strong> Mối quan hệ giữa tốc độ tàu và tiêu thụ nhiên liệu là một hàm mũ 3 (Cubic function). Chạy chậm đi 20%, tiết kiệm được tới 50% tiền mua dầu!</li>
+                <li><strong>Lợi ích số 2 (Giảm Cung Ảo):</strong> Khi chạy chậm, thời gian tàu ở trên biển lâu hơn. Nghĩa là khả năng quay đầu (Turnaround) thấp đi. Bằng cách bắt toàn bộ đội tàu đi rùa bò, Maersk đã "hấp thụ" được lượng tàu dư thừa khổng lồ, tạo ra sự khan hiếm ảo (Fake shortage), từ đó đẩy giá cước vận tải biển tăng trở lại! (Một tuyệt chiêu thao túng thị trường đỉnh cao).</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

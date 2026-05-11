@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 74: Incoterms 2020</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 74: Incoterms (Điều Kiện Thương Mại)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Tàu chìm giữa biển, ai là người phải đền tiền?</p>
+        </header>
+
+        <div class="grid-3">
+            <div class="card" style="border-color: var(--primary);">
+                <h2 style="color:var(--primary); margin-top:0;">EXW (Giao tại xưởng)</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">Người BÁN sướng nhất. Cứ để hàng ở cổng xưởng. Người MUA tự thuê xe tải tới rinh về, tự làm hải quan, tự chịu rủi ro chìm tàu.</div>
+            </div>
+            <div class="card" style="border-color: var(--warning);">
+                <h2 style="color:var(--warning); margin-top:0;">FOB (Giao qua lan can tàu)</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">Người BÁN chở hàng tới Cảng, cẩu lên Tàu. Ngay khi hàng vượt qua lan can con tàu, rủi ro tự động chuyển sang cho Người MUA.</div>
+            </div>
+            <div class="card" style="border-color: var(--danger);">
+                <h2 style="color:var(--danger); margin-top:0;">DDP (Giao đến đích)</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">Người MUA sướng nhất (Chỉ việc ngồi nhà mở cửa). Người BÁN phải thuê tàu, lo đóng thuế nhập khẩu và ship hàng đến tận giường.</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Incoterms 2020</h3>
+            <p>Phòng khám bệnh của ngành XNK Toàn cầu được định nghĩa bằng 11 mã Incoterms.</p>
+            <ul>
+                <li><strong>Cốt lõi:</strong> Incoterms không nói về việc "Sở hữu" hàng hóa. Nó chỉ quy định 2 thứ: <strong>Ai trả tiền Vận chuyển</strong> và <strong>Ai chịu Rủi ro mất mát tại điểm nào</strong>.</li>
+                <li><strong>Mẹo thực chiến:</strong> Tại VN, các DN Xuất khẩu hay chọn FOB (Bán tại cảng mình) vì không có năng lực tự thuê tàu biển quốc tế. Ngược lại, nếu chọn CIF, họ bán được giá cao hơn và ăn chênh lệch cước tàu, nhưng rắc rối giấy tờ!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

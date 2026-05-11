@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 21: Phân loại ABC & Sắp xếp Kho (Warehouse Slotting)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #312e81, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #a78bfa, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .warehouse-map { display: grid; grid-template-columns: 1fr; gap: 10px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; position: relative;}
+        
+        .door { background: var(--success); padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 10px; }
+        
+        .zone { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-radius: 8px; border: 2px dashed rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+        .zone-title { font-weight: bold; font-size: 1.1rem; width: 40%;}
+        .zone-dist { font-size: 0.9rem; color: var(--text-muted); width: 30%; }
+        
+        select { padding: 10px; background: rgba(0,0,0,0.8); color: white; border: 1px solid var(--primary); border-radius: 6px; font-weight: bold; width: 30%; font-size: 1rem; cursor: pointer;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #4f46e5); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 21: Phân loại ABC & Tối ưu Không gian Kho (Slotting)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Ứng dụng nguyên lý Pareto (80/20) để giảm lãng phí bước chân của Công nhân (Travel Time).</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Kho của bạn có 3 nhóm mặt hàng:<br>
+            🔴 <strong>Hàng loại A:</strong> Chiếm 80% số lượng đơn hàng bán ra (Bán cực chạy).<br>
+            🔵 <strong>Hàng loại B:</strong> Chiếm 15% số lượng đơn hàng.<br>
+            ⚪ <strong>Hàng loại C:</strong> Chiếm 5% số lượng đơn (Cả năm mới có người mua, nhưng chiếm rất nhiều diện tích).<br>
+            <em>Nhiệm vụ: Cấu hình Vị trí (Slotting) cho 3 nhóm hàng này vào 3 Khu vực trong kho. Sau đó chạy mô phỏng 100 đơn hàng (Lấy hàng Pick-pack) để xem công nhân phải đi bộ bao nhiêu mét!</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">CA LÀM VIỆC</div><div class="stat-value" id="shiftStat">1 / 5</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG QUÃNG ĐƯỜNG ĐI BỘ</div><div class="stat-value" id="distStat" style="color: var(--warning)">0 m</div></div>
+            <div><div style="color: var(--text-muted);">CHI PHÍ NHÂN CÔNG</div><div class="stat-value" id="costStat" style="color: var(--danger)">$0</div></div>
+        </div>
+
+        <div class="warehouse-map">
+            <div class="door">🚪 CỬA XUẤT HÀNG (PACKING STATION) 🚪</div>
+            
+            <div class="zone" style="border-color: var(--success); background: rgba(16, 185, 129, 0.1);">
+                <div class="zone-title" style="color: var(--success);">Khu Vực 1 (Golden Zone)</div>
+                <div class="zone-dist">Khoảng cách: <strong>10 mét</strong></div>
+                <select id="zone1">
+                    <option value="A" selected>Đặt Hàng Loại A</option>
+                    <option value="B">Đặt Hàng Loại B</option>
+                    <option value="C">Đặt Hàng Loại C</option>
+                </select>
+            </div>
+
+            <div class="zone" style="border-color: var(--primary); background: rgba(59, 130, 246, 0.1);">
+                <div class="zone-title" style="color: var(--primary);">Khu Vực 2 (Silver Zone)</div>
+                <div class="zone-dist">Khoảng cách: <strong>50 mét</strong></div>
+                <select id="zone2">
+                    <option value="A">Đặt Hàng Loại A</option>
+                    <option value="B" selected>Đặt Hàng Loại B</option>
+                    <option value="C">Đặt Hàng Loại C</option>
+                </select>
+            </div>
+
+            <div class="zone" style="border-color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                <div class="zone-title" style="color: var(--danger);">Khu Vực 3 (Bronze Zone)</div>
+                <div class="zone-dist">Khoảng cách: <strong>150 mét</strong> (Tít cuối kho)</div>
+                <select id="zone3">
+                    <option value="A">Đặt Hàng Loại A</option>
+                    <option value="B">Đặt Hàng Loại B</option>
+                    <option value="C" selected>Đặt Hàng Loại C</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="runShift()" style="flex: 1.5;">CHẠY CA LÀM VIỆC (Lấy 100 Đơn) ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="optimal">Mẫu 1: Tối ưu (A -> B -> C)</option>
+                    <option value="bad">Mẫu 2: Sắp xếp ngu ngốc (C -> B -> A)</option>
+                    <option value="random">Mẫu 3: Lộn xộn (B -> A -> C)</option>
+                </select>
+                <button class="action-btn" onclick="applyTemplate()" style="flex: 1; background: #475569; margin: 0; padding: 10px;">Gắn Mẫu</button>
+                <button class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success); margin: 0; padding: 10px;">🤖 GỌI AI</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #a78bfa; margin-top: 0;">📚 Cẩm nang Phân tích ABC (ABC Analysis & Slotting)</h3>
+            <p>Trong vận hành kho bãi (Warehouse Management), <strong>Chi phí đi lại (Travel Time) của công nhân chiếm tới 60% tổng thời gian và chi phí của quá trình lấy hàng (Picking).</strong></p>
+            <ul>
+                <li><strong>Phân tích ABC (Pareto 80/20):</strong> Thông thường, 20% mã hàng (SKU) tạo ra 80% doanh thu và tần suất xuất kho. Đây gọi là Hàng Nhóm A. Các hàng ế ẩm ít xuất gọi là Nhóm C.</li>
+                <li><strong>Slotting Tối ưu:</strong> Những hàng Nhóm A (Bán chạy như tôm tươi) PHẢI được đặt ở "Golden Zone" (Khu vực sát cửa xuất hàng, vừa tầm với, ngang thắt lưng công nhân). Ngược lại, hàng Nhóm C phải bị tống tít vào góc sâu nhất của kho hoặc trên kệ cao ngất ngưởng.</li>
+                <li><strong>Hậu quả của việc Sắp xếp Ngu ngốc (C -> B -> A):</strong> Nếu bạn để Hàng C (ế) chắn ngay cửa kho, và giấu Hàng A (bán chạy) ở tít góc sâu. Cứ mỗi lần có đơn hàng A (80% số lần), công nhân phải lội bộ 150m đi vào và 150m đi ra. Quãng đường đi bộ vọt lên hàng ngàn km mỗi năm. Chi phí trả lương ngoài giờ và hao mòn sức khỏe sẽ làm công ty phá sản!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { shift: 1, maxShifts: 5, totalDist: 0, logs: [] };
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Ca ${state.shift}:</strong> ${msg}</div>`); }
+        function format(v) { return v.toLocaleString(); }
+
+        function applyTemplate() {
+            let strat = document.getElementById('aiStrategy').value;
+            if (strat === 'optimal') {
+                document.getElementById('zone1').value = 'A';
+                document.getElementById('zone2').value = 'B';
+                document.getElementById('zone3').value = 'C';
+            } else if (strat === 'bad') {
+                document.getElementById('zone1').value = 'C';
+                document.getElementById('zone2').value = 'B';
+                document.getElementById('zone3').value = 'A';
+            } else {
+                document.getElementById('zone1').value = 'B';
+                document.getElementById('zone2').value = 'A';
+                document.getElementById('zone3').value = 'C';
+            }
+        }
+
+        // Simulate 1 order based on 80/20 rule
+        function getOrderType() {
+            let r = Math.random();
+            if (r < 0.80) return 'A';      // 80% chance
+            else if (r < 0.95) return 'B'; // 15% chance
+            else return 'C';               // 5% chance
+        }
+
+        function runShift() {
+            if (state.shift > state.maxShifts) return;
+
+            let z1 = document.getElementById('zone1').value;
+            let z2 = document.getElementById('zone2').value;
+            let z3 = document.getElementById('zone3').value;
+
+            // Kiểm tra trùng lặp
+            if(z1 === z2 || z2 === z3 || z1 === z3) {
+                alert("Lỗi Sắp xếp: Không được đặt cùng 1 loại hàng ở nhiều khu vực trong bài tập này!");
+                return;
+            }
+
+            // Distances (Round trip)
+            let distMap = {
+                1: 10 * 2,  // Zone 1 = 10m in + 10m out = 20m
+                2: 50 * 2,  // Zone 2 = 50m in + 50m out = 100m
+                3: 150 * 2  // Zone 3 = 150m in + 150m out = 300m
+            };
+
+            let locMap = {};
+            locMap[z1] = 1;
+            locMap[z2] = 2;
+            locMap[z3] = 3;
+
+            let shiftDist = 0;
+            let countA = 0, countB = 0, countC = 0;
+
+            // Generate 100 Pick orders
+            for(let i=0; i<100; i++) {
+                let item = getOrderType();
+                if(item === 'A') countA++;
+                if(item === 'B') countB++;
+                if(item === 'C') countC++;
+
+                let zoneId = locMap[item];
+                shiftDist += distMap[zoneId];
+            }
+
+            state.totalDist += shiftDist;
+            let laborCost = (shiftDist / 1000) * 10; // Giả sử 1km tốn $10 tiền lương giờ
+
+            let color = shiftDist < 5000 ? 'var(--success)' : (shiftDist < 10000 ? 'var(--warning)' : 'var(--danger)');
+            
+            let msg = `Có ${countA} Đơn A, ${countB} Đơn B, ${countC} Đơn C. Công nhân phải đi bộ tổng cộng <strong style="color:${color}">${format(shiftDist)} mét</strong>. Tốn $${laborCost.toFixed(2)} tiền lương.`;
+            addLog(msg);
+
+            state.shift++;
+            renderUI();
+
+            if (state.shift > state.maxShifts) {
+                let totalCost = (state.totalDist / 1000) * 10;
+                addLog(`<span style="color:var(--primary); font-size:1.1rem; font-weight:bold;">🎉 TỔNG KẾT: Tổng quãng đường công nhân đi bộ là ${format(state.totalDist)} mét (${format(state.totalDist/1000)} km). Chi phí lương: $${totalCost.toFixed(2)}</span>`);
+                document.getElementById('shiftStat').innerText = "END";
+            }
+        }
+
+        function renderUI() {
+            if(state.shift <= state.maxShifts) document.getElementById('shiftStat').innerText = `${state.shift} / 5`;
+            document.getElementById('distStat').innerText = format(state.totalDist) + " m";
+            document.getElementById('costStat').innerText = '$' + ((state.totalDist / 1000) * 10).toFixed(2);
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.shift > state.maxShifts) return;
+            isPlaying = true;
+            applyTemplate();
+            
+            while(state.shift <= state.maxShifts) {
+                await new Promise(r => setTimeout(r, 400));
+                runShift();
+                await new Promise(r => setTimeout(r, 600));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 16: Hợp đồng Chia sẻ Doanh thu (Revenue Sharing & Double Marginalization)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f43f5e; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --dist: #3b82f6;}
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #4c0519, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .contract-box { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 40%; text-align: left; font-weight: bold; font-size: 1.1rem;}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--primary);}
+        .slider-val { width: 15%; font-size: 1.5rem; font-weight: 900; color: var(--warning); text-align: right;}
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+        
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #9f1239); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 16: Hợp đồng Chia sẻ Doanh thu</h1>
+            <p style="text-align: center; color: var(--text-muted);">Khắc phục "Double Marginalization" - Làm sao để Đại lý dám nhập nhiều hàng?</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--success);">
+            <strong>Kịch bản:</strong> Băng đĩa phim Blockbuster. Nhu cầu xem phim ngẫu nhiên từ <strong>20 đến 100 đĩa</strong>.<br>
+            Bạn là <strong>Nhà Máy (Sản xuất)</strong>. Chi phí sản xuất: <strong>$10/đĩa</strong>.<br>
+            Đối tác của bạn là <strong>Đại Lý Bán Lẻ (AI)</strong>. Giá bán lẻ cho khách: <strong>$100/đĩa</strong>. Hàng ế bán ve chai $0.<br>
+            <em>Bạn hãy thiết lập Hợp đồng để xúi giục Đại Lý nhập càng nhiều hàng càng tốt, qua đó tối đa hóa lợi nhuận của MÌNH.</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">VÒNG</div><div class="stat-value" id="roundStat">1 / 10</div></div>
+            <div><div style="color: var(--text-muted);">LỢI NHUẬN CỦA BẠN</div><div class="stat-value" id="myProfit" style="color: var(--success)">$0</div></div>
+            <div><div style="color: var(--text-muted);">LỢI NHUẬN ĐẠI LÝ</div><div class="stat-value" id="distProfit" style="color: var(--dist)">$0</div></div>
+        </div>
+
+        <div class="contract-box">
+            <h2 style="margin-top: 0; color: var(--primary);">SOẠN THẢO HỢP ĐỒNG BÁN SỈ</h2>
+            
+            <div class="slider-group">
+                <div class="slider-label">Giá Bán Sỉ ($):</div>
+                <input type="range" id="wPrice" min="10" max="80" value="50" oninput="updateContract()">
+                <div class="slider-val" id="valWPrice">$50</div>
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">% Chiết khấu Doanh thu (Cho Bạn):</div>
+                <input type="range" id="rShare" min="0" max="80" value="0" oninput="updateContract()">
+                <div class="slider-val" id="valRShare">0%</div>
+            </div>
+            
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 20px;">
+                <em>Đại lý nhìn vào hợp đồng này... Dự đoán họ sẽ dám nhập: <strong id="aiEstimate" style="color: white; font-size: 1.2rem;">44 Đĩa</strong></em>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="endRound()" style="flex: 1.5;">KÝ HỢP ĐỒNG & CHẠY ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="standard">Mẫu 1: Bán sỉ truyền thống ($50, 0%)</option>
+                    <option value="greedy">Mẫu 2: Ép giá Đại lý ($80, 0%)</option>
+                    <option value="revshare">Mẫu 3: Chia sẻ rủi ro ($10, 45%)</option>
+                </select>
+                <button class="action-btn" onclick="applyTemplate()" style="flex: 1; background: #475569; margin: 0; padding: 10px;">Gắn Mẫu</button>
+                <button class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success); margin: 0; padding: 10px;">🤖 GỌI AI</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #fb7185; margin-top: 0;">📚 Cẩm nang Double Marginalization (Blockbuster Case Study)</h3>
+            <p>Đây là bài toán kinh điển đã cứu sống chuỗi cho thuê băng đĩa Blockbuster thập niên 90.</p>
+            <ul>
+                <li><strong>Hợp đồng Bán sỉ Truyền thống ($50, 0%):</strong> Nhà máy đòi ăn lãi $40/đĩa. Đại lý mua sỉ $50, bán $100. Đại lý sợ ôm hàng ế (vì vốn $50 quá đắt), nên họ nhát gan chỉ nhập khoảng 40 đĩa. Nếu khách đông, đại lý thiếu hàng. Tổng lợi nhuận của toàn bộ Chuỗi cung ứng bị giảm sút. Đây gọi là <em>Hiệu ứng cận biên kép (Double Marginalization)</em> - Ai cũng muốn chèn biên lợi nhuận của mình vào khiến giá quá cao.</li>
+                <li><strong>Hợp đồng Ép giá ($80, 0%):</strong> Bạn quá tham lam. Đại lý nhập $80 bán $100 lãi quá mỏng. Họ sẽ sợ chết khiếp và chỉ dám nhập 20 đĩa. Khách hàng không có phim xem.</li>
+                <li><strong>Hợp đồng Chia sẻ Doanh thu (Revenue Sharing):</strong> Nhà máy bán sỉ VỚI GIÁ GỐC ($10), nhưng thòng thêm điều kiện "Ăn 45% doanh thu mỗi đĩa bán ra". Lúc này, Đại lý nhập hàng không mất đồng rủi ro nào ($10 quá rẻ), họ sẽ đặt liền 90 đĩa để phủ ngập thị trường. Hàng bán đắt như tôm tươi. Kết quả: Đại lý lãi khủng, và BẠN cũng được bú 45% doanh thu khổng lồ đó! Tổng lợi nhuận Chuỗi được tối đa hóa!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { round: 1, maxRounds: 10, myProf: 0, distProf: 0, logs: [] };
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Vòng ${state.round}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        // Tính toán Newsvendor model cho Đại lý AI
+        function getAiOrderQty(wPrice, rSharePct) {
+            let costToDist = wPrice;
+            let priceToDist = 100 * (1 - rSharePct/100);
+            
+            // Critical Ratio = (Price - Cost) / Price
+            // Nếu Cost >= Price, AI sẽ không nhập hàng
+            if (costToDist >= priceToDist) return 0;
+            
+            let cr = (priceToDist - costToDist) / priceToDist;
+            
+            // Nhu cầu đều Uniform[20, 100]. Khảng = 80.
+            // Q = Min + CR * (Max - Min)
+            let optimalQ = 20 + cr * 80;
+            return Math.round(optimalQ);
+        }
+
+        function updateContract() {
+            let wPrice = parseInt(document.getElementById('wPrice').value);
+            let rShare = parseInt(document.getElementById('rShare').value);
+            
+            document.getElementById('valWPrice').innerText = '$' + wPrice;
+            document.getElementById('valRShare').innerText = rShare + '%';
+            
+            let qty = getAiOrderQty(wPrice, rShare);
+            document.getElementById('aiEstimate').innerText = qty + " Đĩa";
+        }
+
+        function applyTemplate() {
+            let strat = document.getElementById('aiStrategy').value;
+            if (strat === 'standard') { document.getElementById('wPrice').value = 50; document.getElementById('rShare').value = 0; }
+            if (strat === 'greedy') { document.getElementById('wPrice').value = 80; document.getElementById('rShare').value = 0; }
+            if (strat === 'revshare') { document.getElementById('wPrice').value = 10; document.getElementById('rShare').value = 45; }
+            updateContract();
+        }
+
+        function endRound() {
+            if (state.round > state.maxRounds) return;
+
+            let wPrice = parseInt(document.getElementById('wPrice').value);
+            let rSharePct = parseInt(document.getElementById('rShare').value) / 100;
+            
+            let orderQty = getAiOrderQty(wPrice, rSharePct * 100);
+            
+            let demand = Math.floor(Math.random() * 81) + 20; // 20 - 100
+            let sold = Math.min(orderQty, demand);
+
+            // Tính tiền Nhà máy (BẠN)
+            // Lãi từ bán sỉ + Lãi từ chia sẻ doanh thu
+            let factoryCost = orderQty * 10;
+            let factoryWholesaleRev = orderQty * wPrice;
+            let factoryShareRev = sold * 100 * rSharePct;
+            let netFactory = factoryWholesaleRev - factoryCost + factoryShareRev;
+
+            // Tính tiền Đại lý (AI)
+            let distCost = orderQty * wPrice;
+            let distRev = sold * 100 * (1 - rSharePct);
+            let netDist = distRev - distCost;
+
+            state.myProf += netFactory;
+            state.distProf += netDist;
+
+            let msg = `Nhu cầu thực: ${demand}. Đại lý nhập: ${orderQty}, bán được: ${sold}. Bạn lãi: <strong style="color:var(--success)">${format(netFactory)}</strong> | Đại lý lãi: <strong style="color:var(--dist)">${format(netDist)}</strong>.`;
+            addLog(msg);
+
+            state.round++;
+            renderUI();
+
+            if (state.round > state.maxRounds) {
+                addLog(`<span style="color:var(--warning); font-size:1.1rem; font-weight:bold;">🎉 TỔNG KẾT: Bạn thu ${format(state.myProf)} - Đại lý thu ${format(state.distProf)}</span>`);
+            }
+        }
+
+        function renderUI() {
+            document.getElementById('roundStat').innerText = state.round <= state.maxRounds ? `${state.round} / 10` : "END";
+            document.getElementById('myProfit').innerText = format(state.myProf);
+            document.getElementById('distProfit').innerText = format(state.distProf);
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.round > state.maxRounds) return;
+            isPlaying = true;
+            applyTemplate();
+            
+            while(state.round <= state.maxRounds) {
+                await new Promise(r => setTimeout(r, 400));
+                endRound();
+                await new Promise(r => setTimeout(r, 600));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = updateContract;
+    </script>
+</body>
+</html>

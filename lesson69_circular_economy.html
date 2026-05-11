@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 69: Chuỗi Cung Ứng Tuần Hoàn (Circular Economy)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #34d399, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .diagram-box { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 30px; position: relative; height: 350px; margin-bottom: 20px;}
+        
+        .circle-path { position: absolute; width: 250px; height: 250px; border: 4px dashed var(--primary); border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1;}
+        .linear-path { position: absolute; width: 80%; height: 4px; background: var(--danger); left: 10%; top: 50%; transform: translateY(-50%); z-index: 0; display: none;}
+
+        .node { position: absolute; width: 80px; height: 80px; background: var(--panel-bg); border: 2px solid var(--border); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2; font-size: 0.8rem; font-weight: bold; text-align: center; transition: all 0.5s;}
+        
+        .n-raw { top: 10px; left: 50%; transform: translateX(-50%); border-color: var(--warning);}
+        .n-mfg { top: 50%; right: 50px; transform: translateY(-50%); }
+        .n-use { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .n-trash { top: 50%; left: 50px; transform: translateY(-50%); border-color: var(--danger);}
+
+        .control-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;}
+        
+        .slider-group { margin: 20px 0; }
+        input[type="range"] { width: 80%; accent-color: var(--primary); }
+        .val-disp { font-size: 2rem; font-weight: 900; color: var(--primary); margin-top: 10px; }
+
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;}
+        .stat-card { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 15px; text-align: center;}
+        .stat-val { font-size: 1.5rem; font-weight: bold; margin-top: 5px;}
+
+        .particle { position: absolute; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; z-index: 3; filter: drop-shadow(0 0 5px var(--primary));}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 69: Kinh Tế Tuần Hoàn (Circular Economy)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Biến Rác thải của hôm nay thành Nguyên liệu của ngày mai.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn điều hành một hãng Sản xuất Điện thoại.<br>
+            - <strong>Tuyến Tính (Linear):</strong> Đào đất lấy Kim loại Mới ➔ Sản xuất ➔ Khách xài ➔ Vứt ra Bãi rác. Chi phí nguyên liệu siêu đắt, phá hủy môi trường.<br>
+            - <strong>Tuần Hoàn (Circular/Reverse Logistics):</strong> Bạn mở chương trình "Thu Cũ Đổi Mới" (Trade-in). Thu hồi điện thoại hỏng ➔ Tách lấy vàng, đồng, linh kiện ➔ Bơm lại vào nhà máy. <br>
+            <em>Hành động: Kéo thanh trượt để tăng Tỷ lệ Thu hồi. Bạn sẽ thấy Phép màu khi Doanh nghiệp tự sản sinh ra nguồn Nguyên liệu cho chính mình!</em>
+        </div>
+
+        <div class="diagram-box" id="diaBox">
+            <div class="circle-path" id="cPath"></div>
+            
+            <div class="node n-raw" id="nRaw">⛏️<br>Đào Mỏ<br>(Mua Mới)</div>
+            <div class="node n-mfg">🏭<br>Sản Xuất</div>
+            <div class="node n-use">📱<br>Khách Xài</div>
+            <div class="node n-trash" id="nTrash">♻️<br>Tái Chế<br>(Thu hồi)</div>
+        </div>
+
+        <div class="control-panel">
+            <h3 style="margin-top:0; color: var(--text-muted);">TỶ LỆ THU HỒI ĐIỆN THOẠI CŨ (RECOVERY RATE)</h3>
+            <div class="slider-group">
+                <input type="range" id="recSlider" min="0" max="90" step="10" value="0" oninput="updateSim()">
+            </div>
+            <div class="val-disp" id="valDisp">0% (Mô hình Tuyến Tính)</div>
+
+            <div class="dashboard">
+                <div class="stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">CHI PHÍ MUA QUẶNG MỚI</div>
+                    <div class="stat-val" id="costStat" style="color: var(--danger);">$100 Triệu</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">LƯỢNG RÁC THẢI RA ĐẤT</div>
+                    <div class="stat-val" id="trashStat" style="color: var(--danger);">10,000 Tấn</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">TÌNH TRẠNG</div>
+                    <div class="stat-val" id="evalStat" style="color: var(--danger);">Cạn kiệt</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--success);">📚 Cẩm nang Logistics Ngược (Reverse Logistics)</h3>
+            <p>Trong 100 năm qua, nhân loại chỉ thiết kế chuỗi cung ứng chạy theo 1 chiều (Forward Logistics). Hàng đi từ Trái sang Phải, và kết thúc ở Thùng rác (Take - Make - Dispose).</p>
+            <ul>
+                <li><strong>Cú sốc Khai khoáng:</strong> Trái đất không có vô tận Vàng, Đồng, và Đất hiếm (Rare earth). Giá nguyên liệu thô ngày càng tăng vọt. Phụ thuộc vào các mỏ quặng ở nước ngoài tạo ra rủi ro đứt gãy cực lớn (Geopolitical Risk).</li>
+                <li><strong>Khép kín vòng lặp (Closing the Loop):</strong> Bằng cách tạo ra hệ thống Logistics Ngược (Thu hồi sản phẩm từ tay người dùng), bạn kích hoạt vòng tròn Tuần Hoàn (Reduce - Reuse - Remanufacture - Recycle). Chiếc điện thoại cũ của khách hàng chính là "Mỏ quặng" giàu tài nguyên nhất, rẻ nhất và nằm ngay trong nước.</li>
+                <li><strong>Lợi ích Kép:</strong> Khi tỷ lệ thu hồi đạt 80-90%, bạn gần như không cần mua thêm Nguyên liệu mới. Bạn miễn nhiễm với biến động giá vật tư toàn cầu. Vừa tiết kiệm hàng trăm triệu Đô la chi phí đầu vào, vừa được chính phủ khen thưởng vì không xả rác ra bãi chôn lấp! (Apple hiện có robot Daisy chuyên tháo tung iPhone cũ để lấy lại 100% coban và đất hiếm).</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateSim() {
+            let rate = parseInt(document.getElementById('recSlider').value);
+            
+            let disp = document.getElementById('valDisp');
+            if (rate === 0) {
+                disp.innerText = rate + "% (Mô hình Tuyến tính)";
+                disp.style.color = "var(--danger)";
+                document.getElementById('nTrash').innerHTML = "🗑️<br>Bãi Rác<br>(Vứt bỏ)";
+                document.getElementById('cPath').style.borderStyle = "dotted";
+                document.getElementById('cPath').style.opacity = 0.2;
+            } else if (rate < 50) {
+                disp.innerText = rate + "% (Đang Cải thiện)";
+                disp.style.color = "var(--warning)";
+                document.getElementById('nTrash').innerHTML = "♻️<br>Tái Chế";
+                document.getElementById('cPath').style.borderStyle = "dashed";
+                document.getElementById('cPath').style.opacity = 0.6;
+            } else {
+                disp.innerText = rate + "% (Tuần Hoàn Khép Kín)";
+                disp.style.color = "var(--success)";
+                document.getElementById('nTrash').innerHTML = "♾️<br>Tuần Hoàn";
+                document.getElementById('cPath').style.borderStyle = "solid";
+                document.getElementById('cPath').style.opacity = 1;
+            }
+
+            // Math
+            let cost = 100 - rate; // $100M base
+            let trash = 10000 * (1 - (rate/100));
+
+            let costEl = document.getElementById('costStat');
+            costEl.innerText = "$" + cost + " Triệu";
+            costEl.style.color = cost > 50 ? "var(--danger)" : "var(--success)";
+
+            let trashEl = document.getElementById('trashStat');
+            trashEl.innerText = trash.toLocaleString() + " Tấn";
+            trashEl.style.color = trash > 5000 ? "var(--danger)" : "var(--success)";
+
+            let evalEl = document.getElementById('evalStat');
+            if (rate === 0) {
+                evalEl.innerText = "Cạn kiệt tài nguyên";
+                evalEl.style.color = "var(--danger)";
+            } else if (rate < 80) {
+                evalEl.innerText = "Giảm thiểu Rác";
+                evalEl.style.color = "var(--warning)";
+            } else {
+                evalEl.innerText = "Tự cung tự cấp!";
+                evalEl.style.color = "var(--success)";
+            }
+
+            // Node visual fading
+            document.getElementById('nRaw').style.opacity = Math.max(0.2, 1 - (rate/100));
+            document.getElementById('nTrash').style.borderColor = rate > 0 ? "var(--success)" : "var(--danger)";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 93: Vận Tải Biển (Liner vs Tramp)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .boat-area { height: 120px; background: rgba(59, 130, 246, 0.2); border-radius: 8px; margin: 15px 0; position: relative; overflow: hidden; border-bottom: 4px solid var(--primary);}
+        .boat { position: absolute; bottom: 10px; font-size: 3rem; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% {transform: translateY(0) rotate(-2deg);} 50% {transform: translateY(-10px) rotate(2deg);} }
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 93: Tàu Chợ (Liner) vs Tàu Chuyến (Tramp)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự khác biệt giữa Xe Buýt và Xe Taxi trên Biển khơi.</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--warning);">
+                <h2 style="color:var(--warning); margin-top:0;">🚢 Tàu Chợ (Liner)</h2>
+                <div style="font-size: 0.9rem; color:var(--text-muted); text-align:left;">Chạy như tuyến <strong>Xe Buýt</strong>. Đi theo Lịch Trình (Schedule) cố định, tuyến cố định. Dù đầy hay vắng khách, đến giờ là tàu nhổ neo.</div>
+                <div class="boat-area" style="border-color: var(--warning);">
+                    <div class="boat" style="left: 30%;">🛳️</div>
+                    <div style="position: absolute; top: 10px; left: 10px; font-weight: bold; color: var(--warning); text-shadow: 1px 1px black;">Hàng Container (Ti vi, Áo quần)</div>
+                </div>
+            </div>
+            
+            <div class="card" style="border-color: var(--danger);">
+                <h2 style="color:var(--danger); margin-top:0;">⚓ Tàu Chuyến (Tramp)</h2>
+                <div style="font-size: 0.9rem; color:var(--text-muted); text-align:left;">Chạy như <strong>Xe Taxi / Grab</strong>. Ai thuê bao nguyên chiếc thì đi. Không có lịch trình cố định. Lang thang khắp các đại dương tìm hàng.</div>
+                <div class="boat-area" style="border-color: var(--danger);">
+                    <div class="boat" style="left: 30%;">⛴️</div>
+                    <div style="position: absolute; top: 10px; left: 10px; font-weight: bold; color: var(--danger); text-shadow: 1px 1px black;">Hàng Rời (Than, Cát, Dầu mỏ)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Hàng Hải</h3>
+            <p>Vận tải biển gánh vác 90% thương mại toàn cầu, chia làm 2 hình thái tổ chức hoàn toàn đối lập:</p>
+            <ul>
+                <li><strong>Liner Shipping (Của Maersk, MSC, COSCO):</strong> Rất đắt đỏ để vận hành. Giống như mở hãng hàng không, bạn phải công bố lịch tàu "Thượng Hải - Los Angeles thứ 3 hàng tuần". Giá cước (Freight rate) do Hãng tàu niêm yết sẵn. Chuyên dùng để chở hộp Container.</li>
+                <li><strong>Tramp Shipping:</strong> Không chở hộp. Tàu là một cái hầm khổng lồ, xúc hàng trăm ngàn tấn Than hoặc Dầu mỏ đổ trực tiếp vào. Giá cước giống như Sàn chứng khoán, thay đổi từng giờ dựa trên đàm phán cung cầu (Thường do các Broker chốt deal qua điện thoại). Tàu bơi đến Brazil bốc quặng sắt sang Trung Quốc, rồi lại lững thững chạy rỗng sang Úc tìm than đá chở đi Ấn Độ!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

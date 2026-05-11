@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 43: Ma trận Mua sắm Kraljic (Kraljic Portfolio Matrix)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #3b0764, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #7e22ce); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .kraljic-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; width: 100%; height: 350px; position: relative; margin-bottom: 20px;}
+        
+        .axis-y { position: absolute; left: -30px; top: 0; bottom: 0; display: flex; align-items: center; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: bold; color: var(--text-muted);}
+        .axis-x { position: absolute; bottom: -30px; left: 0; right: 0; text-align: center; font-weight: bold; color: var(--text-muted);}
+
+        .quadrant { border: 2px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; position: relative; transition: all 0.3s;}
+        .quadrant:hover { border-color: rgba(255,255,255,0.3); }
+        .quadrant h3 { margin-top: 0; text-align: center; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 10px;}
+        
+        #q-leverage { background: rgba(59, 130, 246, 0.1); border-color: #3b82f6;}
+        #q-strategic { background: rgba(16, 185, 129, 0.1); border-color: #10b981;}
+        #q-routine { background: rgba(100, 116, 139, 0.1); border-color: #64748b;}
+        #q-bottleneck { background: rgba(239, 68, 68, 0.1); border-color: #ef4444;}
+
+        .select-strat { width: 100%; padding: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--border); border-radius: 6px; margin-top: auto;}
+
+        .item-badge { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 6px; font-size: 0.9rem; text-align: center; margin-bottom: 10px;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #581c87); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-top: 15px; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 43: Ma trận Mua sắm Kraljic</h1>
+            <p style="text-align: center; color: var(--text-muted);">Ngừng ảo tưởng rằng "Cứ ép giá là mua được rẻ". Kỹ sư mua sắm cần chiến lược phân loại.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Công ty sản xuất Laptop của bạn cần mua 4 loại hàng hóa. Chúng đã được xếp sẵn vào 4 Ô của Ma trận Kraljic dựa trên <strong>Tầm quan trọng (Trục Y)</strong> và <strong>Rủi ro Đứt gãy Nguồn cung (Trục X)</strong>.<br>
+            <em>Nhiệm vụ: Hãy chọn <strong>Chiến lược Ứng xử</strong> đúng đắn nhất cho từng loại hàng hóa từ hộp Dropdown! Nếu chọn sai chiến thuật, chuỗi cung ứng của bạn sẽ sụp đổ.</em>
+        </div>
+
+        <div style="padding-left: 30px; position: relative;">
+            <div class="axis-y">TẦM QUAN TRỌNG LỢI NHUẬN (THẤP ➔ CAO)</div>
+            
+            <div class="kraljic-grid">
+                <!-- Top Left: Leverage -->
+                <div class="quadrant" id="q-leverage">
+                    <h3 style="color:#60a5fa">Hàng Đòn Bẩy (Leverage)</h3>
+                    <div class="item-badge">📦 Thùng Carton (Nhiều NCC, Cần mua cực nhiều)</div>
+                    <select class="select-strat" id="selLev">
+                        <option value="">-- Chọn Chiến Thuật --</option>
+                        <option value="bid">Ép giá, Đấu thầu cạnh tranh khốc liệt</option>
+                        <option value="auto">Tự động hóa, quẹt thẻ mua cho nhanh</option>
+                        <option value="partner">Ký hợp đồng chia sẻ rủi ro 10 năm</option>
+                        <option value="stock">Nhịn nhục, mua tích trữ thật nhiều</option>
+                    </select>
+                </div>
+
+                <!-- Top Right: Strategic -->
+                <div class="quadrant" id="q-strategic">
+                    <h3 style="color:#34d399">Hàng Chiến Lược (Strategic)</h3>
+                    <div class="item-badge">💻 CPU Intel Core i9 (Cốt lõi, Độc quyền)</div>
+                    <select class="select-strat" id="selStr">
+                        <option value="">-- Chọn Chiến Thuật --</option>
+                        <option value="bid">Ép giá, Đấu thầu cạnh tranh khốc liệt</option>
+                        <option value="auto">Tự động hóa, quẹt thẻ mua cho nhanh</option>
+                        <option value="partner">Ký hợp đồng đối tác, chia sẻ công nghệ</option>
+                        <option value="stock">Nhịn nhục, mua tích trữ thật nhiều</option>
+                    </select>
+                </div>
+
+                <!-- Bottom Left: Routine -->
+                <div class="quadrant" id="q-routine">
+                    <h3 style="color:#94a3b8">Hàng Thường Quy (Routine)</h3>
+                    <div class="item-badge">📎 Giấy in, Bút bi (Rẻ tiền, Đâu cũng bán)</div>
+                    <select class="select-strat" id="selRou">
+                        <option value="">-- Chọn Chiến Thuật --</option>
+                        <option value="bid">Ép giá, lập hội đồng chấm thầu 3 tháng</option>
+                        <option value="auto">Ủy quyền nhân viên tự mua, Giảm thủ tục giấy tờ</option>
+                        <option value="partner">Ký hợp đồng chia sẻ rủi ro 10 năm</option>
+                        <option value="stock">Nhịn nhục, mua tích trữ thật nhiều</option>
+                    </select>
+                </div>
+
+                <!-- Bottom Right: Bottleneck -->
+                <div class="quadrant" id="q-bottleneck">
+                    <h3 style="color:#f87171">Hàng Nút Thắt (Bottleneck)</h3>
+                    <div class="item-badge">🧪 Keo tản nhiệt đặc biệt (Chỉ 1 hãng có, Mua rất ít)</div>
+                    <select class="select-strat" id="selBot">
+                        <option value="">-- Chọn Chiến Thuật --</option>
+                        <option value="bid">Ép giá, Đấu thầu cạnh tranh khốc liệt</option>
+                        <option value="auto">Tự động hóa, quẹt thẻ mua cho nhanh</option>
+                        <option value="partner">Ký hợp đồng đối tác, chia sẻ công nghệ</option>
+                        <option value="stock">Đảm bảo nguồn cung, Tích trữ tồn kho an toàn</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="axis-x">RỦI RO NGUỒN CUNG (THẤP ➔ CAO)</div>
+        </div>
+
+        <button class="action-btn" onclick="evaluateStrategy()">THỰC THI CHIẾN LƯỢC MUA SẮM</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Phân loại Kraljic</h3>
+            <p>Năm 1983, Peter Kraljic công bố ma trận này trên Harvard Business Review, đánh dấu sự chuyển mình của nghề "Đi chợ (Purchasing)" thành "Quản trị Cung ứng (Supply Management)".</p>
+            <ul>
+                <li><strong>Routine (Giấy in):</strong> Giá trị thấp, rủi ro thấp. Sai lầm lớn nhất là lập hội đồng đấu thầu tốn 2 tháng để mua lô giấy in tiết kiệm được $10. Tiền lương nhân sự tốn $500! Giải pháp: Đơn giản hóa, cấp thẻ tín dụng cho nhân viên tự mua.</li>
+                <li><strong>Leverage (Thùng Carton):</strong> Giá trị cực lớn, rủi ro thấp (ai cũng bán được). Đây là sân chơi của bạn. Hãy tổ chức Đấu thầu khốc liệt (Reverse Auction), ép giá nhà cung cấp để vắt kiệt lợi nhuận cho công ty. Đừng ngại đổi nhà cung cấp.</li>
+                <li><strong>Bottleneck (Hóa chất đặc biệt):</strong> Giá trị thấp nhưng rủi ro cực cao (Độc quyền). Nếu ép giá, họ sẽ giận và cắt cung cấp. Bạn thiếu 1 lọ keo $50, dây chuyền sản xuất $10 triệu Đô phải dừng lại! Giải pháp: Chịu nhún nhường, mua nhiều để tích trữ (Buffer stock) và tìm kiếm công nghệ thay thế lâu dài.</li>
+                <li><strong>Strategic (CPU Intel):</strong> Giá trị lớn, rủi ro cực lớn. Đây là cốt lõi sống còn. Ép giá Intel là bất khả thi. Giải pháp duy nhất: Hợp tác Win-Win (Partnership). Ký hợp đồng dài hạn, cùng nhau thiết kế sản phẩm. Họ là một nửa linh hồn của bạn.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function evaluateStrategy() {
+            let logs = document.getElementById('logContent');
+            logs.innerHTML = '';
+            let score = 0;
+
+            let rou = document.getElementById('selRou').value;
+            let lev = document.getElementById('selLev').value;
+            let bot = document.getElementById('selBot').value;
+            let str = document.getElementById('selStr').value;
+
+            if(!rou || !lev || !bot || !str) {
+                logs.innerHTML = '<div class="log-entry" style="color:var(--warning)">⚠️ Vui lòng chọn chiến thuật cho cả 4 nhóm!</div>';
+                return;
+            }
+
+            // Routine
+            if (rou === 'auto') {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--success)">✅ Giấy in (Routine): CHÍNH XÁC.</strong> Bạn đã cắt giảm tối đa chi phí hành chính và thủ tục phê duyệt cho những món lặt vặt.</div>`;
+                score++;
+            } else {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--danger)">❌ Giấy in (Routine): SAI LẦM.</strong> Bạn tốn quá nhiều thời gian và tiền bạc của Kỹ sư chỉ để xử lý những đơn hàng rẻ mạt.</div>`;
+            }
+
+            // Leverage
+            if (lev === 'bid') {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--success)">✅ Thùng Carton (Leverage): CHÍNH XÁC.</strong> Nhờ mua số lượng siêu khủng, bạn đấu thầu ép giá thành công, tiết kiệm hàng triệu Đô la!</div>`;
+                score++;
+            } else {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--danger)">❌ Thùng Carton (Leverage): SAI LẦM.</strong> Bạn bỏ lỡ cơ hội vàng để dùng sức mạnh đồng tiền (Purchasing Power) ép giá thị trường.</div>`;
+            }
+
+            // Bottleneck
+            if (bot === 'stock') {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--success)">✅ Keo tản nhiệt (Bottleneck): CHÍNH XÁC.</strong> Bạn biết mình ở thế yếu, nên đã ngậm ngùi trữ kho an toàn để bảo vệ dây chuyền sản xuất không bị đứt đoạn.</div>`;
+                score++;
+            } else if (bot === 'bid') {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--danger)">❌ Keo tản nhiệt (Bottleneck): CHẾT NGƯỜI.</strong> Bạn ngạo mạn đòi ép giá nhà cung cấp độc quyền. Họ hủy hợp đồng. Dây chuyền Laptop của bạn NGỪNG HOẠT ĐỘNG!</div>`;
+            } else {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--danger)">❌ Keo tản nhiệt (Bottleneck): SAI LẦM.</strong> Chiến thuật không phù hợp, rủi ro đứt nguồn cung lơ lửng trên đầu.</div>`;
+            }
+
+            // Strategic
+            if (str === 'partner') {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--success)">✅ CPU Intel (Strategic): CHÍNH XÁC.</strong> Thiết lập quan hệ đối tác chiến lược. Intel cam kết ưu tiên chip cho bạn kể cả khi thế giới khan hiếm.</div>`;
+                score++;
+            } else {
+                logs.innerHTML += `<div class="log-entry"><strong style="color:var(--danger)">❌ CPU Intel (Strategic): SAI LẦM.</strong> Bạn đối xử với Đối tác cốt lõi như một kẻ bán rong. Mối quan hệ rạn nứt, bạn mất đi lợi thế cạnh tranh cốt lõi.</div>`;
+            }
+
+            if (score === 4) {
+                logs.innerHTML = `<div class="log-entry" style="font-size: 1.2rem; text-align: center;"><strong style="color:var(--primary)">🏆 XUẤT SẮC! BẠN CHUẨN BỊ ĐƯỢC THĂNG CHỨC GIÁM ĐỐC MUA SẮM (CPO)!</strong></div>` + logs.innerHTML;
+            } else {
+                logs.innerHTML = `<div class="log-entry" style="font-size: 1.2rem; text-align: center;"><strong style="color:var(--warning)">⚠️ KẾT QUẢ: ${score}/4. Chuỗi cung ứng của bạn có lỗ hổng nghiêm trọng!</strong></div>` + logs.innerHTML;
+            }
+        }
+    </script>
+</body>
+</html>

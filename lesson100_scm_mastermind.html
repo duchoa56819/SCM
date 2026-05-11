@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 100: Kỹ Sư Trưởng Chuỗi Cung Ứng</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at center, #312e81, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; text-align: center;}
+        
+        .golden-title { font-weight: 900; font-size: 3rem; background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-transform: uppercase; text-shadow: 0 0 20px rgba(245,158,11,0.3);}
+        
+        .tradeoff-board { background: rgba(0,0,0,0.5); border: 2px solid #fbbf24; border-radius: 12px; padding: 30px; margin: 30px 0; box-shadow: 0 0 30px rgba(245,158,11,0.2);}
+        
+        .slider-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; gap: 20px;}
+        .lbl { width: 120px; font-weight: bold; text-align: right; color: var(--text-main);}
+        input[type=range] { flex: 1; accent-color: #f59e0b; cursor: pointer;}
+        
+        .balance-box { padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; background: rgba(255,255,255,0.1); margin-top: 20px; transition: all 0.5s;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6; text-align: left;}
+        
+        .firework { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10rem; pointer-events: none; opacity: 0; transition: opacity 2s;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="golden-title">BÀI 100: KỸ SƯ TRƯỞNG SCM</div>
+            <p style="color: var(--text-muted); font-size:1.2rem;">Sự Cân Bằng Của Tạo Hóa (The Art of Trade-offs)</p>
+        </header>
+
+        <div class="tradeoff-board">
+            <h2 style="color:#fbbf24; margin-top:0;">BẢNG ĐIỀU KHIỂN CHIẾN LƯỢC TỔNG (MASTER CONTROL)</h2>
+            
+            <div class="slider-row">
+                <div class="lbl">TỒN KHO</div>
+                <input type="range" id="inv" min="0" max="100" value="50" oninput="checkBalance()">
+                <div class="lbl" style="text-align:left; color:var(--success)">Phục Vụ Khách Hàng</div>
+            </div>
+            <div class="slider-row">
+                <div class="lbl" style="color:var(--danger)">Giam Vốn (Cash)</div>
+                <input type="range" id="cash" min="0" max="100" value="50" disabled>
+                <div class="lbl" style="text-align:left;">&nbsp;</div>
+            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+
+            <div class="slider-row">
+                <div class="lbl">TỐC ĐỘ GIAO</div>
+                <input type="range" id="spd" min="0" max="100" value="50" oninput="checkBalance()">
+                <div class="lbl" style="text-align:left; color:var(--success)">Giao siêu tốc (Lead Time)</div>
+            </div>
+            <div class="slider-row">
+                <div class="lbl" style="color:var(--danger)">Cước Phí Vận Tải</div>
+                <input type="range" id="cost" min="0" max="100" value="50" disabled>
+                <div class="lbl" style="text-align:left;">&nbsp;</div>
+            </div>
+
+            <div class="balance-box" id="msgBox">
+                Trạng thái: Đang cân bằng (Cơ bản). Hãy thử kéo thanh trượt!
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #fbbf24; text-align:center;">🏆 CHÚC MỪNG BẠN ĐÃ TỐT NGHIỆP MASTERCLASS!</h3>
+            <p>Bài học cuối cùng, và cũng là bài học quan trọng nhất của toàn bộ chương trình đào tạo SCM:</p>
+            <ul>
+                <li><strong>Không có chuỗi cung ứng "Tốt Nhất", chỉ có chuỗi cung ứng "Phù Hợp Nhất" (Alignment).</strong></li>
+                <li><strong>Nghệ thuật Đánh Đổi (Trade-offs):</strong> Bạn không thể có mọi thứ. Bạn muốn Tồn kho cao để khách luôn có hàng mua? Tiền của bạn sẽ bị chôn vùi trong kho. Bạn muốn đi Máy bay cho lẹ? Tiền cước vận tải sẽ ăn sạch lợi nhuận của bạn.</li>
+                <li><strong>Vai trò của Giám đốc SCM:</strong> Công việc của bạn không phải là giảm mọi chi phí xuống 0. Công việc của bạn là <em>Kiểm soát Hệ thống để phục vụ Chiến lược Kinh doanh (Business Strategy).</em> Nếu bạn bán hàng hiệu đắt tiền (Gucci), hãy dùng Máy bay. Nếu bạn bán gạo, hãy đi Tàu biển.</li>
+            </ul>
+            <p style="text-align:center; font-weight:bold; color:var(--success); font-size:1.2rem; margin-top:20px;">Toàn bộ 100 mô đun đã hoàn thành. Bạn hiện đã sở hữu kiến thức của một Chuyên gia Cấp Cao (C-Level) trong ngành Quản trị Chuỗi Cung Ứng Toàn Cầu!</p>
+        </div>
+
+        <div class="firework" id="fw">🎉</div>
+    </div>
+
+    <script>
+        // Trigger graduation firework on load
+        setTimeout(() => {
+            document.getElementById('fw').style.opacity = '1';
+            setTimeout(() => { document.getElementById('fw').style.opacity = '0'; }, 3000);
+        }, 1000);
+
+        function checkBalance() {
+            let inv = parseInt(document.getElementById('inv').value);
+            let spd = parseInt(document.getElementById('spd').value);
+            
+            // Trade-offs mechanism
+            document.getElementById('cash').value = inv; // High inventory = high trapped cash
+            document.getElementById('cost').value = spd; // High speed = high transport cost
+            
+            let box = document.getElementById('msgBox');
+            
+            if(inv > 80 && spd > 80) {
+                box.innerText = "🚨 CẢNH BÁO: Dịch vụ tuyệt hảo nhưng Công ty SẮP PHÁ SẢN vì hết tiền!";
+                box.style.color = "var(--danger)";
+                box.style.borderColor = "var(--danger)";
+            } else if (inv < 20 && spd < 20) {
+                box.innerText = "🚨 CẢNH BÁO: Siêu tiết kiệm chi phí nhưng Khách hàng ĐÃ BỎ SANG ĐỐI THỦ!";
+                box.style.color = "var(--danger)";
+                box.style.borderColor = "var(--danger)";
+            } else {
+                box.innerText = "⚖️ CÂN BẰNG TỐT: Bạn đang thực hiện Đánh đổi (Trade-off) hợp lý!";
+                box.style.color = "var(--success)";
+                box.style.borderColor = "var(--success)";
+            }
+        }
+    </script>
+</body>
+</html>

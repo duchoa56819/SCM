@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 32: Tối ưu Tải trọng (Bin Packing / Load Consolidation)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f97316; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #7c2d12, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fdba74, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .truck-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px;}
+        
+        .truck { width: 200px; height: 300px; border: 4px solid #475569; border-top: none; position: relative; background: rgba(0,0,0,0.5); display: flex; flex-wrap: wrap; align-content: flex-end;}
+        .truck::after { content: "CONTAINER"; position: absolute; bottom: -30px; left: 0; width: 100%; text-align: center; font-weight: bold; color: var(--text-muted);}
+        
+        /* Box types */
+        .box { box-sizing: border-box; border: 1px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 0.8rem; animation: dropIn 0.5s;}
+        .b-big { width: 100px; height: 100px; background: var(--danger); } /* 50% width */
+        .b-long { width: 200px; height: 50px; background: var(--primary); } /* 100% width */
+        .b-small { width: 50px; height: 50px; background: var(--success); } /* 25% width */
+        
+        @keyframes dropIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .action-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; color: white; cursor: pointer; transition: all 0.3s; flex: 1; text-transform: uppercase;}
+        .btn-bad { background: linear-gradient(135deg, #64748b, #334155); }
+        .btn-good { background: linear-gradient(135deg, var(--primary), #9a3412); }
+        .action-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 32: Tối ưu Không gian (Bin Packing / Tetris)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Thuật toán sắp xếp hàng hóa giúp tiết kiệm hàng triệu Đô la tiền cước phí xe tải rỗng.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Đơn hàng gồm: <strong>3 Tivi (Đỏ - Dày), 2 Tủ Lạnh (Cam - Dài), 12 Lò vi sóng (Xanh - Nhỏ)</strong>.<br>
+            Bạn cần bốc hàng lên chiếc Container (Sức chứa bằng đúng thể tích tổng của đống hàng này). Chi phí thuê xe là <strong>$500 / 1 chiếc</strong>.<br>
+            <em>Xem sự khác biệt giữa công nhân tự bốc vác (FIFO) và Hệ thống tính toán Load Consolidation Software!</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">SỐ XE CẦN THUÊ</div><div class="stat-value" id="truckStat" style="color: var(--warning)">0</div></div>
+            <div><div style="color: var(--text-muted);">HIỆU SUẤT KHÔNG GIAN</div><div class="stat-value" id="utilStat" style="color: var(--primary)">0%</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG CƯỚC PHÍ</div><div class="stat-value" id="costStat" style="color: var(--danger)">$0</div></div>
+        </div>
+
+        <div class="action-group">
+            <button class="action-btn btn-bad" onclick="loadBad()">🔴 XẾP HÀNG FIFO (NGU NGỐC)</button>
+            <button class="action-btn btn-good" onclick="loadGood()">🧠 DÙNG AI SẮP XẾP TỐI ƯU</button>
+        </div>
+
+        <div class="truck-container" id="truckArea">
+            <div class="truck" id="t1"></div>
+        </div>
+
+        <div class="detail-box" id="detailContent">
+            <h3 style="margin-top: 0; color: var(--warning);">📚 Cẩm nang Load Consolidation (3D Bin Packing)</h3>
+            <p>Xếp hàng hóa lên xe tải hoặc container trên biển không đơn giản là vứt đồ vào thùng. Nó là một bài toán khoa học máy tính kinh điển gọi là <strong>Bài toán Đóng gói (Bin Packing Problem)</strong>, thuộc nhóm NP-Hard (Rất khó giải chính xác bằng máy tính nếu số lượng quá lớn).</p>
+            <ul>
+                <li><strong>Cách làm Truyền thống (FIFO - First In First Out):</strong> Công nhân thấy thùng nào bê thùng nấy lên trước. Họ vô tình để các thùng nhỏ ở dưới, hoặc xếp so le làm sinh ra các "Khoảng trống chết" (Dead Space). Hệ quả: Về lý thuyết hàng hóa chỉ chiếm 70% thể tích xe, nhưng xe ĐÃ ĐẦY vì không nhét được thêm do kẹt hình dáng. Bạn buộc phải gọi 1 chiếc xe tải thứ 2 (Tốn thêm $500) chỉ để chở vài thùng hàng lẻ tẻ còn sót lại. Lãng phí CỰC LỚN!</li>
+                <li><strong>Hệ thống AI (Thuật toán Heuristic / Largest-Area-Fit-First):</strong> Phần mềm sẽ mô phỏng 3D trước khi công nhân bốc hàng. Nó luôn ưu tiên đưa các khối TO NHẤT, DÀI NHẤT (Tivi, Tủ lạnh) vào góc xe trước. Sau đó, nó dùng các hộp NHỎ (Lò vi sóng) để chèn vào các khe hở còn sót lại. Hiệu suất (Fill Rate) đạt 100%. Bạn đóng vừa khít mọi thứ vào 1 chiếc xe duy nhất. Tiết kiệm 50% chi phí vận tải!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Data: 3 Big, 2 Long, 12 Small
+        let boxes = [];
+        
+        function getHtml(type, id) {
+            let label = "";
+            if(type === 'b-big') label = "Tivi";
+            if(type === 'b-long') label = "Tủ";
+            if(type === 'b-small') label = "Lò";
+            return `<div class="box ${type}" id="bx_${id}">${label}</div>`;
+        }
+
+        async function loadBad() {
+            // Bad logic: randomly mixing small and big, leaving gaps (simulated via layout logic constraints)
+            // In CSS flex, if we put small, small, big... it wraps badly leaving dead spaces.
+            
+            let tArea = document.getElementById('truckArea');
+            tArea.innerHTML = `
+                <div class="truck" id="t1" style="align-content: flex-start;"></div>
+                <div class="truck" id="t2" style="align-content: flex-start;"></div>
+            `;
+            
+            document.getElementById('truckStat').innerText = "2 Xe";
+            document.getElementById('utilStat').innerText = "60% (Dead Space)";
+            document.getElementById('utilStat').style.color = "var(--danger)";
+            document.getElementById('costStat').innerText = "$1,000";
+
+            let badOrder = [
+                'b-small', 'b-big', 'b-small', 'b-small', 
+                'b-long', 'b-small', 'b-small', 'b-small', 'b-big',
+                'b-small', 'b-long'
+            ];
+            
+            let t1 = document.getElementById('t1');
+            let t2 = document.getElementById('t2');
+
+            let id = 0;
+            for(let b of badOrder) {
+                t1.innerHTML += getHtml(b, id++);
+                await new Promise(r => setTimeout(r, 200));
+            }
+            
+            // The rest spills over to Truck 2
+            let overflow = ['b-small', 'b-big', 'b-small', 'b-small', 'b-small', 'b-small'];
+            for(let b of overflow) {
+                t2.innerHTML += getHtml(b, id++);
+                await new Promise(r => setTimeout(r, 200));
+            }
+        }
+
+        async function loadGood() {
+            // Good logic: Largest First. Long -> Big -> Small. Fills perfectly into 1 truck (200x300 = 60000 px area).
+            // Long (200x50)=10000 * 2 = 20000. Big (100x100)=10000 * 3 = 30000. Small (50x50)=2500 * 12 = 30000.
+            // Wait, 20k + 30k + 30k = 80k. Box is 200x300 = 60k. 
+            // My math above: I need to fit exactly. Let's adjust counts.
+            // Truck: 200 x 300.
+            // 2 Long: 200x50 x 2 = 200x100 space taken. Remaining: 200x200.
+            // 4 Big: 100x100 x 4 = 200x200 space taken. Remaining: 0. Wait, where are smalls?
+            // Let's do: 2 Long (takes 200x100). 2 Big (takes 200x100). Remaining 200x100.
+            // Small is 50x50. 1 row = 4 smalls. 1 column = 2 smalls. So 200x100 fits 8 smalls.
+            // Perfect list: 2 Long, 2 Big, 8 Small.
+            
+            let tArea = document.getElementById('truckArea');
+            tArea.innerHTML = `<div class="truck" id="t1" style="align-content: flex-end;"></div>`;
+            
+            document.getElementById('truckStat').innerText = "1 Xe";
+            document.getElementById('utilStat').innerText = "100% (Perfect)";
+            document.getElementById('utilStat').style.color = "var(--success)";
+            document.getElementById('costStat').innerText = "$500";
+            document.getElementById('costStat').style.color = "var(--success)";
+
+            let t1 = document.getElementById('t1');
+            
+            let goodOrder = [
+                'b-small', 'b-small', 'b-small', 'b-small',
+                'b-small', 'b-small', 'b-small', 'b-small',
+                'b-big', 'b-big', 
+                'b-long', 'b-long'
+            ];
+            // Since flex-end wraps from bottom, we put smalls first, they go to the top. Wait, flex-wrap with align-content flex-end puts the FIRST items at the TOP of the block? Actually, it puts the lines towards the end. It's tricky.
+            // Let's just use normal flex-start and put Longs first.
+            t1.style.alignContent = "flex-start";
+            
+            goodOrder = [
+                'b-long', 'b-long',
+                'b-big', 'b-big',
+                'b-small', 'b-small', 'b-small', 'b-small',
+                'b-small', 'b-small', 'b-small', 'b-small'
+            ];
+
+            let id = 0;
+            for(let b of goodOrder) {
+                t1.innerHTML += getHtml(b, id++);
+                await new Promise(r => setTimeout(r, 200));
+            }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 41: Kế toán Chi phí Dựa trên Hoạt động (ABC Costing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #6ee7b7, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s; flex: 1;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);}
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: var(--panel-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        th, td { padding: 15px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(0,0,0,0.5); text-align: center; color: var(--primary); font-weight: 800;}
+        td:first-child { text-align: left; font-weight: bold; color: var(--text-muted); }
+        tr:last-child td { border-bottom: none; font-size: 1.2rem; font-weight: 900; }
+        
+        .profit-pos { color: var(--success); }
+        .profit-neg { color: var(--danger); animation: pulse 1s infinite;}
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 41: Kế toán Dựa trên Hoạt động (ABC Costing)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Khám phá khách hàng đang "Hút máu" lợi nhuận của bạn mà Kế toán trưởng không biết.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Nhà phân phối của bạn có 2 khách hàng lớn cùng mua <strong>1,000 Thùng hàng/Năm</strong> (Mang lại Doanh thu $100,000/người).<br>
+            - <strong>Khách Hàng A (Dễ tính):</strong> Đặt 1 đơn duy nhất 1,000 thùng, tự cử xe tải đến kho lấy thẳng.<br>
+            - <strong>Khách Hàng B (Khó tính):</strong> Đặt 100 đơn lắt nhắt (mỗi đơn 10 thùng), yêu cầu dán tem đặc biệt, và gọi Hotline phàn nàn 50 lần/năm.<br>
+            <em>Tổng Chi phí chung (Overhead) của nhà kho năm nay là $40,000. Hãy xem Hệ thống Kế toán sẽ tính toán lợi nhuận của 2 khách hàng này ra sao!</em>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt active" id="btnTrad" onclick="runSim('trad')">Kế Toán Truyền Thống (Phân bổ cào bằng)</button>
+            <button class="btn-opt" id="btnAbc" onclick="runSim('abc')">Kế Toán ABC (Theo Hoạt động Thực tế)</button>
+        </div>
+
+        <table id="costTable">
+            <!-- Rendered by JS -->
+        </table>
+
+        <div class="detail-box" id="detailBox">
+            <h3 style="margin-top: 0; color: var(--warning);">📚 Cẩm nang Kế toán Logistics (Activity-Based Costing)</h3>
+            <p><strong>Kế toán Truyền thống</strong> thường phân bổ Chi phí Chung (Overhead - Lương kho, điện nước, xe nâng) một cách "cào bằng" dựa trên Sản lượng. Khách A và B đều mua 1,000 thùng, nên mỗi người gánh 50% chi phí chung. Báo cáo tài chính cho thấy BẠN LỜI TO TỪ CẢ HAI! Khách hàng B được tung hô như Thượng đế.</p>
+            <ul>
+                <li><strong>Góc khuất:</strong> Khách hàng B thực chất đang tàn phá hệ thống của bạn. Họ bắt kho phải lấy hàng lắt nhắt 100 lần (Tốn lương bốc vác), bắt in tem nhãn riêng (Tốn vật tư), và gọi điện chửi bới 50 lần (Tốn lương CSKH). Khách A thì chả tốn một xu nào cho những việc này.</li>
+                <li><strong>Activity-Based Costing (ABC):</strong> Nhận diện từng hoạt động cụ thể (Cost Drivers). Ai xài nhiều hoạt động nào thì gánh chi phí đó. Khi áp dụng ABC, sự thật phũ phàng lộ ra: <strong>Khách hàng B đang khiến công ty LỖ NẶNG</strong>! Lợi nhuận thực sự đều đến từ sự tử tế của Khách hàng A. Bằng ABC Costing, bạn sẽ tự tin tăng giá Khách hàng B hoặc sa thải luôn vị "Thượng đế dỏm" này.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runSim(mode) {
+            document.getElementById('btnTrad').classList.remove('active');
+            document.getElementById('btnAbc').classList.remove('active');
+            
+            let html = `
+                <tr>
+                    <th>HẠNG MỤC</th>
+                    <th>KHÁCH HÀNG A (1,000 Thùng)</th>
+                    <th>KHÁCH HÀNG B (1,000 Thùng)</th>
+                </tr>
+                <tr>
+                    <td>1. Doanh thu Bán hàng</td>
+                    <td style="color:white;">$100,000</td>
+                    <td style="color:white;">$100,000</td>
+                </tr>
+                <tr>
+                    <td>2. Giá vốn Hàng hóa (COGS)</td>
+                    <td>-$70,000</td>
+                    <td>-$70,000</td>
+                </tr>
+            `;
+
+            if (mode === 'trad') {
+                document.getElementById('btnTrad').classList.add('active');
+                html += `
+                    <tr>
+                        <td>3. Phân bổ Chi phí Chung ($40k)<br><span style="font-size:0.8rem">(Cào bằng 50/50 theo Sản lượng)</span></td>
+                        <td>-$20,000</td>
+                        <td>-$20,000</td>
+                    </tr>
+                    <tr>
+                        <td>LỢI NHUẬN RÒNG (NET PROFIT)</td>
+                        <td class="profit-pos">+$10,000</td>
+                        <td class="profit-pos">+$10,000</td>
+                    </tr>
+                `;
+            } else {
+                document.getElementById('btnAbc').classList.add('active');
+                // ABC allocation
+                // Total overhead: $40,000
+                // - Picking (Lấy hàng): $20,200. A takes 1 order (200), B takes 100 orders (20,000).
+                // - Custom Label (Dán tem): $9,800. A takes 0. B takes 9,800.
+                // - CSKH (Phàn nàn): $10,000. A takes 0. B takes 10,000.
+                html += `
+                    <tr>
+                        <td>3a. Phí Lấy Hàng ($200/Đơn)</td>
+                        <td>-$200 <span style="font-size:0.8rem">(1 Đơn)</span></td>
+                        <td>-$20,000 <span style="font-size:0.8rem">(100 Đơn)</span></td>
+                    </tr>
+                    <tr>
+                        <td>3b. Phí Dán tem riêng lẻ</td>
+                        <td>$0</td>
+                        <td>-$9,800</td>
+                    </tr>
+                    <tr>
+                        <td>3c. Phí Hỗ trợ Khách hàng</td>
+                        <td>$0</td>
+                        <td>-$10,000</td>
+                    </tr>
+                    <tr>
+                        <td>LỢI NHUẬN RÒNG (THỰC TẾ)</td>
+                        <td class="profit-pos">+$29,800</td>
+                        <td class="profit-neg">-$9,800 (LỖ NẶNG)</td>
+                    </tr>
+                `;
+            }
+            
+            document.getElementById('costTable').innerHTML = html;
+        }
+
+        window.onload = () => runSim('trad');
+    </script>
+</body>
+</html>

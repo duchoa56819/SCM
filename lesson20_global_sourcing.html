@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 20: Offshoring vs Nearshoring (Total Landed Cost)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 1000px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .event-box { background: rgba(239, 68, 68, 0.2); border: 2px dashed var(--danger); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; margin-bottom: 20px; color: #fca5a5;}
+
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.3s;}
+        .panel:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .panel.selected { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        
+        .sup-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; text-align: center;}
+        .cost-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;}
+        .total-row { display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.2rem; font-weight: bold; color: var(--warning);}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 20: Tái cấu trúc Chuỗi cung ứng Toàn cầu</h1>
+            <p style="text-align: center; color: var(--text-muted);">Offshoring (Trung Quốc) vs Nearshoring (Mexico) vs Onshoring (Mỹ) - Bài toán Total Landed Cost.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Công ty của bạn đặt tại Mỹ. Bạn cần tìm nơi gia công 10,000 sản phẩm mỗi năm. <br>
+            Chi phí Không chỉ là "Giá xuất xưởng" (FOB), mà phải tính <strong>Total Landed Cost (TLC)</strong> = Phí gia công + Vận chuyển + Thuế nhập khẩu + Phí tồn kho (Do vận chuyển lâu).<br>
+            <em>Cẩn thận! Mỗi năm Thế giới sẽ xảy ra các Sự kiện Địa chính trị vĩ mô làm thay đổi mạnh các thông số này.</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">NĂM VĨ MÔ</div><div class="stat-value" id="yearStat">1 / 5</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG CHI PHÍ LŨY KẾ</div><div class="stat-value" id="totalCostStat" style="color: var(--danger)">$0</div></div>
+            <div><div style="color: var(--text-muted);">HIỆU SUẤT TỐI ƯU</div><div class="stat-value" id="perfStat" style="color: var(--success)">100%</div></div>
+        </div>
+
+        <div class="event-box" id="eventBox">
+            🌍 TIN TỨC VĨ MÔ NĂM NAY: Thế giới hòa bình, chuỗi cung ứng hoạt động bình thường (Bình thường hóa).
+        </div>
+
+        <h3 style="text-align: center; margin-bottom: 10px;">LỰA CHỌN NHÀ CUNG CẤP CỦA BẠN NĂM NAY:</h3>
+        <div class="grid-3">
+            <!-- China -->
+            <div class="panel" id="supChina" onclick="selectSup('china')">
+                <div class="sup-title" style="color: #ef4444;">🇨🇳 Trung Quốc<br><span style="font-size: 0.8rem; color: var(--text-muted)">(Offshoring)</span></div>
+                <div class="cost-row"><span>Phí Gia công:</span> <strong id="cChinaProd">$10</strong></div>
+                <div class="cost-row"><span>Cước Biển (Tàu):</span> <strong id="cChinaFrt">$3</strong></div>
+                <div class="cost-row"><span>Thuế quan (25%):</span> <strong id="cChinaTrf" style="color: var(--danger)">$2.5</strong></div>
+                <div class="cost-row"><span>Phí Tồn kho (6 tuần):</span> <strong id="cChinaInv">$3</strong></div>
+                <div class="total-row"><span>Total Landed Cost:</span> <strong id="cChinaTot">$18.50</strong></div>
+            </div>
+
+            <!-- Mexico -->
+            <div class="panel" id="supMexico" onclick="selectSup('mexico')">
+                <div class="sup-title" style="color: #10b981;">🇲🇽 Mexico<br><span style="font-size: 0.8rem; color: var(--text-muted)">(Nearshoring)</span></div>
+                <div class="cost-row"><span>Phí Gia công:</span> <strong id="cMexProd">$15</strong></div>
+                <div class="cost-row"><span>Cước Bộ (Xe tải):</span> <strong id="cMexFrt">$1</strong></div>
+                <div class="cost-row"><span>Thuế quan (USMCA):</span> <strong id="cMexTrf">$0</strong></div>
+                <div class="cost-row"><span>Phí Tồn kho (1 tuần):</span> <strong id="cMexInv">$0.5</strong></div>
+                <div class="total-row"><span>Total Landed Cost:</span> <strong id="cMexTot">$16.50</strong></div>
+            </div>
+
+            <!-- USA -->
+            <div class="panel" id="supUSA" onclick="selectSup('usa')">
+                <div class="sup-title" style="color: #3b82f6;">🇺🇸 Hoa Kỳ<br><span style="font-size: 0.8rem; color: var(--text-muted)">(Onshoring)</span></div>
+                <div class="cost-row"><span>Phí Gia công:</span> <strong id="cUsaProd">$20</strong></div>
+                <div class="cost-row"><span>Cước Nội địa:</span> <strong id="cUsaFrt">$0.5</strong></div>
+                <div class="cost-row"><span>Thuế quan:</span> <strong id="cUsaTrf">$0</strong></div>
+                <div class="cost-row"><span>Phí Tồn kho (0 tuần):</span> <strong id="cUsaInv">$0</strong></div>
+                <div class="total-row"><span>Total Landed Cost:</span> <strong id="cUsaTot">$20.50</strong></div>
+            </div>
+        </div>
+
+        <button class="action-btn" id="btnOrder" onclick="processYear()" disabled>KÝ HỢP ĐỒNG 10,000 SẢN PHẨM ➔</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Global Sourcing (Chuỗi cung ứng Toàn cầu)</h3>
+            <p>Hàng thập kỷ qua, các công ty phương Tây chỉ nhìn vào <strong>Phí gia công rẻ (Labor Cost)</strong> để mang nhà máy sang Châu Á (Offshoring). Nhưng tư duy hiện đại yêu cầu tính toán <strong>Total Landed Cost (TLC)</strong>.</p>
+            <ul>
+                <li><strong>Ảo tưởng giá rẻ:</strong> Đồ gia công Trung Quốc chỉ có $10. Nhưng bạn phải cõng thêm $3 tiền cước biển, $2.5 tiền thuế quan (Trade War), và $3 tiền lưu kho tĩnh (Vì hàng lênh đênh trên biển 6 tuần, vốn bị đọng lại). Chi phí thực đội lên $18.5!</li>
+                <li><strong>Nearshoring (Mexico):</strong> Chi phí gia công đắt hơn ($15). Nhưng nhờ giáp biên giới, bạn được miễn thuế hoàn toàn theo Hiệp định USMCA, cước xe tải rẻ ($1) và hàng về trong 1 tuần. Tính ra TLC chỉ $16.5, NGON HƠN Trung Quốc! Đây là lý do làn sóng dịch chuyển nhà máy (Reshoring/Nearshoring) đang bùng nổ hiện nay.</li>
+                <li><strong>Đại dịch & Thiên tai:</strong> Nếu kênh đào Suez tắc nghẽn hoặc Covid-19 làm cước tàu biển tăng X5 lần. Đột nhiên việc Onshoring (Sản xuất ngay tại Mỹ) với giá đắt đỏ $20.5 lại trở thành lựa chọn RẺ NHẤT và AN TOÀN NHẤT. SC Manager xuất sắc là người linh hoạt dịch chuyển chuỗi cung ứng theo tình hình vĩ mô!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { year: 1, maxYears: 5, totalCost: 0, optimalCost: 0, logs: [] };
+        let selectedSup = null;
+
+        // Base costs
+        let china = { prod: 10, frt: 3, trfPct: 0.25, inv: 3 };
+        let mexico = { prod: 15, frt: 1, trfPct: 0, inv: 0.5 };
+        let usa = { prod: 20, frt: 0.5, trfPct: 0, inv: 0 };
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Năm ${state.year}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        const events = [
+            { text: "🌍 Thế giới bình yên. Các cảng biển hoạt động trơn tru.", action: () => { china.frt = 3; china.trfPct = 0.25; mexico.prod = 15; usa.prod = 20; } },
+            { text: "🔥 CHIẾN TRANH THƯƠNG MẠI LEO THANG: Mỹ áp thuế lên 50% hàng hóa Trung Quốc!", action: () => { china.trfPct = 0.50; } },
+            { text: "🚢 KHỦNG HOẢNG BIỂN ĐỎ: Tàu bè phải đi vòng Mũi Hảo Vọng. Cước tàu biển (Trung Quốc) vọt lên $8/sp!", action: () => { china.frt = 8; } },
+            { text: "📉 SUY THOÁI TOÀN CẦU: Mỹ trợ giá sản xuất nội địa. Chi phí gia công Onshoring (USA) giảm xuống còn $16/sp!", action: () => { usa.prod = 16; } },
+            { text: "🤝 HIỆP ĐỊNH USMCA ĐỔ VỠ: Mỹ bất ngờ đánh thuế 10% lên hàng hóa nhập khẩu từ Mexico qua đường bộ!", action: () => { mexico.trfPct = 0.10; } }
+        ];
+
+        function calcTotals() {
+            let chinaTrf = china.prod * china.trfPct;
+            let chinaTot = china.prod + china.frt + chinaTrf + china.inv;
+            document.getElementById('cChinaProd').innerText = '$' + china.prod;
+            document.getElementById('cChinaFrt').innerText = '$' + china.frt;
+            document.getElementById('cChinaTrf').innerText = '$' + chinaTrf.toFixed(2);
+            document.getElementById('cChinaInv').innerText = '$' + china.inv;
+            document.getElementById('cChinaTot').innerText = '$' + chinaTot.toFixed(2);
+
+            let mexTrf = mexico.prod * mexico.trfPct;
+            let mexTot = mexico.prod + mexico.frt + mexTrf + mexico.inv;
+            document.getElementById('cMexProd').innerText = '$' + mexico.prod;
+            document.getElementById('cMexFrt').innerText = '$' + mexico.frt;
+            document.getElementById('cMexTrf').innerText = '$' + mexTrf.toFixed(2);
+            document.getElementById('cMexInv').innerText = '$' + mexico.inv;
+            document.getElementById('cMexTot').innerText = '$' + mexTot.toFixed(2);
+
+            let usaTrf = usa.prod * usa.trfPct;
+            let usaTot = usa.prod + usa.frt + usaTrf + usa.inv;
+            document.getElementById('cUsaProd').innerText = '$' + usa.prod;
+            document.getElementById('cUsaFrt').innerText = '$' + usa.frt;
+            document.getElementById('cUsaTrf').innerText = '$' + usaTrf.toFixed(2);
+            document.getElementById('cUsaInv').innerText = '$' + usa.inv;
+            document.getElementById('cUsaTot').innerText = '$' + usaTot.toFixed(2);
+
+            return { chinaTot, mexTot, usaTot };
+        }
+
+        function triggerEvent() {
+            if(state.year === 1) {
+                events[0].action();
+                document.getElementById('eventBox').innerText = events[0].text;
+            } else {
+                let e = events[Math.floor(Math.random() * (events.length - 1)) + 1]; // Random event 1 to 4
+                e.action();
+                document.getElementById('eventBox').innerText = e.text;
+            }
+            calcTotals();
+        }
+
+        function selectSup(sup) {
+            selectedSup = sup;
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('selected'));
+            if(sup === 'china') document.getElementById('supChina').classList.add('selected');
+            if(sup === 'mexico') document.getElementById('supMexico').classList.add('selected');
+            if(sup === 'usa') document.getElementById('supUSA').classList.add('selected');
+            document.getElementById('btnOrder').disabled = false;
+        }
+
+        function processYear() {
+            if(state.year > state.maxYears) return;
+
+            let totals = calcTotals();
+            let minCost = Math.min(totals.chinaTot, totals.mexTot, totals.usaTot);
+            
+            let userCost = 0;
+            let name = "";
+            if(selectedSup === 'china') { userCost = totals.chinaTot; name = "Trung Quốc"; }
+            if(selectedSup === 'mexico') { userCost = totals.mexTot; name = "Mexico"; }
+            if(selectedSup === 'usa') { userCost = totals.usaTot; name = "Hoa Kỳ"; }
+
+            let totalUserMoney = userCost * 10000;
+            let totalMinMoney = minCost * 10000;
+
+            state.totalCost += totalUserMoney;
+            state.optimalCost += totalMinMoney;
+
+            let color = userCost === minCost ? 'var(--success)' : 'var(--danger)';
+            let msg = `Chọn gia công tại ${name}. TLC là $${userCost.toFixed(2)}/sp. Chi phí năm: <strong style="color:${color}">$${totalUserMoney.toLocaleString()}</strong>.`;
+            if (userCost > minCost) {
+                msg += ` (Lãng phí $${(totalUserMoney - totalMinMoney).toLocaleString()} so với phương án tối ưu!)`;
+            }
+            addLog(msg);
+
+            state.year++;
+            if (state.year > state.maxYears) {
+                let efficiency = Math.round((state.optimalCost / state.totalCost) * 100);
+                addLog(`<span style="color:var(--warning); font-size:1.1rem; font-weight:bold;">🎉 TỔNG KẾT: Tổng chi 5 năm: $${state.totalCost.toLocaleString()}. Điểm SCM của bạn: ${efficiency}% (So với mức Tối ưu Lý thuyết).</span>`);
+                document.getElementById('yearStat').innerText = "END";
+                document.getElementById('btnOrder').disabled = true;
+            } else {
+                selectedSup = null;
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('selected'));
+                document.getElementById('btnOrder').disabled = true;
+                
+                // Reset base costs before applying new event
+                china = { prod: 10, frt: 3, trfPct: 0.25, inv: 3 };
+                mexico = { prod: 15, frt: 1, trfPct: 0, inv: 0.5 };
+                usa = { prod: 20, frt: 0.5, trfPct: 0, inv: 0 };
+                
+                triggerEvent();
+            }
+            renderUI();
+        }
+
+        function renderUI() {
+            if(state.year <= state.maxYears) document.getElementById('yearStat').innerText = `${state.year} / 5`;
+            document.getElementById('totalCostStat').innerText = '$' + state.totalCost.toLocaleString();
+            let efficiency = state.totalCost > 0 ? Math.round((state.optimalCost / state.totalCost) * 100) : 100;
+            document.getElementById('perfStat').innerText = efficiency + '%';
+            document.getElementById('perfStat').style.color = efficiency >= 95 ? 'var(--success)' : (efficiency >= 80 ? 'var(--warning)' : 'var(--danger)');
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = triggerEvent;
+    </script>
+</body>
+</html>

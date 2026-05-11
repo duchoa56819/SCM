@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 17: Hệ thống Xếp dỡ Chéo (Cross-Docking)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #172554, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .dock-container { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 30px; border-radius: 16px; border: 1px solid var(--primary); margin-bottom: 20px;}
+        
+        .truck-col { width: 30%; }
+        .truck { background: rgba(255,255,255,0.05); border: 2px solid var(--text-muted); padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: bold;}
+        .truck.inbound { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .truck.outbound { border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        
+        .warehouse-center { width: 30%; text-align: center; }
+        .warehouse-box { background: rgba(239, 68, 68, 0.1); border: 2px dashed var(--danger); padding: 30px 10px; border-radius: 12px; font-weight: bold;}
+        
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #1e40af); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 17: Hệ thống Xếp dỡ Chéo (Cross-Docking)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bí mật Logistics của Walmart: Chuyển hàng thẳng từ xe này sang xe khác, bỏ qua Kho lưu trữ.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Mỗi ngày có 3 Xe Tải Nhập (Inbound) mang hàng tới. Bạn cần chuyển hàng cho 3 Xe Tải Xuất (Outbound).<br>
+            - Phí <strong>Cross-Docking</strong> (Chuyển trực tiếp từ xe sang xe): <strong>$2/Pallet</strong>.<br>
+            - Phí <strong>Nhập Kho (Warehousing)</strong> (Chở hàng vào kho, cất lên kệ, rồi hôm sau lấy xuống): <strong>$10/Pallet</strong>.
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">NGÀY</div><div class="stat-value" id="dayStat">1 / 10</div></div>
+            <div><div style="color: var(--text-muted);">HÀNG QUA KHO (PALLET)</div><div class="stat-value" id="whStat" style="color: var(--danger)">0</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG CHI PHÍ</div><div class="stat-value" id="costStat" style="color: var(--warning)">$0</div></div>
+        </div>
+
+        <div class="dock-container">
+            <div class="truck-col">
+                <div style="text-align: center; margin-bottom: 10px; color: var(--success); font-weight: bold;">CỬA NHẬP (INBOUND)</div>
+                <div class="truck inbound">Tải Nhập 1: <span id="in1">0</span> Pallet</div>
+                <div class="truck inbound">Tải Nhập 2: <span id="in2">0</span> Pallet</div>
+                <div class="truck inbound">Tải Nhập 3: <span id="in3">0</span> Pallet</div>
+            </div>
+            
+            <div class="warehouse-center">
+                <div style="font-size: 2rem; margin-bottom: 10px;">➔</div>
+                <div class="warehouse-box">
+                    <div style="font-size: 2.5rem; margin-bottom: 5px;">🏭</div>
+                    KHO LƯU TRỮ<br>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">(Tốn $10/Pallet)</span>
+                </div>
+                <div style="font-size: 2rem; margin-top: 10px;">➔</div>
+            </div>
+            
+            <div class="truck-col">
+                <div style="text-align: center; margin-bottom: 10px; color: var(--warning); font-weight: bold;">CỬA XUẤT (OUTBOUND)</div>
+                <div class="truck outbound">Tải Xuất A: Cần <span id="out1">0</span> Pallet</div>
+                <div class="truck outbound">Tải Xuất B: Cần <span id="out2">0</span> Pallet</div>
+                <div class="truck outbound">Tải Xuất C: Cần <span id="out3">0</span> Pallet</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="endDay()" style="flex: 1.5;">THỰC THI (CHUYỂN NGÀY) ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="warehouse">Chiến thuật 1: Truyền thống (100% nhập Kho)</option>
+                    <option value="crossdock">Chiến thuật 2: Cross-Docking (Chuyển trực tiếp)</option>
+                </select>
+                <button class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success); margin: 0; padding: 10px;">🤖 AI XẾP HÀNG</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Cross-Docking (Kỹ thuật của Walmart)</h3>
+            <p>Vào những năm 1980, Walmart đánh bại Kmart và thống trị ngành bán lẻ thế giới chủ yếu nhờ một phát kiến Logistics: <strong>Cross-Docking</strong>.</p>
+            <ul>
+                <li><strong>Kho truyền thống (Warehousing):</strong> Xe hàng tới -> Đưa hàng vào kho -> Cất lên kệ cao -> Lưu trữ -> Hôm sau có đơn -> Lấy xe nâng kéo hàng xuống -> Đóng gói -> Đưa ra xe xuất. Quá trình này tạo ra <em>"Double Handling" (Chạm vào hàng hóa 2 lần)</em>, tốn rất nhiều tiền nhân công, diện tích kho và thời gian. Chi phí: $10/Pallet.</li>
+                <li><strong>Cross-Docking (Sang xe trực tiếp):</strong> Hàng từ xe Inbound vừa dỡ xuống cửa bên trái, được công nhân đẩy thẳng bằng xe đẩy sang cửa bên phải và chất luôn lên xe Outbound đang chờ sẵn. Hàng hóa KHÔNG BAO GIỜ chạm vào sàn kho (Zero Inventory). Quá trình diễn ra trong vài giờ. Chi phí chỉ tốn $2/Pallet (tiền công nhân đẩy hàng).</li>
+                <li>Để làm được Cross-Docking, bạn cần một hệ thống <strong>Đồng bộ thông tin cực tốt (IT System)</strong> để các xe tải đến kho cùng một khung giờ. Nếu xe xuất đến trễ, hàng buộc phải tống vào kho và bạn sẽ thất bại.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { day: 1, maxDays: 10, cost: 0, whCount: 0, logs: [] };
+        
+        let inVals = [0,0,0];
+        let outVals = [0,0,0];
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>Ngày ${state.day}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function generateTrucks() {
+            // Tổng Inbound = Tổng Outbound
+            let total = Math.floor(Math.random() * 50) + 100; // 100-150 pallets
+            
+            // Random split for inbound
+            inVals[0] = Math.floor(total * 0.3);
+            inVals[1] = Math.floor(total * 0.4);
+            inVals[2] = total - inVals[0] - inVals[1];
+
+            // Random split for outbound
+            outVals[0] = Math.floor(total * 0.2);
+            outVals[1] = Math.floor(total * 0.5);
+            outVals[2] = total - outVals[0] - outVals[1];
+
+            if(state.day <= state.maxDays) {
+                document.getElementById('in1').innerText = inVals[0];
+                document.getElementById('in2').innerText = inVals[1];
+                document.getElementById('in3').innerText = inVals[2];
+                document.getElementById('out1').innerText = outVals[0];
+                document.getElementById('out2').innerText = outVals[1];
+                document.getElementById('out3').innerText = outVals[2];
+            }
+        }
+
+        function endDay() {
+            if (state.day > state.maxDays) return;
+
+            let totalPallets = inVals[0] + inVals[1] + inVals[2];
+            let strat = document.getElementById('aiStrategy').value;
+            let dayCost = 0;
+            let dayWH = 0;
+            let dayCD = 0;
+
+            if (strat === 'warehouse') {
+                // Đưa hết vào kho
+                dayWH = totalPallets;
+                dayCost = dayWH * 10;
+                addLog(`Truyền thống: 100% hàng (${totalPallets} Pallets) bị đẩy vào kho lưu trữ. Chi phí: <strong style="color:var(--danger)">${format(dayCost)}</strong>.`);
+            } else {
+                // Cross-docking: Chuyển thẳng (Giả định IT tốt, 90% thành công, 10% kẹt rớt vào kho)
+                dayCD = Math.floor(totalPallets * 0.9);
+                dayWH = totalPallets - dayCD;
+                dayCost = (dayCD * 2) + (dayWH * 10);
+                addLog(`Cross-Docking: Sang xe thành công ${dayCD} Pallets ($2/p). Kẹt vào kho ${dayWH} Pallets ($10/p). Chi phí: <strong style="color:var(--success)">${format(dayCost)}</strong>.`);
+            }
+
+            state.cost += dayCost;
+            state.whCount += dayWH;
+            state.day++;
+            
+            if (state.day > state.maxDays) {
+                addLog(`🎉 KẾT THÚC! TỔNG CHI PHÍ LOGISTICS: ${format(state.cost)}`, 'var(--warning)');
+            } else {
+                generateTrucks();
+            }
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('dayStat').innerText = state.day <= state.maxDays ? `${state.day} / 10` : "END";
+            document.getElementById('costStat').innerText = format(state.cost);
+            document.getElementById('whStat').innerText = state.whCount;
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.day > state.maxDays) return;
+            isPlaying = true;
+            
+            while(state.day <= state.maxDays) {
+                await new Promise(r => setTimeout(r, 600));
+                endDay();
+                await new Promise(r => setTimeout(r, 600));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = generateTrucks;
+    </script>
+</body>
+</html>

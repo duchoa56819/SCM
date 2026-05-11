@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 37: Tối ưu Nhân sự (Workforce Scheduling)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #3b0764, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #7e22ce); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .control-box { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 25px; margin-bottom: 20px;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 45%; font-weight: bold; font-size: 1.1rem; color: var(--text-main);}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--primary);}
+        .slider-val { width: 15%; font-size: 1.5rem; font-weight: 900; color: var(--primary); text-align: right;}
+
+        .chart-container { position: relative; width: 100%; height: 250px; background: rgba(255,255,255,0.05); border-left: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted); margin-bottom: 20px;}
+        
+        .bar-demand { position: absolute; bottom: 0; width: 12%; background: rgba(239, 68, 68, 0.4); border: 1px dashed var(--danger); border-bottom: none; display: flex; align-items: flex-start; justify-content: center; padding-top: 5px; font-weight: bold; color: #fca5a5; transition: height 0.3s;}
+        .bar-supply { position: absolute; bottom: 0; width: 12%; background: rgba(16, 185, 129, 0.6); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-weight: bold; transition: height 0.3s;}
+        
+        .axis-label { position: absolute; bottom: -25px; width: 12%; text-align: center; font-size: 0.8rem; color: var(--text-muted);}
+
+        .error-msg { text-align: center; color: var(--warning); font-weight: bold; margin-bottom: 10px; height: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 37: Lịch trình Nhân sự (Shift Scheduling)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Tránh thảm họa trả lương cho người ngồi chơi, nhưng lại thiếu người lúc cao điểm.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Trung tâm phân loại hàng có lượng đơn thay đổi theo hình Sin. Cao điểm (Peak) diễn ra lúc 2h chiều (14:00) đến 6h tối.<br>
+            Bạn có tổng cộng <strong>30 Nhân viên</strong>. Hãy phân bổ họ vào 3 Ca làm việc (Mỗi ca kéo dài 8 tiếng) sao cho cột năng suất Xanh (Công nhân) khớp với cột Nhu cầu Đỏ (Lượng hàng hóa).<br>
+            <em>- Thiếu người: Hàng ùn ứ, trễ chuyến bay.<br>
+            - Dư người: Lãng phí hàng ngàn Đô la tiền lương.</em>
+        </div>
+
+        <div class="error-msg" id="errorMsg">Bạn còn 30 nhân viên chưa sắp xếp!</div>
+
+        <div class="control-box">
+            <div class="slider-group">
+                <div class="slider-label">Ca Hành chính (08:00 - 16:00):</div>
+                <input type="range" id="shift1" min="0" max="30" value="0" oninput="updateChart()">
+                <div class="slider-val" id="val1">0</div>
+            </div>
+            <div class="slider-group">
+                <div class="slider-label">Ca Lệch 1 (10:00 - 18:00):</div>
+                <input type="range" id="shift2" min="0" max="30" value="0" oninput="updateChart()">
+                <div class="slider-val" id="val2">0</div>
+            </div>
+            <div class="slider-group">
+                <div class="slider-label">Ca Chiều (14:00 - 22:00):</div>
+                <input type="range" id="shift3" min="0" max="30" value="0" oninput="updateChart()">
+                <div class="slider-val" id="val3">0</div>
+            </div>
+        </div>
+
+        <div class="chart-container" id="chartArea">
+            <div style="position: absolute; top: -20px; right: 0; font-size: 0.8rem; color: var(--danger);">🟥 Cột Đỏ: Lượng Hàng (Demand)</div>
+            <div style="position: absolute; top: -20px; right: 180px; font-size: 0.8rem; color: var(--success);">🟩 Cột Xanh: Năng lực Nhân sự</div>
+            <!-- Bars will be generated by JS -->
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">GIỜ DƯ THỪA (LÃNG PHÍ)</div><div class="stat-value" id="wasteStat" style="color: var(--danger)">0 Giờ</div></div>
+            <div><div style="color: var(--text-muted);">SẢN LƯỢNG ÙN Ứ (LỖ)</div><div class="stat-value" id="shortStat" style="color: var(--warning)">0 Kiện</div></div>
+            <div><div style="color: var(--text-muted);">HIỆU QUẢ SẮP XẾP</div><div class="stat-value" id="scoreStat" style="color: var(--success)">0%</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Tối ưu hóa Nguồn lực (Workforce Optimization)</h3>
+            <p>Bài toán chia ca (Shift Scheduling) là vấn đề đau đầu nhất của Amazon và Shopee Express.</p>
+            <ul>
+                <li><strong>Ca làm việc cố định (Fixed Shifts):</strong> Nếu bạn gom tất cả 30 người vào Ca Hành Chính (8h-16h). Vào buổi sáng (8h-10h), lượng xe tải về kho rất ít, 30 người sẽ ngồi chơi xơi nước (Overstaffed - Trả lương oan). Nhưng đến 18h tối khi xe tải ào ạt đổ về, toàn bộ công nhân đã tan làm! Hàng hóa ùn ứ thành núi qua đêm.</li>
+                <li><strong>Lịch trình đan xen (Staggered / Flexible Shifts):</strong> Lời giải là rải đều lực lượng. Dùng một nhóm nhỏ (Ca 1) để lo việc sáng sớm. Đưa lực lượng chủ lực (Ca 2 và Ca 3) đi làm trễ hơn (10h và 14h) để họ phủ kín khoảng thời gian giao thoa lúc chiều muộn (14h-18h), khi mà Nhu cầu hàng hóa lên đến đỉnh điểm. Mức độ "Vừa vặn" giữa Cung và Cầu chính là ranh giới giữa một kho vận có lãi và một kho vận phá sản.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const times = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+        const demand = [10, 30, 50, 90, 80, 50, 20, 0]; // Nhu cầu (số người cần thiết) * 10 = hàng
+        const MAX_WORKERS = 30;
+
+        function initChart() {
+            let html = '';
+            for(let i=0; i<times.length; i++) {
+                let left = (i * 12.5) + 0.25;
+                let heightD = (demand[i] / 100) * 100; // max 100 scale
+                
+                html += `<div class="bar-demand" style="left: ${left}%; height: ${heightD}%">${demand[i]}</div>`;
+                html += `<div class="bar-supply" id="sup_${i}" style="left: ${left}%; height: 0%">0</div>`;
+                html += `<div class="axis-label" style="left: ${left}%">${times[i]}</div>`;
+            }
+            document.getElementById('chartArea').innerHTML += html;
+            updateChart();
+        }
+
+        function updateChart() {
+            let s1 = parseInt(document.getElementById('shift1').value);
+            let s2 = parseInt(document.getElementById('shift2').value);
+            let s3 = parseInt(document.getElementById('shift3').value);
+            
+            let total = s1 + s2 + s3;
+            let err = document.getElementById('errorMsg');
+            
+            if (total > MAX_WORKERS) {
+                err.innerText = `CẢNH BÁO: Bạn đã vượt quá quỹ nhân sự (${total}/30 người)!`;
+                err.style.color = "var(--danger)";
+            } else if (total < MAX_WORKERS) {
+                err.innerText = `Bạn còn ${MAX_WORKERS - total} nhân viên chưa sắp xếp!`;
+                err.style.color = "var(--warning)";
+            } else {
+                err.innerText = `Đã phân bổ đủ 30/30 nhân sự. Tuyệt vời!`;
+                err.style.color = "var(--success)";
+            }
+
+            document.getElementById('val1').innerText = s1;
+            document.getElementById('val2').innerText = s2;
+            document.getElementById('val3').innerText = s3;
+
+            // Tính toán lực lượng hiện diện tại mỗi mốc giờ
+            // s1 (8-16): 8h, 10h, 12h, 14h
+            // s2 (10-18): 10h, 12h, 14h, 16h
+            // s3 (14-22): 14h, 16h, 18h, 20h
+            
+            let supply = [
+                s1,                 // 8h
+                s1 + s2,            // 10h
+                s1 + s2,            // 12h
+                s1 + s2 + s3,       // 14h (Đỉnh)
+                s2 + s3,            // 16h
+                s3,                 // 18h
+                s3,                 // 20h
+                0                   // 22h
+            ];
+
+            let waste = 0;
+            let shortage = 0;
+
+            for(let i=0; i<times.length; i++) {
+                let capacity = supply[i] * 4; // 1 người làm 4 kiện
+                
+                let supBar = document.getElementById('sup_'+i);
+                supBar.style.height = Math.min((capacity / 100) * 100, 100) + '%';
+                supBar.innerText = capacity;
+
+                if (capacity > demand[i]) {
+                    waste += (capacity - demand[i]);
+                } else if (capacity < demand[i]) {
+                    shortage += (demand[i] - capacity);
+                }
+            }
+
+            document.getElementById('wasteStat').innerText = waste + ' Giờ';
+            document.getElementById('shortStat').innerText = shortage + ' Kiện';
+
+            let maxPossibleError = 300; 
+            let totalError = waste + shortage;
+            let score = Math.max(0, 100 - (totalError / maxPossibleError) * 100);
+            
+            if(total > 30) score = 0; // Penalty
+
+            let scColor = score > 85 ? 'var(--success)' : (score > 50 ? 'var(--warning)' : 'var(--danger)');
+            document.getElementById('scoreStat').innerText = score.toFixed(1) + '%';
+            document.getElementById('scoreStat').style.color = scColor;
+        }
+
+        window.onload = initChart;
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 76: Lý Thuyết Trò Chơi Trong SCM (Game Theory)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .matrix-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: rgba(0,0,0,0.4); border-radius: 12px; overflow: hidden; border: 1px solid var(--border);}
+        .matrix-table th, .matrix-table td { border: 1px solid rgba(255,255,255,0.2); padding: 15px; text-align: center;}
+        .matrix-table th { background: rgba(255,255,255,0.05); color: var(--text-muted);}
+        .matrix-table td { font-size: 1.1rem; font-weight: bold; position: relative; transition: all 0.3s;}
+        
+        .c-you { color: var(--primary); }
+        .c-them { color: var(--danger); }
+        .cell-highlight { background: rgba(16, 185, 129, 0.2) !important; border: 2px solid var(--success) !important; box-shadow: inset 0 0 15px rgba(16,185,129,0.5);}
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-high { background: linear-gradient(135deg, #1e40af, #1e3a8a); }
+        .btn-high:hover { transform: translateY(-2px); filter: brightness(1.2);}
+        .btn-low { background: linear-gradient(135deg, var(--warning), #b45309); }
+        .btn-low:hover { transform: translateY(-2px); filter: brightness(1.2);}
+
+        .result-panel { display: none; background: var(--panel-bg); border: 2px solid var(--success); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; animation: slideIn 0.5s;}
+        @keyframes slideIn { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px;}
+        .dash-col { padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;}
+        .stat-val { font-size: 2rem; font-weight: 900;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 76: Cạnh Tranh Giá (Game Theory)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Trò chơi Vương quyền của các Đại gia Vận tải Biển (Maersk vs MSC).</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Thị trường chỉ có Bạn và Đối thủ (Cạnh tranh Độc quyền nhóm). Cả 2 đang bán Dịch vụ Giao hàng. Tổng quy mô thị trường là cố định.<br>
+            - Nếu cả 2 cùng "Giữ giá Cao", mỗi bên ăn chia lợi nhuận vui vẻ ($500).<br>
+            - Nếu bạn "Giảm giá", bạn cướp khách của Đối thủ (Bạn được $800, nó chỉ còn $200).<br>
+            <em>Luật pháp cấm 2 bên gọi điện thoại cho nhau để "Làm giá". Bạn phải ra quyết định đơn độc. Hãy Chọn 1 Nút bấm bên dưới để ra giá:</em>
+        </div>
+
+        <table class="matrix-table">
+            <tr>
+                <th colspan="2" rowspan="2">Ma trận Lợi Nhuận<br>(Payoff Matrix)</th>
+                <th colspan="2" style="color:var(--danger)">HÀNH ĐỘNG CỦA ĐỐI THỦ</th>
+            </tr>
+            <tr>
+                <th>Họ Giữ Giá Cao</th>
+                <th>Họ Giảm Giá Sốc</th>
+            </tr>
+            <tr>
+                <th rowspan="2" style="color:var(--primary); width:20%;">QUYẾT ĐỊNH<br>CỦA BẠN</th>
+                <th>Bạn Giữ Giá Cao</th>
+                <td id="cell-HH"><span class="c-you">Bạn: $500</span><br><span class="c-them">Đ.Thủ: $500</span></td>
+                <td id="cell-HL"><span class="c-you">Bạn: $200 (Thua)</span><br><span class="c-them">Đ.Thủ: $800 (Ăn hết)</span></td>
+            </tr>
+            <tr>
+                <th>Bạn Giảm Giá Sốc</th>
+                <td id="cell-LH"><span class="c-you">Bạn: $800 (Ăn hết)</span><br><span class="c-them">Đ.Thủ: $200 (Thua)</span></td>
+                <td id="cell-LL"><span class="c-you">Bạn: $300</span><br><span class="c-them">Đ.Thủ: $300</span></td>
+            </tr>
+        </table>
+
+        <div class="btn-group">
+            <button class="action-btn btn-high" onclick="playGame('H')">🤝 CHỌN: GIỮ GIÁ CAO (Tin tưởng)</button>
+            <button class="action-btn btn-low" onclick="playGame('L')">🔪 CHỌN: GIẢM GIÁ SỐC (Đâm lén)</button>
+        </div>
+
+        <div class="result-panel" id="resPanel">
+            <h2 style="margin-top:0; color:white;" id="resTitle"></h2>
+            
+            <div class="dashboard">
+                <div class="dash-col">
+                    <div style="color: var(--text-muted);">LỢI NHUẬN CỦA BẠN</div>
+                    <div class="stat-val c-you" id="myScore"></div>
+                </div>
+                <div class="dash-col">
+                    <div style="color: var(--text-muted);">LỢI NHUẬN ĐỐI THỦ</div>
+                    <div class="stat-val c-them" id="themScore"></div>
+                </div>
+            </div>
+            <p id="resDesc" style="margin-bottom:0; margin-top:15px; color:var(--text-muted);"></p>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Game Theory (Cân bằng Nash)</h3>
+            <p>Bài toán này chính là biến thể của <strong>Thế lưỡng nan của người tù (Prisoner's Dilemma)</strong>, một trong những nền tảng kinh tế học định hình ngành SCM.</p>
+            <ul>
+                <li><strong>Ảo mộng Hòa bình (Giữ giá cao):</strong> Ai cũng muốn cả 2 cùng Giữ giá ($500 - $500). Nhưng vì không có niềm tin (không được gọi điện cho nhau), bạn sợ rằng: "Nếu mình Giữ giá, lỡ nó Giảm giá thì mình sẽ chết thảm chỉ còn $200".</li>
+                <li><strong>Lực hút vô hình (Nash Equilibrium):</strong> Vì sợ bị đâm sau lưng, bạn buộc phải chọn cách an toàn nhất: <strong>Tự mình Giảm giá trước!</strong> Trớ trêu thay, Đối thủ cũng thông minh và sợ hãi y như bạn, nên họ cũng Giảm giá. Cuối cùng, 2 người cùng rơi vào ô <strong>(Giảm Giá - Giảm Giá)</strong>.</li>
+                <li><strong>Sự hủy diệt ngành Vận tải biển:</strong> Kết quả là cả 2 cùng có lợi nhuận thê thảm ($300 - $300). Dù chả ai muốn ô này, nhưng không ai dám thoát ra! Đây chính xác là những gì đã xảy ra với các hãng tàu container (Maersk, MSC, CMA) trong nhiều thập kỷ qua. Họ rơi vào cuộc chiến giá cả đẫm máu (Price War) phá hủy toàn bộ lợi nhuận của ngành, cho đến khi dịch Covid xảy ra và cứu họ!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function resetCells() {
+            document.querySelectorAll('td').forEach(td => td.classList.remove('cell-highlight'));
+        }
+
+        function playGame(myChoice) {
+            resetCells();
+            document.getElementById('resPanel').style.display = 'block';
+
+            let title = document.getElementById('resTitle');
+            let mS = document.getElementById('myScore');
+            let tS = document.getElementById('themScore');
+            let desc = document.getElementById('resDesc');
+
+            // The AI Competitor is rational. It will ALWAYS choose L (Low/Cut Price) because it's the dominant strategy.
+            let compChoice = 'L'; 
+
+            if (myChoice === 'H' && compChoice === 'L') {
+                document.getElementById('cell-HL').classList.add('cell-highlight');
+                title.innerText = "😭 BẠN ĐÃ BỊ PHẢN BỘI!";
+                mS.innerText = "$200";
+                tS.innerText = "$800";
+                desc.innerText = "Bạn ngây thơ giữ giá cao. Đối thủ lập tức giảm giá và cướp sạch khách hàng của bạn. Bạn phá sản!";
+            } else if (myChoice === 'L' && compChoice === 'L') {
+                document.getElementById('cell-LL').classList.add('cell-highlight');
+                title.innerText = "🔥 CHIẾN TRANH GIÁ CẢ (PRICE WAR)!";
+                mS.innerText = "$300";
+                tS.innerText = "$300";
+                desc.innerText = "Cả 2 đều khôn lỏi chọn Giảm Giá. Cuối cùng chẳng ai cướp được ai, nhưng biên lợi nhuận của cả 2 bị phá nát. Đây là CÂN BẰNG NASH!";
+            }
+        }
+    </script>
+</body>
+</html>

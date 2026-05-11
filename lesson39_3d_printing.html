@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 39: Tồn kho Kỹ thuật số (3D Printing / Additive Manufacturing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #6ee7b7, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s; flex: 1;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);}
+
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .col { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative;}
+        
+        .col h2 { text-align: center; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        
+        .row-item { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px;}
+        .row-item.total { border-bottom: none; font-size: 1.5rem; font-weight: bold; margin-top: 20px; color: var(--warning);}
+
+        .map-anim { height: 100px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; padding: 0 20px; position: relative;}
+        .plane { font-size: 1.5rem; position: absolute; left: 10%; transition: left 2s ease-in-out; }
+        .printer { font-size: 2rem; position: absolute; right: 20%; display: none; animation: pulse 1s infinite;}
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 39: In 3D & Tồn kho Kỹ thuật số</h1>
+            <p style="text-align: center; color: var(--text-muted);">Di chuyển Dữ liệu thay vì di chuyển Hàng hóa vật lý (Digital Inventory).</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Một cỗ máy Đào vàng khổng lồ tại mỏ quặng ở sa mạc Úc vừa bị gãy Bánh răng (Gear).<br>
+            Máy ngừng hoạt động khiến mỏ thiệt hại (Downtime Cost): <strong style="color:var(--danger)">$10,000 / Ngày</strong>.<br>
+            Bánh răng thay thế hiện đang nằm ở nhà máy gốc tại Đức. Bạn sẽ giải quyết bài toán Spare Parts Logistics này thế nào?
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt" id="btnTrad" onclick="runSim('trad')">✈️ Cách Cũ: Chế tạo ở Đức & Chuyển phát nhanh</button>
+            <button class="btn-opt" id="btn3d" onclick="runSim('3d')">🖨️ Tương Lai: Gửi file CAD & In 3D tại Úc</button>
+        </div>
+
+        <div class="comparison-grid">
+            <!-- Traditional -->
+            <div class="col" id="colTrad">
+                <h2 style="color: #64748b;">Supply Chain Cũ</h2>
+                <div class="map-anim">
+                    <div>🇩🇪 Đức</div>
+                    <div class="plane" id="planeTrad">✈️</div>
+                    <div style="margin-left:auto;">🇦🇺 Úc</div>
+                </div>
+                <div class="row-item"><span>Phí Gia công:</span> <span>$100</span></div>
+                <div class="row-item"><span>Phí Giao hàng Hỏa tốc:</span> <span>$500</span></div>
+                <div class="row-item"><span>Thời gian Giao hàng:</span> <span style="color:var(--danger)">7 Ngày</span></div>
+                <div class="row-item"><span>Thiệt hại Mỏ ngưng trệ:</span> <span style="color:var(--danger)">$70,000</span></div>
+                <div class="row-item total"><span>TỔNG THIỆT HẠI:</span> <span id="totTrad" style="color:var(--danger)">$70,600</span></div>
+            </div>
+
+            <!-- 3D Printing -->
+            <div class="col" id="col3d">
+                <h2 style="color: var(--success);">Supply Chain 5.0</h2>
+                <div class="map-anim">
+                    <div>🇩🇪 Đám mây</div>
+                    <div class="plane" id="data3d">📧 (File .STL) ➔</div>
+                    <div class="printer" id="printer3d">🖨️</div>
+                </div>
+                <div class="row-item"><span>Phí In 3D Kim loại (Rất đắt):</span> <span style="color:var(--danger)">$800</span></div>
+                <div class="row-item"><span>Phí Vận chuyển:</span> <span>$0</span></div>
+                <div class="row-item"><span>Thời gian In & Gắn:</span> <span style="color:var(--success)">1 Ngày</span></div>
+                <div class="row-item"><span>Thiệt hại Mỏ ngưng trệ:</span> <span style="color:var(--warning)">$10,000</span></div>
+                <div class="row-item total"><span>TỔNG THIỆT HẠI:</span> <span id="tot3d" style="color:var(--success)">$10,800</span></div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Phụ tùng Số (Spare Parts Logistics)</h3>
+            <p><strong>Additive Manufacturing (In 3D)</strong> đang phá hủy hoàn toàn khái niệm tồn kho phụ tùng bảo hành truyền thống.</p>
+            <ul>
+                <li><strong>Gánh nặng Tồn kho cũ:</strong> Các hãng như Caterpillar, Boeing hay BMW phải xây dựng hàng trăm "Kho Phụ tùng" trên khắp thế giới để lưu trữ các bánh răng, ốc vít phòng khi máy hỏng. Hàng tồn kho đọng vốn hàng Tỷ đô, sau 10 năm không ai xài lại phải đem vứt bỏ (Lỗi thời/Obsolete).</li>
+                <li><strong>Digital Inventory (Tồn kho Kỹ thuật số):</strong> Thay vì lưu trữ "Cái bánh răng sắt" trong nhà kho, họ chỉ cần lưu trữ "File thiết kế 3D (CAD)" trên hệ thống Đám mây (Cloud Server). Chi phí lưu kho = $0.</li>
+                <li><strong>Cú lừa của Giá thành:</strong> Nhìn lướt qua, tiền tiện cái bánh răng ở nhà máy cũ chỉ mất $100, còn đem In 3D mất tận $800 (In 3D kim loại rất đắt). Nhiều người chê 3D quá đắt. NHƯNG họ quên tính <strong>Chi phí Downtime ($10,000/ngày)</strong>. Vận chuyển xuyên quốc gia dính hải quan mất 7 ngày. Trong khi In 3D thì in ngay tại thành phố đó và lấy ngay trong ngày. Bài toán tổng thể chứng minh: In 3D cứu mỏ vàng tận $60,000!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runSim(mode) {
+            document.getElementById('btnTrad').classList.remove('active');
+            document.getElementById('btn3d').classList.remove('active');
+            
+            document.getElementById('planeTrad').style.left = '10%';
+            document.getElementById('data3d').style.left = '10%';
+            document.getElementById('printer3d').style.display = 'none';
+
+            if (mode === 'trad') {
+                document.getElementById('btnTrad').classList.add('active');
+                
+                // Animate plane
+                setTimeout(() => {
+                    document.getElementById('planeTrad').style.left = '80%';
+                }, 100);
+
+            } else {
+                document.getElementById('btn3d').classList.add('active');
+                
+                // Animate data transmission
+                setTimeout(() => {
+                    document.getElementById('data3d').style.left = '60%';
+                    setTimeout(() => {
+                        document.getElementById('data3d').style.left = '10%'; // reset visual
+                        document.getElementById('printer3d').style.display = 'block';
+                    }, 500); // Super fast transmission
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>

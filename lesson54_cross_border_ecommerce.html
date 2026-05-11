@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 54: Cross-Border E-Commerce Fulfillment</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; position: relative;}
+        .card h2 { margin-top: 0; text-align: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
+        .card-A h2 { color: var(--warning); }
+        .card-B h2 { color: var(--success); }
+
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;}
+        .metric-row strong { color: white; }
+
+        .control-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;}
+        .slider-group { margin: 20px 0; }
+        input[type="range"] { width: 80%; accent-color: var(--primary); }
+        .val-disp { font-size: 1.5rem; font-weight: 900; color: var(--primary); margin-top: 10px; }
+
+        .result-panel { display: none; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--success); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; animation: fadeIn 0.5s;}
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 54: Vận Hành Xuyên Biên Giới (Cross-Border Fulfillment)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cuộc chiến Giành Thị Phần Giữa Shopee Global và Các Kho Ngoại Quan.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn là xưởng Mỹ phẩm tại Hàn Quốc, bán hàng sang Việt Nam.<br>
+            Bạn có 2 Mô hình Vận hành để lựa chọn. Đâu là mô hình tối ưu? Nó phụ thuộc hoàn toàn vào <strong>Độ Biến Động Nhu Cầu (Demand Volatility)</strong> của loại hàng hóa bạn đang bán.
+        </div>
+
+        <div class="grid-2">
+            <div class="card card-A">
+                <h2>📦 Mô hình A: Direct Mail</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 15px;">Gửi từng bưu kiện nhỏ bằng Máy bay từ Hàn Quốc.</div>
+                <div class="metric-row"><span>Tốc độ Giao hàng:</span> <strong style="color:var(--danger)">Chậm (7-10 Ngày)</strong></div>
+                <div class="metric-row"><span>Cước Vận chuyển:</span> <strong style="color:var(--danger)">Rất đắt ($5/đơn)</strong></div>
+                <div class="metric-row"><span>Rủi ro Tồn kho ế (VN):</span> <strong style="color:var(--success)">0% (Không ôm hàng)</strong></div>
+            </div>
+
+            <div class="card card-B">
+                <h2>🏭 Mô hình B: Overseas Warehouse</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 15px;">Đi nguyên Container Tàu biển sang nhập Kho Ngoại Quan ở VN trước.</div>
+                <div class="metric-row"><span>Tốc độ Giao hàng:</span> <strong style="color:var(--success)">Siêu tốc (1-2 Ngày)</strong></div>
+                <div class="metric-row"><span>Cước Vận chuyển:</span> <strong style="color:var(--success)">Siêu rẻ ($1/đơn)</strong></div>
+                <div class="metric-row"><span>Rủi ro Tồn kho ế (VN):</span> <strong style="color:var(--danger)">Cực cao (Phải hủy bỏ)</strong></div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3 style="margin-top:0; color: var(--text-muted);">NHẬP ĐẶC TÍNH SẢN PHẨM CỦA BẠN</h3>
+            <div class="slider-group">
+                <input type="range" id="volatilitySlider" min="0" max="100" step="10" value="50" oninput="updateVal()">
+            </div>
+            <div class="val-disp" id="valDisp">Độ Rủi Ro Ế Hàng: 50%</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">(0% = Hàng thiết yếu bán quanh năm. 100% = Hàng Trend Tiktok 3 ngày là hết thời)</div>
+            
+            <button onclick="runSim()" style="padding: 15px 30px; font-weight: bold; background: linear-gradient(135deg, var(--primary), #0369a1); border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 1.1rem;">CHẠY PHÂN TÍCH TỐI ƯU</button>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <h2 id="resTitle" style="margin-top:0;">...</h2>
+            <p id="resDesc" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;"></p>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #38bdf8;">📚 Cẩm nang Cross-Border E-Commerce (CBEC)</h3>
+            <p>Nhiều hãng Trung Quốc và Hàn Quốc phá sản khi tiến vào thị trường Việt Nam vì bê nguyên một mô hình áp dụng cho mọi loại hàng hóa.</p>
+            <ul>
+                <li><strong>Cạm bẫy của Kho Ngoại Quan (Overseas Warehouse):</strong> Thấy phí ship $1/đơn so với $5/đơn, mọi người đổ xô đóng container chở sang Việt Nam. Nhưng nếu bạn bán "Váy thời trang Trend", vòng đời chỉ 2 tuần. Hàng kẹt ở cảng 3 tuần. Lúc nhập kho VN thì Trend đã hết. Bạn không thể chở ngược về Hàn (Phí cực đắt). Bạn buộc phải thiêu hủy toàn bộ lô hàng trị giá $100,000!</li>
+                <li><strong>Chiến lược Hỗn hợp (Hybrid Fulfillment):</strong>
+                    <br>- <em>Hàng mới / Thử nghiệm / Trend (Rủi ro cao):</em> Giữ hàng ở Kho tổng tại Hàn. Chấp nhận trả tiền ship đắt (Direct Mail) để test thị trường. Lỗ tiền ship còn hơn phá sản vì tồn kho.
+                    <br>- <em>Hàng bán chạy / Ổn định (Sữa rửa mặt, Bông tẩy trang):</em> Khi dữ liệu đã chứng minh mỗi tháng đều đặn bán 5000 chai. Lập tức chuyển sang mô hình Overseas Warehouse để ăn trọn biên độ lợi nhuận cước tàu biển ($1) và đè bẹp đối thủ bằng tốc độ giao hàng (Hỏa tốc 1 ngày).
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateVal() {
+            let val = document.getElementById('volatilitySlider').value;
+            let text = "Độ Rủi Ro Ế Hàng: " + val + "%";
+            
+            if (val < 30) text += " (Hàng Thiết Yếu)";
+            else if (val > 70) text += " (Hàng Trend Siêu Ngắn)";
+            else text += " (Hàng Tiêu Dùng Mùa Vụ)";
+            
+            document.getElementById('valDisp').innerText = text;
+        }
+
+        function runSim() {
+            let val = parseInt(document.getElementById('volatilitySlider').value);
+            let panel = document.getElementById('resultPanel');
+            let title = document.getElementById('resTitle');
+            let desc = document.getElementById('resDesc');
+
+            panel.style.display = 'block';
+
+            if (val <= 30) {
+                panel.style.background = "rgba(16, 185, 129, 0.1)";
+                panel.style.borderColor = "var(--success)";
+                title.innerText = "🏭 MÔ HÌNH THẮNG CỘC: OVERSEAS WAREHOUSE";
+                title.style.color = "var(--success)";
+                desc.innerHTML = `Hàng của bạn có lượng bán cực kỳ ổn định (Ví dụ: Giấy vệ sinh, Bỉm sữa). Rủi ro ế là 0%.<br><strong>Hành động:</strong> Đóng thẳng Container Tàu biển sang kho VN. Bạn sẽ tiết kiệm được 80% chi phí vận tải và thống trị thị trường bằng tốc độ Giao hàng 24h!`;
+            } else if (val >= 70) {
+                panel.style.background = "rgba(245, 158, 11, 0.1)";
+                panel.style.borderColor = "var(--warning)";
+                title.innerText = "📦 MÔ HÌNH THẮNG CỘC: DIRECT MAIL (GIAO THẲNG)";
+                title.style.color = "var(--warning)";
+                desc.innerHTML = `Hàng của bạn là Trend ngắn hạn (Ví dụ: Ốp lưng iPhone 16 mới ra).<br><strong>Hành động:</strong> Tuyệt đối KHÔNG ôm hàng sang kho VN. Giữ hàng tại Hàn Quốc. Có đơn nào bắn máy bay thẳng đơn đó. Dù tiền ship mất $5/đơn, nhưng bạn né được án tử hình "Ôm đống hàng phế thải" khi Trend vụt tắt!`;
+            } else {
+                panel.style.background = "rgba(56, 189, 248, 0.1)";
+                panel.style.borderColor = "var(--primary)";
+                title.innerText = "⚖️ MÔ HÌNH HỖN HỢP (HYBRID STRATEGY)";
+                title.style.color = "var(--primary)";
+                desc.innerHTML = `Độ rủi ro 50/50. Phân tích dữ liệu: Đưa 20% Top các mã bán chạy nhất (Best sellers) sang Kho VN (Overseas). Giữ 80% các mã bán chậm/mới (Long-tail) ở kho Hàn Quốc (Direct Mail). Đây là đẳng cấp cao nhất của Fulfillment!`;
+            }
+
+            // Trigger animation
+            panel.classList.remove('fadeIn');
+            void panel.offsetWidth;
+            panel.classList.add('fadeIn');
+        }
+
+        window.onload = updateVal;
+    </script>
+</body>
+</html>

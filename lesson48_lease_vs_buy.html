@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 48: Phân tích Tài chính (Lease vs Buy - Thuê hay Mua Kho?)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #fbbf24; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #451a03, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fcd34d, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; position: relative;}
+        .card h2 { margin-top: 0; color: var(--primary); border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
+        
+        .flow-table { width: 100%; margin-top: 15px; border-collapse: collapse;}
+        .flow-table th, .flow-table td { padding: 8px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.05);}
+        .flow-table th { text-align: left; color: var(--text-muted);}
+        .total-row { font-size: 1.2rem; font-weight: bold; color: white;}
+        
+        .npv-row { display: none; font-size: 1.5rem; font-weight: 900; color: var(--success); margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--primary); animation: fadeIn 1s;}
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-group { display: flex; justify-content: center; margin-bottom: 20px; }
+        .action-btn { padding: 15px 30px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--warning), #b45309); color: white; cursor: pointer; transition: all 0.3s; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6; display: none;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 48: Phân tích Thuê hay Mua (Lease vs Buy)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự mù quáng của Kế toán cơ bản và Quyền năng của Giá trị Thời gian của Tiền tệ.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Giám đốc Chuỗi cung ứng cần 1 Nhà kho trong 5 Năm. Công ty có Lãi suất chiết khấu vốn (WACC) là <strong>10%</strong>.<br>
+            Cấp dưới trình lên 2 Phương án:<br>
+            - <strong>PHƯƠNG ÁN 1 (ĐI THUÊ):</strong> Trả tiền thuê $80,000 vào cuối mỗi năm. <strong style="color:var(--danger)">Tổng chi tiền: $400,000.</strong><br>
+            - <strong>PHƯƠNG ÁN 2 (MUA ĐỨT):</strong> Trả $400,000 ngay bây giờ (Năm 0). Hết 5 năm, bán lại kho thu về $100,000. <strong style="color:var(--success)">Tổng chi tiền (net): $300,000.</strong><br>
+            <em>Bạn nhìn vào bảng báo cáo thô: Mua đứt rẻ hơn Đi thuê tới $100,000. Bạn định ký duyệt MUA. Bạn có chắc chắn chưa?</em>
+        </div>
+
+        <div class="grid-2">
+            <!-- Lease -->
+            <div class="card" id="cardLease">
+                <h2>🏢 PHƯƠNG ÁN 1: ĐI THUÊ</h2>
+                <table class="flow-table">
+                    <tr><th>Năm 0 (Hiện tại)</th><td style="color:white;">$0</td></tr>
+                    <tr><th>Năm 1</th><td>-$80,000</td></tr>
+                    <tr><th>Năm 2</th><td>-$80,000</td></tr>
+                    <tr><th>Năm 3</th><td>-$80,000</td></tr>
+                    <tr><th>Năm 4</th><td>-$80,000</td></tr>
+                    <tr><th>Năm 5</th><td>-$80,000</td></tr>
+                    <tr class="total-row"><th>TỔNG KẾ TOÁN THÔ</th><td style="color:var(--danger)">-$400,000</td></tr>
+                </table>
+                <div class="npv-row" id="npvLease">
+                    Giá trị Hiện tại (NPV)<br>
+                    <span style="color:var(--success)">-$303,200</span>
+                </div>
+            </div>
+
+            <!-- Buy -->
+            <div class="card" id="cardBuy">
+                <h2>🏭 PHƯƠNG ÁN 2: MUA ĐỨT</h2>
+                <table class="flow-table">
+                    <tr><th>Năm 0 (Hiện tại)</th><td style="color:var(--danger)">-$400,000</td></tr>
+                    <tr><th>Năm 1</th><td>$0</td></tr>
+                    <tr><th>Năm 2</th><td>$0</td></tr>
+                    <tr><th>Năm 3</th><td>$0</td></tr>
+                    <tr><th>Năm 4</th><td>$0</td></tr>
+                    <tr><th>Năm 5 (Bán lại)</th><td style="color:var(--success)">+$100,000</td></tr>
+                    <tr class="total-row"><th>TỔNG KẾ TOÁN THÔ</th><td style="color:white">-$300,000</td></tr>
+                </table>
+                <div class="npv-row" id="npvBuy">
+                    Giá trị Hiện tại (NPV)<br>
+                    <span style="color:var(--danger)">-$337,900</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn" onclick="reveal()">🔍 TÍNH TOÁN THEO DÒNG TIỀN CHIẾT KHẤU (DCF)</button>
+        </div>
+
+        <div class="detail-box" id="guide">
+            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Tài chính Chuỗi cung ứng (Capital Budgeting)</h3>
+            <p><strong>"Một Đô la ngày hôm nay có giá trị hơn Một Đô la của ngày mai"</strong> (Do lạm phát và cơ hội sinh lời - Lãi suất 10%).</p>
+            <ul>
+                <li><strong>Sự dối trá của Kế toán Thô:</strong> Nếu chỉ cộng trừ số học, Phương án Mua tốn $300k, Phương án Thuê tốn $400k. Trông có vẻ Mua là một món hời.</li>
+                <li><strong>Cú Lật kèo của NPV (Net Present Value):</strong> 
+                    <br> - Trong <strong>Phương án Thuê</strong>, bạn giữ lại được $400,000 trong túi ở Năm 0 để đem đi gửi ngân hàng (hoặc đầu tư sinh lời 10%). Đến cuối mỗi năm bạn mới rút $80k ra trả. Quy đổi giá trị về hiện tại, gánh nặng thực sự của bạn chỉ là <strong>-$303,200</strong>.
+                    <br> - Trong <strong>Phương án Mua</strong>, bạn phải ói ngay $400,000 tiền tươi thóc thật ở Năm 0 (Mất trắng chi phí cơ hội). Khoản thu $100,000 ở Năm 5 nghe thì to, nhưng quy đổi về sức mua hiện tại (chia cho 1.1^5) thì nó chỉ đáng giá $62,100! Do đó, gánh nặng thực sự của việc Mua đứt là <strong>-$337,900</strong>.
+                </li>
+                <li><strong>Kết luận chấn động:</strong> Phương án Mua thực chất <strong style="color:var(--danger)">ĐẮT HƠN</strong> Phương án Thuê tới $34,700! Việc áp dụng NPV đã cứu công ty khỏi một khoản đầu tư chôn vốn sai lầm.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function reveal() {
+            document.getElementById('npvLease').style.display = 'block';
+            document.getElementById('npvBuy').style.display = 'block';
+            document.getElementById('guide').style.display = 'block';
+            
+            document.getElementById('cardLease').style.borderColor = 'var(--success)';
+            document.getElementById('cardBuy').style.borderColor = 'var(--danger)';
+        }
+    </script>
+</body>
+</html>

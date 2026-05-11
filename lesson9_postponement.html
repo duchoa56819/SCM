@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 9: Chiến lược Trì hoãn (Postponement Strategy)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #2e1065, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 1000px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--success); margin-top: 5px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+        input[type="number"] { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--primary); color: white; border-radius: 8px; font-size: 1.1rem; margin-top: 10px; box-sizing: border-box; text-align: center;}
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #ec4899); color: white; cursor: pointer; transition: all 0.3s; width: 100%;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4); }
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 200px; overflow-y: auto; border: 1px solid var(--border); }
+        .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 9: Chiến lược Trì hoãn (Postponement)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sản xuất hoàn thiện ngay từ đầu hay Sản xuất phôi và Tùy biến sau cùng?</p>
+        </header>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">TUẦN</div><div class="stat-value" id="weekStat" style="color: white">1 / 12</div></div>
+            <div><div style="color: var(--text-muted);">LỢI NHUẬN RÒNG</div><div class="stat-value" id="cashStat">$0</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG TỒN KHO</div><div class="stat-value" id="invStat" style="color: var(--warning)">0</div></div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Bạn bán Laptop cho 2 thị trường: <strong>Mỹ (Phím US)</strong> và <strong>Châu Âu (Phím EU)</strong>. Giá bán $100.
+            <br>1. <strong>Đoán trước (Speculation):</strong> Lắp sẵn bàn phím từ nhà máy. Giá vốn: <strong>$50/máy</strong>. Rủi ro: Nếu sai dự báo, Laptop US không thể bán cho Châu Âu.
+            <br>2. <strong>Trì hoãn (Postponement):</strong> Chỉ sản xuất "Phôi" (Barebone - chưa phím). Khi khách order mới lắp phím hỏa tốc. Giá vốn: <strong>$65/máy</strong>. Chắc chắn không bao giờ bị tồn kho sai loại.
+        </div>
+
+        <div class="grid-3">
+            <div class="panel" style="border-top: 4px solid var(--danger);">
+                <h2 style="color: var(--danger); margin-top: 0;">💻 Laptop Phím US</h2>
+                <div class="info-row"><span>Nhu cầu tuần này:</span> <strong id="demUS" style="font-size: 1.2rem; color: var(--text-muted)">?</strong></div>
+                <div class="info-row"><span>Giá vốn (Lắp sẵn):</span> <strong>$50</strong></div>
+                <div class="info-row"><span>Tồn kho hiện tại:</span> <strong id="invUS">0</strong></div>
+                <input type="number" id="prodUS" placeholder="SL Lắp sẵn US..." min="0">
+            </div>
+
+            <div class="panel" style="border-top: 4px solid var(--success);">
+                <h2 style="color: var(--success); margin-top: 0;">💻 Laptop Phím EU</h2>
+                <div class="info-row"><span>Nhu cầu tuần này:</span> <strong id="demEU" style="font-size: 1.2rem; color: var(--text-muted)">?</strong></div>
+                <div class="info-row"><span>Giá vốn (Lắp sẵn):</span> <strong>$50</strong></div>
+                <div class="info-row"><span>Tồn kho hiện tại:</span> <strong id="invEU">0</strong></div>
+                <input type="number" id="prodEU" placeholder="SL Lắp sẵn EU..." min="0">
+            </div>
+
+            <div class="panel" style="border-top: 4px solid var(--primary);">
+                <h2 style="color: var(--primary); margin-top: 0;">🔧 Phôi Laptop (Barebone)</h2>
+                <div class="info-row"><span>Sử dụng cho:</span> <strong>Cả US & EU</strong></div>
+                <div class="info-row"><span>Giá vốn (Tùy biến):</span> <strong style="color: var(--danger)">$65</strong></div>
+                <div class="info-row"><span>Tồn kho Phôi:</span> <strong id="invBB">0</strong></div>
+                <input type="number" id="prodBB" placeholder="SL Phôi đa năng..." min="0">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="endWeek()" style="flex: 1.5;">CHỐT SẢN XUẤT ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="speculate">Chiến thuật 1: Liều mạng đoán trước (Speculation)</option>
+                    <option value="postpone">Chiến thuật 2: An toàn tuyệt đối (100% Postponement)</option>
+                    <option value="mix">Chiến thuật 3: Kết hợp (Tối ưu biên độ)</option>
+                </select>
+                <button class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success);">🤖 GỌI AI</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #ec4899; margin-top: 0;">📚 Cẩm nang Postponement Strategy</h3>
+            <p>Chiến lược Trì hoãn (Postponement) được HP ứng dụng khi bán máy in ra toàn thế giới. Thay vì gắn sẵn dây cắm điện cho từng nước (Anh, Pháp, Mỹ) tại nhà máy Trung Quốc, họ vận chuyển máy in "trần", và chỉ bỏ dây cáp tương ứng vào thùng khi máy in đã tới kho địa phương.</p>
+            <ul>
+                <li><strong>Đoán trước (Speculation):</strong> Lãi to ($50/máy). Nhưng nếu Mỹ ế, Châu Âu cháy hàng, bạn không thể đem Laptop phím Mỹ sang bán ở Châu Âu. Bạn bị tồn kho chết ở Mỹ và mất khách ở EU.</li>
+                <li><strong>Trì hoãn (Postponement):</strong> Lãi mỏng ($35/máy). Nhưng Barebone dùng được cho MỌI thị trường. Nó hấp thụ hoàn toàn sự biến động (Volatility) của nhu cầu.</li>
+                <li><strong>Chiến lược Tối ưu (Kết hợp):</strong> Nhu cầu luôn có một mức "Cơ sở" (ví dụ chắc chắn bán được tối thiểu 20 máy mỗi bên). Hãy Speculate 20 máy để hưởng lãi dày $50. Phần dao động (từ 20 đến 50) hãy dùng Barebone để phủ lấp an toàn.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { week: 1, maxWeeks: 12, cash: 0, invUS: 0, invEU: 0, invBB: 0, logs: [] };
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>T${state.week}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function endWeek() {
+            if (state.week > state.maxWeeks) return;
+            
+            let pUS = parseInt(document.getElementById('prodUS').value) || 0;
+            let pEU = parseInt(document.getElementById('prodEU').value) || 0;
+            let pBB = parseInt(document.getElementById('prodBB').value) || 0;
+
+            let cost = (pUS * 50) + (pEU * 50) + (pBB * 65);
+            state.invUS += pUS; state.invEU += pEU; state.invBB += pBB;
+
+            let demUS = Math.floor(Math.random() * 41) + 10; // 10-50
+            let demEU = Math.floor(Math.random() * 41) + 10; // 10-50
+            
+            document.getElementById('demUS').innerText = demUS;
+            document.getElementById('demEU').innerText = demEU;
+
+            // Bán US
+            let soldUS = Math.min(demUS, state.invUS);
+            state.invUS -= soldUS;
+            let shortUS = demUS - soldUS;
+            
+            let BBusedForUS = Math.min(shortUS, state.invBB);
+            state.invBB -= BBusedForUS;
+            soldUS += BBusedForUS;
+
+            // Bán EU
+            let soldEU = Math.min(demEU, state.invEU);
+            state.invEU -= soldEU;
+            let shortEU = demEU - soldEU;
+
+            let BBusedForEU = Math.min(shortEU, state.invBB);
+            state.invBB -= BBusedForEU;
+            soldEU += BBusedForEU;
+
+            let rev = (soldUS + soldEU) * 100;
+            let holdCost = (state.invUS + state.invEU + state.invBB) * 5;
+
+            let net = rev - cost - holdCost;
+            state.cash += net;
+
+            let totalMiss = (demUS - soldUS) + (demEU - soldEU);
+            let msg = `Cần ${demUS} US, ${demEU} EU. Bán ${soldUS} US (Dùng ${BBusedForUS} Phôi), ${soldEU} EU (Dùng ${BBusedForEU} Phôi). Lãi tuần: ${format(net)}.`;
+            if(totalMiss > 0) msg += ` <span style="color:var(--danger)">Mất ${totalMiss} khách!</span>`;
+            addLog(msg, net > 0 ? 'var(--success)' : 'white');
+
+            state.week++;
+            if(state.week > state.maxWeeks) addLog(`🎉 KẾT THÚC! TỔNG LỢI NHUẬN: ${format(state.cash)}`, 'var(--primary)');
+            
+            document.getElementById('weekStat').innerText = state.week <= state.maxWeeks ? `${state.week} / 12` : "END";
+            document.getElementById('cashStat').innerText = format(state.cash);
+            document.getElementById('invStat').innerText = state.invUS + state.invEU + state.invBB;
+            document.getElementById('invUS').innerText = state.invUS;
+            document.getElementById('invEU').innerText = state.invEU;
+            document.getElementById('invBB').innerText = state.invBB;
+            
+            document.getElementById('prodUS').value = ''; document.getElementById('prodEU').value = ''; document.getElementById('prodBB').value = '';
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.week > state.maxWeeks) return;
+            isPlaying = true;
+            let strat = document.getElementById('aiStrategy').value;
+
+            while(state.week <= state.maxWeeks) {
+                let u=0, e=0, b=0;
+                
+                if(strat === 'speculate') {
+                    u = Math.max(0, 40 - state.invUS); // Aim for 40
+                    e = Math.max(0, 40 - state.invEU);
+                } else if(strat === 'postpone') {
+                    b = Math.max(0, 80 - state.invBB); // Only use BB
+                } else {
+                    // Mix: Base load 15 for each. Rest covered by BB.
+                    u = Math.max(0, 15 - state.invUS);
+                    e = Math.max(0, 15 - state.invEU);
+                    b = Math.max(0, 50 - state.invBB);
+                }
+
+                document.getElementById('prodUS').value = u;
+                document.getElementById('prodEU').value = e;
+                document.getElementById('prodBB').value = b;
+                
+                await new Promise(r => setTimeout(r, 600));
+                endWeek();
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

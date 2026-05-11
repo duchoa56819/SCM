@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 77: Hải Quan & HS Code</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 77: Khai Báo Hải Quan (HS Code)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Án phạt hàng triệu Đô chỉ vì khai sai 1 chữ số.</p>
+        </header>
+
+        <div class="box-area">
+            <h2 style="color:white; margin-top:0;">Sản phẩm: ÁO THUN GOLF (Có Cổ)</h2>
+            <div style="display:flex; justify-content:space-around; margin-top:20px;">
+                <div style="background:var(--panel-bg); padding:15px; border-radius:8px; border:1px solid var(--success);">
+                    <div style="color:var(--success); font-weight:bold;">Mã HS: 6109.10</div>
+                    <div style="font-size:0.9rem; color:var(--text-muted);">Áo phông nam (Bằng Cotton)</div>
+                    <div style="font-size:1.5rem; font-weight:bold; color:white; margin-top:10px;">Thuế Nhập: 5%</div>
+                </div>
+                <div style="background:var(--panel-bg); padding:15px; border-radius:8px; border:1px solid var(--danger);">
+                    <div style="color:var(--danger); font-weight:bold;">Mã HS: 6105.20</div>
+                    <div style="font-size:0.9rem; color:var(--text-muted);">Áo sơ mi nam (Bằng sợi nhân tạo)</div>
+                    <div style="font-size:1.5rem; font-weight:bold; color:white; margin-top:10px;">Thuế Nhập: 20%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Phân loại Mã HS</h3>
+            <p>Toàn bộ thương mại Toàn cầu được số hóa bằng một cuốn Từ điển gọi là Hệ thống Hài hòa (Harmonized System - HS Code).</p>
+            <ul>
+                <li><strong>Sức mạnh của HS Code:</strong> Nó quyết định mức Thuế Nhập Khẩu của bạn. Nếu bạn bán Giày thể thao nhưng lại khai mã là "Đồ nhựa", bạn đang Trốn thuế. Cục Hải Quan sẽ truy thu hàng tỷ đồng và khởi tố hình sự.</li>
+                <li><strong>Tranh cãi chuyên môn:</strong> Rất nhiều sản phẩm ranh giới rất mong manh. Một cái áo Golf có cổ thì tính là "Áo phông" hay "Áo sơ mi"? Một cái Ipad thì khai là "Máy tính" hay "Máy phát thanh"? Việc áp đúng mã HS đòi hỏi sự am hiểu kỹ thuật và nghệ thuật làm việc với Hải Quan!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 85: Mô hình SCOR (Supply Chain Operations Reference)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #2e1065, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .scor-chain { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px; position: relative;}
+        
+        .phase { background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 8px; flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; transition: all 0.3s;}
+        .phase:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);}
+        .phase-title { font-weight: 800; font-size: 1.1rem; color: white;}
+        .phase-icon { font-size: 2rem; margin: 10px 0;}
+        
+        .info-panel { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 20px; min-height: 120px; border: 1px dashed var(--border); margin-bottom: 20px; display: none; animation: fadeIn 0.3s;}
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 85: Mô Hình SCOR Chuyên Nghiệp</h1>
+            <p style="text-align: center; color: var(--text-muted);">Khung xương sống (Framework) của mọi Tập đoàn Đa quốc gia.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Giám đốc yêu cầu bạn: "Đánh giá lại toàn bộ Chuỗi cung ứng của công ty". Nếu bạn bế tắc không biết bắt đầu từ đâu, hãy dùng SCOR. Nó chia một tập đoàn tỷ đô thành 5 trụ cột siêu việt.<br>
+            <em>Hành động: Nhấp vào từng Trụ cột dưới đây để xem Công việc và Chỉ số đo lường (KPI) mà nó cai quản!</em>
+        </div>
+
+        <div class="scor-chain">
+            <div class="phase" onclick="showInfo('P')" id="ph-P">
+                <div class="phase-title">PLAN</div>
+                <div class="phase-icon">🧠</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Hoạch định</div>
+            </div>
+            <div class="phase" onclick="showInfo('S')" id="ph-S">
+                <div class="phase-title">SOURCE</div>
+                <div class="phase-icon">🛒</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Thu mua</div>
+            </div>
+            <div class="phase" onclick="showInfo('M')" id="ph-M">
+                <div class="phase-title">MAKE</div>
+                <div class="phase-icon">🏭</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Sản xuất</div>
+            </div>
+            <div class="phase" onclick="showInfo('D')" id="ph-D">
+                <div class="phase-title">DELIVER</div>
+                <div class="phase-icon">🚚</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Giao hàng</div>
+            </div>
+            <div class="phase" onclick="showInfo('R')" id="ph-R">
+                <div class="phase-title">RETURN</div>
+                <div class="phase-icon">♻️</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Thu hồi</div>
+            </div>
+        </div>
+
+        <div class="info-panel" id="infoPnl">
+            <h2 id="iTitle" style="margin-top:0; color:var(--primary);">...</h2>
+            <div id="iDesc" style="color:var(--text-muted); font-size:1.1rem; line-height: 1.5;"></div>
+            <div style="margin-top:15px; padding-top:10px; border-top:1px solid var(--border);">
+                <strong style="color:white;">KPI Cốt lõi:</strong> <span id="iKpi" style="color:var(--warning); font-weight:bold;"></span>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang SCOR Model</h3>
+            <p>Supply Chain Operations Reference (SCOR) do Hội đồng ASCM phát triển là tiêu chuẩn vàng toàn cầu.</p>
+            <ul>
+                <li><strong>Giao tiếp đồng nhất:</strong> Thay vì cãi nhau "Bộ phận tôi làm tốt, bộ phận anh làm dở", SCOR ép toàn bộ công ty nói chung 1 ngôn ngữ. Khi nói về "Source", tất cả hiểu đang nói về Nhà Cung Cấp.</li>
+                <li><strong>Cân bằng chỉ số (Metrics):</strong> Bạn không thể bắt phòng "Make" chạy máy nhanh nhất có thể (Hiệu suất cao), nếu phòng "Deliver" không có đủ xe tải chở đi, hoặc phòng "Plan" chưa bán được hàng. SCOR đánh giá theo 5 thuộc tính: Độ tin cậy (Reliability), Tốc độ (Responsiveness), Độ linh hoạt (Agility), Chi phí (Cost), và Tài sản (Assets).</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            'P': {
+                title: "🧠 PLAN (Bộ Não Hoạch Định)",
+                desc: "Đầu não của chuỗi. Cân bằng Cung và Cầu. Dự báo số lượng hàng bán ra tháng tới. Cân đối năng lực máy móc và dòng tiền. Nếu PLAN sai, toàn bộ 4 khâu phía sau sẽ sụp đổ.",
+                kpi: "Độ chính xác Dự báo (Forecast Accuracy) & Vòng quay tiền mặt (Cash-to-Cash Cycle)."
+            },
+            'S': {
+                title: "🛒 SOURCE (Thu Mua / Sourcing)",
+                desc: "Tìm kiếm nguyên vật liệu. Chấm điểm năng lực Nhà Cung Cấp. Đàm phán hợp đồng, nhận hàng và thanh toán. Không có Source, nhà máy không có nguyên liệu để chạy.",
+                kpi: "Tỷ lệ giao hàng đúng hạn của Supplier & Biến động Giá Mua."
+            },
+            'M': {
+                title: "🏭 MAKE (Sản Xuất / Lắp Ráp)",
+                desc: "Chuyển hóa Nguyên vật liệu (Raw Materials) thành Thành phẩm (Finished Goods). Đóng gói, kiểm tra chất lượng và chuyển vào kho thành phẩm.",
+                kpi: "Năng suất tổng thể (OEE) & Tỷ lệ Hàng Lỗi (Defect Rate)."
+            },
+            'D': {
+                title: "🚚 DELIVER (Giao Hàng / Phân Phối)",
+                desc: "Nhận đơn hàng (Order Management). Quản lý kho bãi (Warehousing). Phân bổ xe tải và giao hàng thẳng đến tay người tiêu dùng cuối cùng.",
+                kpi: "Chỉ số Giao hàng Hoàn hảo (Perfect Order Fulfillment / OTIF)."
+            },
+            'R': {
+                title: "♻️ RETURN (Thu Hồi / Reverse Logistics)",
+                desc: "Nhận lại hàng hóa bị lỗi, hàng bảo hành, hoặc thu hồi bao bì rỗng để tái chế. Khâu này thường bị bỏ quên nhưng tốn kém cực kỳ.",
+                kpi: "Chi phí xử lý hàng trả về & Tỷ lệ Tái chế thành công."
+            }
+        };
+
+        function showInfo(code) {
+            // Reset colors
+            document.querySelectorAll('.phase').forEach(el => {
+                el.style.background = 'var(--panel-bg)';
+                el.style.borderColor = 'var(--primary)';
+            });
+
+            // Highlight active
+            let active = document.getElementById('ph-' + code);
+            active.style.background = 'rgba(139, 92, 246, 0.2)';
+            active.style.borderColor = '#c084fc';
+
+            let pnl = document.getElementById('infoPnl');
+            pnl.style.display = 'block';
+            
+            // Re-trigger animation
+            pnl.style.animation = 'none';
+            pnl.offsetHeight; // trigger reflow
+            pnl.style.animation = null; 
+
+            document.getElementById('iTitle').innerText = data[code].title;
+            document.getElementById('iDesc').innerText = data[code].desc;
+            document.getElementById('iKpi').innerText = data[code].kpi;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 58: Định Giá Động (Dynamic Pricing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0369a1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .status-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .truck-cap { height: 40px; background: #333; border-radius: 8px; margin: 15px 0; overflow: hidden; border: 1px solid var(--border); position: relative;}
+        .truck-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.3s, background 0.3s;}
+        .truck-text { position: absolute; width: 100%; text-align: center; line-height: 40px; font-weight: bold; z-index: 10;}
+
+        .control-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center;}
+        
+        .slider-group { margin: 20px 0; }
+        input[type="range"] { width: 90%; accent-color: var(--primary); }
+        .price-disp { font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-top: 10px; }
+
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--primary), #0284c7); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; transform: none; box-shadow: none;}
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; display: flex; justify-content: space-between;}
+
+        .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2.5rem; font-weight: 900; color: white; margin-top: 5px; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 58: Định Giá Động (Dynamic Pricing)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Thuật toán thao túng giá của Uber, Hàng không và Vận tải biển.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Xe tải container của bạn có sức chứa <strong>100 Pallet</strong>. Xe sẽ khởi hành vào 17:00 chiều nay.<br>
+            Bây giờ là 09:00 sáng. Bạn có 8 tiếng để bán chỗ trống trên xe. <br>
+            <em>Trò chơi: Cứ mỗi giờ trôi qua, khách hàng sẽ vào hỏi mua. Nếu giá quá đắt, họ bỏ đi. Nếu giá rẻ, xe sẽ đầy sớm trước khi khởi hành. Nhu cầu của khách "VIP" sẵn sàng trả giá cao thường xuất hiện vào phút chót (gần 17:00). Hãy kiếm nhiều Doanh thu nhất có thể!</em>
+        </div>
+
+        <div class="dashboard">
+            <div class="status-panel">
+                <h3 style="margin-top: 0; color: var(--text-muted);">TRẠNG THÁI CHUYẾN XE</h3>
+                <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px;" id="timeDisp">⏰ 09:00 AM (Còn 8 tiếng)</div>
+                
+                <div style="text-align: left; font-size: 0.9rem; color: var(--text-muted);">SỨC CHỨA XE TẢI (100 Pallet)</div>
+                <div class="truck-cap">
+                    <div class="truck-fill" id="capFill"></div>
+                    <div class="truck-text" id="capText">0 / 100 Đã Bán</div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3 style="margin-top:0; color: var(--primary);">ĐIỀU CHỈNH GIÁ BÁN HIỆN TẠI</h3>
+                <div class="slider-group">
+                    <input type="range" id="priceSlider" min="10" max="150" step="5" value="40" oninput="updatePrice()">
+                </div>
+                <div class="price-disp" id="priceDisp">$40 / Pallet</div>
+                <button class="action-btn" id="btnNext" onclick="nextHour()" style="margin-top:15px;">MỞ BÁN & CHUYỂN SANG GIỜ TIẾP</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logs"></div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">DOANH THU CỦA BẠN</div><div class="stat-value" id="revStat" style="color: var(--success)">$0</div></div>
+            <div><div style="color: var(--text-muted);">KỶ LỤC CỦA A.I.</div><div class="stat-value" style="color: var(--text-muted);">$6,850</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #38bdf8;">📚 Cẩm nang Quản trị Lợi suất (Yield Management)</h3>
+            <p>Tại sao vé máy bay lúc thì 1 triệu, lúc thì 5 triệu? Đó là ứng dụng tàn khốc nhất của Dynamic Pricing dựa trên Số lượng tồn kho và Thời gian (Time-to-departure).</p>
+            <ul>
+                <li><strong>Cạm bẫy Bán Quá Sớm (Spill / Underpricing):</strong> Nếu buổi sáng bạn set giá rẻ ($20). Bạn mừng rỡ vì khách mua ào ạt, xe tải đầy 100 chỗ ngay lúc 12:00 trưa. Bạn kiếm được $2,000. NHƯNG đến 4 giờ chiều, có khách hàng đang rất gấp (hàng đông lạnh sắp hỏng) sẵn sàng trả $150/pallet. Bạn đành ngậm ngùi từ chối vì xe đã hết chỗ! Bạn vừa "Đổ" (Spill) mất cơ hội ăn tiền của khách VIP.</li>
+                <li><strong>Cạm bẫy Bán Quá Đắt (Spoilage / Overpricing):</strong> Bạn tham lam, giữ giá $100 từ sáng đến chiều. Khách bình dân bỏ đi hết. Đến giờ xe chạy, bạn chỉ bán được 10 chỗ. Bạn kiếm được $1,000. Còn dư 90 chỗ trống lên đường. Bạn vừa "Làm ôi thiu" (Spoilage) hàng hóa dịch vụ.</li>
+                <li><strong>Dynamic Pricing:</strong> Chiến thuật hoàn hảo: Buổi sáng bán rẻ ($30-$40) để lấp đầy 50% xe (Tạo nền tảng an toàn). Sau đó bắt đầu kéo giá lên $70, $90, và chốt những ghế cuối cùng với giá $150 cho những kẻ tuyệt vọng đến muộn. Nếu làm đúng, thuật toán máy tính sẽ vắt kiệt thặng dư của mọi loại khách hàng để mang về hơn $6,500!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let hour = 9;
+        let sold = 0;
+        let revenue = 0;
+        
+        function updatePrice() {
+            document.getElementById('priceDisp').innerText = "$" + document.getElementById('priceSlider').value + " / Pallet";
+        }
+
+        function nextHour() {
+            let price = parseInt(document.getElementById('priceSlider').value);
+            
+            // Demand logic: 
+            // In morning, people are price sensitive (max willingness to pay around $50-$60).
+            // In afternoon (closer to 17:00), willingness to pay jumps to $100-$150, but fewer volume.
+            
+            let willingnessToPay = 40 + ((hour - 8) * 15); // Scales from $55 at 9am to $175 at 16:00
+            let maxVol = 30 - ((hour - 8) * 2); // Volume shrinks from 28 to 14
+            
+            let prob = Math.max(0, 1 - (price / willingnessToPay)); // If price < WTP, high probability
+            let demand = Math.round(maxVol * prob);
+
+            // Add randomness
+            demand += Math.floor(Math.random() * 10 - 5);
+            if (demand < 0) demand = 0;
+
+            let actualSold = Math.min(demand, 100 - sold);
+            let income = actualSold * price;
+
+            sold += actualSold;
+            revenue += income;
+
+            // Log
+            let logHtml = `
+                <div class="log-entry">
+                    <span><b>${hour}:00</b> - Đặt giá: $${price}</span>
+                    <span>Khách hỏi: ${demand} | Bán được: <b style="color:var(--primary)">${actualSold}</b></span>
+                    <span style="color:var(--success)"><b>+$${income.toLocaleString()}</b></span>
+                </div>
+            `;
+            let logBox = document.getElementById('logs');
+            logBox.innerHTML = logHtml + logBox.innerHTML;
+
+            // Update UI
+            hour++;
+            
+            document.getElementById('capText').innerText = sold + " / 100 Đã Bán";
+            document.getElementById('capFill').style.width = sold + "%";
+            
+            if(sold === 100) document.getElementById('capFill').style.background = "var(--warning)";
+
+            document.getElementById('revStat').innerText = "$" + revenue.toLocaleString();
+
+            if (hour >= 17 || sold >= 100) {
+                document.getElementById('timeDisp').innerText = "🚫 XE ĐÃ KHỞI HÀNH!";
+                document.getElementById('timeDisp').style.color = "var(--danger)";
+                document.getElementById('btnNext').disabled = true;
+                
+                let evalText = "";
+                if (revenue < 3000) evalText = "Quản lý quá tệ! Nhìn bảng giá của AI kìa.";
+                else if (revenue < 5000) evalText = "Làm tốt, nhưng vẫn bị lỡ mất khách VIP buổi chiều.";
+                else evalText = "XUẤT SẮC! Bạn là một bậc thầy thao túng giá thị trường!";
+
+                alert("CHUYẾN XE ĐÃ KHỞI HÀNH!\n\nTổng doanh thu: $" + revenue.toLocaleString() + "\n\n" + evalText);
+            } else {
+                document.getElementById('timeDisp').innerText = `⏰ ${hour}:00 (Còn ${17 - hour} tiếng)`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 26: Hiệu suất Thiết bị Toàn phần (OEE - Lean Manufacturing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #06b6d4; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #083344, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #22d3ee, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .oee-box { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+        .oee-formula { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; font-size: 1.5rem; font-weight: bold;}
+        .oee-element { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid var(--border); width: 22%;}
+        
+        .val-a { color: var(--warning); font-size: 2rem;}
+        .val-p { color: var(--primary); font-size: 2rem;}
+        .val-q { color: var(--success); font-size: 2rem;}
+        .val-oee { color: var(--danger); font-size: 3rem; text-shadow: 0 0 20px rgba(239,68,68,0.5);}
+
+        .upgrade-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;}
+        .upg-card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; transition: all 0.2s;}
+        .upg-title { font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;}
+        .upg-cost { color: var(--danger); font-weight: bold; margin-bottom: 10px;}
+        
+        .btn-buy { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.2s;}
+        .btn-buy.active { background: var(--success); color: white; }
+        .btn-buy.disabled { background: #333; color: #777; cursor: not-allowed; }
+        .btn-buy:not(.disabled):hover { filter: brightness(1.2); }
+
+        .budget-bar { background: rgba(16, 185, 129, 0.1); border: 2px dashed var(--success); padding: 15px; border-radius: 12px; text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;}
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 26: Hiệu suất Thiết bị OEE (Lean Manufacturing)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bạn mua máy 1 triệu Đô chạy 100sp/giờ. Tại sao thực tế chỉ ra được 60sp/giờ?</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Máy dập kim loại của bạn có Công suất lý thuyết là <strong>100 sp/giờ</strong>. Nhưng nó đang bị mất mát (Loss) ở 3 khía cạnh:<br>
+            - <strong>Sẵn sàng (Availability):</strong> Máy hay hỏng vặt, phải dừng để thay khuôn (Chỉ chạy được 80% thời gian).<br>
+            - <strong>Hiệu năng (Performance):</strong> Máy cũ nên nhân viên phải chỉnh cho máy chạy chậm lại kẻo đứt gãy (Chỉ đạt 90% tốc độ gốc).<br>
+            - <strong>Chất lượng (Quality):</strong> Cứ làm ra 100 cái thì có 5 cái móp méo (Tỷ lệ tốt 95%).<br>
+            Bạn có ngân sách <strong>$100,000</strong>. Hãy mua các Nâng cấp để OEE đạt mức "Đẳng cấp Thế giới" (World-Class > 85%).
+        </div>
+
+        <div class="budget-bar">
+            NGÂN SÁCH ĐẦU TƯ: <span id="budget" style="color: var(--success);">$100,000</span>
+        </div>
+
+        <div class="oee-box">
+            <h2 style="margin-top:0; color: var(--text-muted);">HIỆU SUẤT TỔNG THỂ (OEE)</h2>
+            <div class="oee-formula">
+                <div class="oee-element">
+                    <div style="color: var(--warning);">Mức Sẵn Sàng (A)</div>
+                    <div class="val-a" id="valA">80%</div>
+                </div>
+                <div>✖</div>
+                <div class="oee-element">
+                    <div style="color: var(--primary);">Hiệu Năng (P)</div>
+                    <div class="val-p" id="valP">90%</div>
+                </div>
+                <div>✖</div>
+                <div class="oee-element">
+                    <div style="color: var(--success);">Chất Lượng (Q)</div>
+                    <div class="val-q" id="valQ">95%</div>
+                </div>
+                <div>🟰</div>
+                <div class="oee-element" style="border-color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                    <div style="color: var(--danger);">OEE TỔNG</div>
+                    <div class="val-oee" id="valOEE">68.4%</div>
+                </div>
+            </div>
+            
+            <div style="font-size: 1.2rem;">Sản lượng thực tế: <strong id="output" style="color: white; font-size: 1.8rem;">68</strong> sp/giờ (So với lý thuyết 100)</div>
+        </div>
+
+        <div class="upgrade-grid">
+            <div class="upg-card" style="border-top: 4px solid var(--warning);">
+                <div class="upg-title">1. Bảo trì Toàn diện (TPM)</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Triệt tiêu lỗi vặt, giảm thời gian thay khuôn (SMED).</div>
+                <div class="upg-cost">Giá: $40,000</div>
+                <div style="color: var(--warning); font-weight: bold; margin-bottom: 10px;">+15% Mức Sẵn Sàng (A)</div>
+                <button class="btn-buy active" id="btn1" onclick="buy(1, 40000, 'A', 15)">ĐẦU TƯ</button>
+            </div>
+
+            <div class="upg-card" style="border-top: 4px solid var(--primary);">
+                <div class="upg-title">2. Thay Motor Servo Nhỏ</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Động cơ mới giúp máy chạy đúng tốc độ thiết kế.</div>
+                <div class="upg-cost">Giá: $30,000</div>
+                <div style="color: var(--primary); font-weight: bold; margin-bottom: 10px;">+8% Hiệu Năng (P)</div>
+                <button class="btn-buy active" id="btn2" onclick="buy(2, 30000, 'P', 8)">ĐẦU TƯ</button>
+            </div>
+
+            <div class="upg-card" style="border-top: 4px solid var(--success);">
+                <div class="upg-title">3. Cảm biến Laser (Six Sigma)</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Poka-Yoke: Tự động dừng máy nếu phát hiện lỗi phôi.</div>
+                <div class="upg-cost">Giá: $50,000</div>
+                <div style="color: var(--success); font-weight: bold; margin-bottom: 10px;">+4% Chất Lượng (Q)</div>
+                <button class="btn-buy active" id="btn3" onclick="buy(3, 50000, 'Q', 4)">ĐẦU TƯ</button>
+            </div>
+            
+            <!-- Optional 4th -->
+            <div class="upg-card" style="border-top: 4px solid var(--primary);">
+                <div class="upg-title">4. Phần mềm AI Điều tốc</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Thuật toán điều khiển nhịp độ hoạt động.</div>
+                <div class="upg-cost">Giá: $40,000</div>
+                <div style="color: var(--primary); font-weight: bold; margin-bottom: 10px;">+12% Hiệu Năng (P)</div>
+                <button class="btn-buy active" id="btn4" onclick="buy(4, 40000, 'P', 12)">ĐẦU TƯ</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #22d3ee; margin-top: 0;">📚 Cẩm nang Sản xuất Tinh gọn (Lean - OEE)</h3>
+            <p><strong>OEE (Overall Equipment Effectiveness)</strong> là chỉ số đo lường hiệu quả "Thực sự" của nhà máy. Nó phơi bày sự thật phũ phàng.</p>
+            <ul>
+                <li><strong>Cạm bẫy của Phép nhân (Multiplication Rule):</strong> Nếu mỗi khía cạnh của máy bạn đều khá tốt (90% Sẵn sàng, 90% Tốc độ, 90% Tỷ lệ chuẩn). Bạn nghĩ máy chạy tốt? KHÔNG! OEE = 0.9 x 0.9 x 0.9 = <strong>72.9%</strong>. Bạn mất đi GẦN 30% công suất nhà máy chỉ vì mỗi chỗ hao hụt một ít.</li>
+                <li><strong>Hiệu ứng Cấp số nhân:</strong> Đầu tư để tăng 15% Sẵn sàng KHÔNG CHỈ mang lại 15% sản lượng. Nó sẽ nhân với Performance và Quality hiện tại để đẩy tổng OEE lên một mốc mới.</li>
+                <li><strong>World-Class OEE (Tiêu chuẩn Toyota):</strong> OEE lớn hơn 85% được coi là đẳng cấp thế giới. Thường là: Sẵn sàng 90% x Hiệu năng 95% x Chất lượng 99.9%. Trò chơi yêu cầu bạn chi tiêu $100k khôn ngoan nhất để ghép các Nâng cấp lại và vượt mốc 85% OEE!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            budget: 100000,
+            valA: 80,
+            valP: 90,
+            valQ: 95
+        };
+
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function calcOEE() {
+            let oee = (state.valA/100) * (state.valP/100) * (state.valQ/100);
+            document.getElementById('valA').innerText = state.valA + '%';
+            document.getElementById('valP').innerText = state.valP + '%';
+            document.getElementById('valQ').innerText = state.valQ + '%';
+            document.getElementById('valOEE').innerText = (oee * 100).toFixed(1) + '%';
+            
+            let output = Math.round(100 * oee);
+            document.getElementById('output').innerText = output;
+            
+            if (oee >= 0.85) {
+                document.getElementById('valOEE').style.color = "var(--success)";
+                document.getElementById('valOEE').style.textShadow = "0 0 20px rgba(16,185,129,0.8)";
+            }
+        }
+
+        function updateButtons() {
+            document.getElementById('budget').innerText = format(state.budget);
+            
+            for(let i=1; i<=4; i++) {
+                let btn = document.getElementById('btn' + i);
+                if (btn.innerText === "ĐÃ MUA") continue;
+                
+                let cost = parseInt(btn.getAttribute('onclick').split(',')[1]);
+                if (cost > state.budget) {
+                    btn.classList.replace('active', 'disabled');
+                } else {
+                    btn.classList.replace('disabled', 'active');
+                }
+            }
+        }
+
+        function buy(id, cost, type, amt) {
+            if (state.budget < cost) return;
+            
+            state.budget -= cost;
+            if (type === 'A') state.valA = Math.min(100, state.valA + amt);
+            if (type === 'P') state.valP = Math.min(100, state.valP + amt);
+            if (type === 'Q') state.valQ = Math.min(100, state.valQ + amt);
+            
+            let btn = document.getElementById('btn' + id);
+            btn.innerText = "ĐÃ MUA";
+            btn.classList.replace('active', 'disabled');
+            btn.onclick = null; // Remove click event
+
+            calcOEE();
+            updateButtons();
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { calcOEE(); updateButtons(); };
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 15: Giao Hàng Chặng Cuối (Last Mile Delivery / TSP)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #06b6d4; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #083344, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #22d3ee, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .map-container { width: 100%; aspect-ratio: 16/9; background: #e2e8f0; border-radius: 16px; border: 4px solid var(--border); position: relative; overflow: hidden; margin-bottom: 20px; cursor: crosshair;}
+        svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; pointer-events: none;}
+        
+        .node { width: 30px; height: 30px; border-radius: 50%; position: absolute; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10;}
+        .node:hover { transform: translate(-50%, -50%) scale(1.2); }
+        .depot { background: var(--danger); font-size: 1.2rem; z-index: 20; width: 40px; height: 40px;}
+        .customer { background: var(--primary); }
+        .visited { background: var(--success); }
+
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0369a1); color: white; cursor: pointer; transition: all 0.3s; text-transform: uppercase; margin: 0 5px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 15: Giao Hàng Chặng Cuối (Last Mile)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bài toán Người Bán Hàng (TSP) - Yếu tố ngốn 50% tổng chi phí Logistics.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Xe tải xuất phát từ Kho (Màu đỏ), đi giao hàng cho 6 Khách (Màu xanh), rồi phải quay về Kho.<br>
+            Chi phí xăng dầu: <strong>$10 / 1 km</strong>.<br>
+            <strong>Nhiệm vụ của bạn:</strong> Dùng chuột click vào các Khách hàng theo thứ tự sao cho <strong>Tổng quãng đường là NGẮN NHẤT</strong>.
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">TRẠNG THÁI</div><div class="stat-value" id="statusStat" style="font-size:1.5rem; color: var(--warning)">Đang Giao...</div></div>
+            <div><div style="color: var(--text-muted);">QUÃNG ĐƯỜNG (KM)</div><div class="stat-value" id="distStat" style="color: var(--primary)">0</div></div>
+            <div><div style="color: var(--text-muted);">CHI PHÍ XĂNG ($)</div><div class="stat-value" id="costStat" style="color: var(--danger)">$0</div></div>
+        </div>
+
+        <div class="map-container" id="map">
+            <svg id="svgCanvas"></svg>
+            <!-- Nodes generated via JS -->
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="initMap()" style="background: #475569;">🔄 TẠO BẢN ĐỒ MỚI</button>
+            <button class="action-btn" onclick="aiRandom()" style="background: var(--warning);">🤖 AI GIAO NGẪU NHIÊN</button>
+            <button class="action-btn" onclick="aiNearest()" style="background: var(--success);">🤖 AI TỐI ƯU (NEAREST)</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #22d3ee; margin-top: 0;">📚 Cẩm nang Định tuyến (Routing Algorithms)</h3>
+            <p><strong>Last Mile Delivery (Giao hàng chặng cuối)</strong> từ Trạm trung chuyển đến nhà khách hàng là đoạn đường ngắn nhất nhưng lại tốn kém nhất, chiếm tới <strong>53% tổng chi phí Logistics</strong> của một món hàng.</p>
+            <ul>
+                <li><strong>Giao Ngẫu Nhiên:</strong> Tài xế không có kinh nghiệm, bốc bừa đơn hàng để giao. Tuyến đường bị đan chéo (zigzag) vào nhau. Bạn sẽ thấy xe tải chạy lượn vòng quanh thành phố, tốn hàng ngàn Đô la tiền xăng.</li>
+                <li><strong>Thuật toán Tham lam (Nearest Neighbor):</strong> Luôn đi đến điểm gần nhất chưa được giao. Thuật toán này không phải là tuyệt đối tối ưu (toán học gọi là NP-Hard), nhưng nó giải quyết bài toán với tốc độ phần nghìn giây và tiết kiệm được 30-40% quãng đường so với chạy ngẫu nhiên.</li>
+                <li><strong>Công nghệ thực tế:</strong> UPS có một phần mềm tên là ORION (On-Road Integrated Optimization and Navigation). Thuật toán của họ nổi tiếng với quy tắc <em>"Không bao giờ rẽ trái"</em> để tránh chờ đèn đỏ. Mỗi năm, ORION tiết kiệm cho UPS 100 triệu dặm lái xe, 10 triệu gallon xăng và 300-400 triệu Đô la!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let nodes = []; // {x, y, type, id}
+        let route = []; // indices of nodes
+        let totalDist = 0;
+        let svg = document.getElementById('svgCanvas');
+        let map = document.getElementById('map');
+
+        function initMap() {
+            nodes = []; route = []; totalDist = 0;
+            svg.innerHTML = '';
+            document.querySelectorAll('.node').forEach(e => e.remove());
+
+            // Depot at center
+            addNode(50, 50, 'depot', 0);
+            
+            // 6 Random Customers
+            for(let i=1; i<=6; i++) {
+                let x = 10 + Math.random() * 80;
+                let y = 10 + Math.random() * 80;
+                addNode(x, y, 'customer', i);
+            }
+
+            // Start route at depot
+            visitNode(0);
+            renderUI();
+        }
+
+        function addNode(x, y, type, id) {
+            nodes.push({x, y, type, id});
+            let el = document.createElement('div');
+            el.className = `node ${type}`;
+            el.style.left = `${x}%`;
+            el.style.top = `${y}%`;
+            el.innerText = type === 'depot' ? '🏠' : id;
+            el.id = `node-${id}`;
+            el.onclick = () => userClickNode(id);
+            map.appendChild(el);
+        }
+
+        function dist(n1, n2) {
+            // Convert % to pixels approx for display distance. Let's say map is 800x450
+            let dx = (n1.x - n2.x) * 8; 
+            let dy = (n1.y - n2.y) * 4.5;
+            return Math.sqrt(dx*dx + dy*dy);
+        }
+
+        function visitNode(id) {
+            if(route.includes(id) && !(route.length === nodes.length && id === 0)) return; // Already visited, except returning to depot at end
+
+            let el = document.getElementById(`node-${id}`);
+            if(id !== 0) el.classList.add('visited');
+
+            if (route.length > 0) {
+                let lastNode = nodes[route[route.length-1]];
+                let currNode = nodes[id];
+                let d = dist(lastNode, currNode);
+                totalDist += d;
+
+                // Draw line
+                let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', `${lastNode.x}%`);
+                line.setAttribute('y1', `${lastNode.y}%`);
+                line.setAttribute('x2', `${currNode.x}%`);
+                line.setAttribute('y2', `${currNode.y}%`);
+                line.setAttribute('stroke', route.length === nodes.length ? 'var(--danger)' : 'var(--primary)');
+                line.setAttribute('stroke-width', '3');
+                svg.appendChild(line);
+            }
+            
+            route.push(id);
+            renderUI();
+
+            if(route.length === nodes.length) {
+                // Must return to depot
+                document.getElementById('statusStat').innerText = "Về Kho!";
+                document.getElementById('statusStat').style.color = "var(--danger)";
+            }
+            if(route.length > nodes.length) {
+                document.getElementById('statusStat').innerText = "HOÀN THÀNH!";
+                document.getElementById('statusStat').style.color = "var(--success)";
+            }
+        }
+
+        function userClickNode(id) {
+            if (route.length > nodes.length) return; // Finished
+            if (id === 0 && route.length < nodes.length) {
+                alert("Bạn phải giao hết hàng trước khi quay về Kho!");
+                return;
+            }
+            visitNode(id);
+        }
+
+        async function aiRandom() {
+            initMap();
+            let unvisited = [1,2,3,4,5,6];
+            // Shuffle array
+            unvisited.sort(() => Math.random() - 0.5);
+            
+            for(let id of unvisited) {
+                await new Promise(r => setTimeout(r, 400));
+                visitNode(id);
+            }
+            await new Promise(r => setTimeout(r, 400));
+            visitNode(0); // Return
+        }
+
+        async function aiNearest() {
+            initMap();
+            let unvisited = [1,2,3,4,5,6];
+            
+            while(unvisited.length > 0) {
+                let lastNodeId = route[route.length-1];
+                let lastNode = nodes[lastNodeId];
+                
+                let nearestId = -1;
+                let minDist = Infinity;
+                
+                for(let id of unvisited) {
+                    let d = dist(lastNode, nodes[id]);
+                    if (d < minDist) { minDist = d; nearestId = id; }
+                }
+                
+                await new Promise(r => setTimeout(r, 400));
+                visitNode(nearestId);
+                unvisited = unvisited.filter(x => x !== nearestId);
+            }
+            await new Promise(r => setTimeout(r, 400));
+            visitNode(0); // Return
+        }
+
+        function renderUI() {
+            document.getElementById('distStat').innerText = Math.round(totalDist);
+            document.getElementById('costStat').innerText = '$' + (Math.round(totalDist) * 10).toLocaleString();
+            
+            if(route.length === 1) {
+                document.getElementById('statusStat').innerText = "Đang Giao...";
+                document.getElementById('statusStat').style.color = "var(--warning)";
+            }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = initMap;
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 75: Bản Sao Kỹ Thuật Số (Digital Twin)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .sim-area { background: rgba(0,0,0,0.4); border: 2px dashed var(--primary); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;}
+        .sim-title { font-weight: bold; color: var(--primary); font-size: 1.2rem; margin-bottom: 15px;}
+        
+        .factory-line { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; position: relative;}
+        
+        .station { width: 120px; padding: 15px 10px; background: var(--panel-bg); border: 2px solid var(--border); border-radius: 8px; z-index: 2; transition: all 0.3s;}
+        .st-name { font-weight: bold; margin-bottom: 5px;}
+        .st-speed { font-size: 0.85rem; color: var(--text-muted);}
+        
+        .conveyor { flex: 1; height: 10px; background: #334155; position: relative; z-index: 1;}
+        .traffic-jam { position: absolute; left: 0; top: -15px; background: var(--danger); color: white; padding: 2px 5px; font-size: 0.7rem; border-radius: 4px; font-weight: bold; display: none; animation: flash 1s infinite;}
+        @keyframes flash { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;}
+        .stat-val { font-size: 2rem; font-weight: 900; color: white; margin-top: 5px; transition: color 0.5s;}
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1rem; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-upgrade { background: linear-gradient(135deg, var(--warning), #b45309); }
+        .btn-reset { background: linear-gradient(135deg, #475569, #1e293b); }
+
+        .result-msg { padding: 15px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); display: none; line-height: 1.5; margin-bottom: 20px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 75: Bản Sao Kỹ Thuật Số (Digital Twin)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Mô phỏng 1 Triệu Đô sai lầm mà không tốn một xu thực tế.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Dây chuyền sản xuất của bạn có 3 trạm. Năng suất tổng của dây chuyền luôn bị khóa bởi điểm yếu nhất (Bottleneck/Nút thắt cổ chai). Hiện tại, khâu Lắp Ráp (10 sp/phút) đang là điểm nghẽn.<br>
+            - Bạn có ý định mua một cái máy Lắp ráp siêu tốc mới (30 sp/phút) với giá <strong>$1 Triệu Đô</strong>.<br>
+            <em>Hành động: Thay vì mua máy thật, hãy thử nhập thông số này vào môi trường "Digital Twin" (Mô phỏng thực tại ảo) để xem dây chuyền sẽ hoạt động ra sao!</em>
+        </div>
+
+        <div class="sim-area">
+            <div class="sim-title">💻 PHẦN MỀM DIGITAL TWIN (MÔ PHỎNG DÂY CHUYỀN)</div>
+            
+            <div class="factory-line">
+                <div class="station" id="st1">
+                    <div class="st-name">1. Lắp Ráp</div>
+                    <div class="st-speed" id="sp1">10 SP / Phút</div>
+                </div>
+                
+                <div class="conveyor">
+                    <div class="traffic-jam" id="jam">💥 KẸT HÀNG!</div>
+                </div>
+                
+                <div class="station" id="st2">
+                    <div class="st-name">2. Kiểm Tra (QA)</div>
+                    <div class="st-speed">15 SP / Phút</div>
+                </div>
+                
+                <div class="conveyor"></div>
+                
+                <div class="station" id="st3">
+                    <div class="st-name">3. Đóng Gói</div>
+                    <div class="st-speed">20 SP / Phút</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-upgrade" onclick="simUpgrade()">Chạy Mô Phỏng: Nâng cấp "Lắp ráp" lên 30 SP/Phút</button>
+            <button class="action-btn btn-reset" onclick="resetSim()">Khôi phục ban đầu</button>
+        </div>
+
+        <div class="dashboard">
+            <div><div style="color: var(--text-muted);">NĂNG SUẤT TỔNG ĐẦU RA</div><div class="stat-val" id="totalOut">10 SP / Phút</div></div>
+            <div><div style="color: var(--text-muted);">CHI PHÍ NÂNG CẤP</div><div class="stat-val" id="costSim">$0</div></div>
+        </div>
+
+        <div class="result-msg" id="resMsg">
+            <strong>❌ CẢNH BÁO TỪ DIGITAL TWIN:</strong> Bạn vừa tốn $1 Triệu vô ích!<br>
+            Bạn tăng tốc độ Lắp Ráp lên 30, nhưng khâu QA (Kiểm tra) phía sau chỉ chịu được tối đa 15. Hàng hóa bị dồn ứ lại thành núi (Kẹt hàng) ngay trước trạm QA. Tổng năng suất toàn dây chuyền chỉ nhích lên được mức 15. Nút thắt (Bottleneck) chỉ bị đẩy từ trạm này sang trạm khác!
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #38bdf8;">📚 Cẩm nang Digital Twin (Bản sao Số)</h3>
+            <p>Nguyên lý lớn nhất của Supply Chain: <strong>Mạng lưới là một chỉnh thể liên kết. Bạn không thể tối ưu cục bộ (Local Optimization).</strong></p>
+            <ul>
+                <li><strong>Khái niệm Digital Twin:</strong> Là việc tạo ra một bản copy 100% của nhà máy, cái kho, hoặc mạng lưới vận tải ngoài đời thực vào trong máy tính bằng AI. Ở đó, bạn có thể thực hiện các bài test "What-if" (Nếu - thì) đắt đỏ nhất.</li>
+                <li><strong>Thất bại trong Đời thực:</strong> Nếu không có Digital Twin, Giám đốc sản xuất sẽ vui sướng cầm 1 triệu Đô đi mua cái máy xịn nhất về. Khi cắm điện vào chạy, ông ta mới ngã ngửa vì khâu QA phía sau không theo kịp tốc độ của khâu trước, gây ra thảm họa hàng tồn kho dở dang (WIP) tràn ngập xưởng. Một quyết định $1 triệu bốc hơi vì không hiểu lý thuyết Ràng buộc (Theory of Constraints).</li>
+                <li><strong>Giá trị của Mô phỏng ảo:</strong> Môi trường ảo đã giúp bạn nhìn thấy tương lai. Nhờ kết quả này, thay vì mua máy 1 triệu Đô, bạn nhận ra chiến lược đúng là: Chia đều ngân sách. Chi 200 ngàn Đô nâng Lắp ráp lên 15. Chi 200 ngàn Đô nâng QA lên 20. Dây chuyền sẽ trơn tru và rẻ hơn rất nhiều!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function simUpgrade() {
+            // Update UI
+            document.getElementById('st1').style.borderColor = 'var(--warning)';
+            document.getElementById('sp1').innerText = "30 SP / Phút";
+            document.getElementById('sp1').style.color = "var(--warning)";
+            document.getElementById('sp1').style.fontWeight = "bold";
+
+            // Traffic jam appears
+            document.getElementById('jam').style.display = 'block';
+            document.getElementById('st2').style.borderColor = 'var(--danger)';
+
+            // Dashboard
+            document.getElementById('totalOut').innerText = "15 SP / Phút (Giới hạn bởi QA)";
+            document.getElementById('totalOut').style.color = "var(--danger)";
+            
+            document.getElementById('costSim').innerText = "$1,000,000";
+            document.getElementById('costSim').style.color = "var(--danger)";
+
+            // Show explanation
+            document.getElementById('resMsg').style.display = 'block';
+        }
+
+        function resetSim() {
+            document.getElementById('st1').style.borderColor = 'var(--border)';
+            document.getElementById('sp1').innerText = "10 SP / Phút";
+            document.getElementById('sp1').style.color = "var(--text-muted)";
+            document.getElementById('sp1').style.fontWeight = "normal";
+
+            document.getElementById('jam').style.display = 'none';
+            document.getElementById('st2').style.borderColor = 'var(--border)';
+
+            document.getElementById('totalOut').innerText = "10 SP / Phút";
+            document.getElementById('totalOut').style.color = "white";
+            
+            document.getElementById('costSim').innerText = "$0";
+            document.getElementById('costSim').style.color = "white";
+
+            document.getElementById('resMsg').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

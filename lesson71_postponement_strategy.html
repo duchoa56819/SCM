@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 71: Mô hình Hoãn Lại (Postponement Strategy)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #2e1065, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        .card h3 { margin-top: 0; color: white; border-bottom: 1px dashed var(--border); padding-bottom: 10px;}
+
+        .shirt-row { display: flex; justify-content: space-around; margin: 15px 0;}
+        .shirt { font-size: 2rem; position: relative; }
+        .qty { font-size: 0.8rem; font-weight: bold; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); color: var(--text-muted);}
+        
+        .res-text { font-size: 0.95rem; line-height: 1.5; min-height: 60px; margin-top: 20px;}
+        .profit-lbl { font-size: 1.5rem; font-weight: 900; margin-top: 10px;}
+
+        .trend-box { background: rgba(245, 158, 11, 0.1); border: 2px solid var(--warning); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px;}
+        .trend-title { color: var(--warning); font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;}
+        .trend-demand { display: flex; justify-content: space-around; font-size: 1.2rem; font-weight: bold;}
+        
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--warning), #b45309); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);}
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 71: Mô Hình Hoãn Lại (Postponement)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Trì hoãn sự khác biệt hóa để triệt tiêu Tồn kho chết.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn sản xuất 4,000 cái Áo Thun bán sang Châu Âu. Khách hàng thích 4 màu: Đỏ, Xanh dương, Xanh lá, Vàng.<br>
+            - <strong>Mô hình A (Đầu cơ - Speculation):</strong> Nhuộm màu sẵn từ đầu tại Trung Quốc (Mỗi màu 1000 cái) rồi ship sang.<br>
+            - <strong>Mô hình B (Hoãn lại - Postponement):</strong> May 4000 cái áo màu TRẮNG. Chở sang Châu Âu. Chờ xem Khách thích màu gì rồi mới dùng máy nhuộm màu hỏa tốc ngay tại cửa hàng.<br>
+            <em>Bấm nút để tạo ra một "Cú Sốc Thị Hiếu" ngẫu nhiên và xem lợi nhuận của 2 mô hình.</em>
+        </div>
+
+        <button class="action-btn" onclick="rollTrend()">🎲 TẠO CÚ SỐC THỊ HIẾU THỜI TRANG</button>
+
+        <div class="trend-box" id="tBox" style="display:none;">
+            <div class="trend-title">SỰ KIỆN: Idol K-Pop lăng xê màu Đỏ! Nhu cầu thay đổi đột ngột!</div>
+            <div class="trend-demand">
+                <span style="color: #ef4444;">Đỏ: 2500 Cái</span>
+                <span style="color: #3b82f6;">Xanh: 500 Cái</span>
+                <span style="color: #10b981;">Lá: 500 Cái</span>
+                <span style="color: #eab308;">Vàng: 500 Cái</span>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- A -->
+            <div class="card" id="cardA">
+                <h3>🏭 A: Nhuộm sẵn từ Nhà máy (Truyền thống)</h3>
+                <div class="shirt-row">
+                    <div class="shirt" style="color:#ef4444;">👕<div class="qty">1000</div></div>
+                    <div class="shirt" style="color:#3b82f6;">👕<div class="qty">1000</div></div>
+                    <div class="shirt" style="color:#10b981;">👕<div class="qty">1000</div></div>
+                    <div class="shirt" style="color:#eab308;">👕<div class="qty">1000</div></div>
+                </div>
+                <div class="res-text" id="resA" style="color: var(--text-muted);">Sản xuất hàng loạt giá rẻ. Nhưng rủi ro tồn kho cực cao.</div>
+                <div class="profit-lbl" id="profA">-</div>
+            </div>
+
+            <!-- B -->
+            <div class="card" id="cardB">
+                <h3>⏳ B: Trì hoãn Nhuộm màu (Postponement)</h3>
+                <div class="shirt-row">
+                    <div class="shirt" style="color:#ffffff; text-shadow: 0 0 2px black;">👕<div class="qty" style="width:100px;">4000 (Trắng)</div></div>
+                </div>
+                <div class="res-text" id="resB" style="color: var(--text-muted);">Sản xuất Áo Trắng. Chờ có đơn mới nhuộm.</div>
+                <div class="profit-lbl" id="profB">-</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Hoãn Lại (Mass Customization)</h3>
+            <p>HP (Hewlett-Packard) từng bị phá sản vì tồn kho máy in khắp Châu Âu, do mỗi nước lại xài một loại dây cắm điện và sách hướng dẫn bằng ngôn ngữ khác nhau.</p>
+            <ul>
+                <li><strong>Gót chân của Sản xuất Đầu cơ (Push System):</strong> Việc bạn tự ý phân bổ (1000 Đỏ, 1000 Xanh) trước khi biết khách hàng thực sự muốn gì là một sự đánh bạc mù quáng. Khi Trend Đỏ ập đến, bạn vừa bị <strong>Mất doanh thu (Stockout)</strong> do thiếu 1500 cái áo Đỏ, vừa phải mang 1500 cái áo màu khác ra Bãi rác (Dead stock).</li>
+                <li><strong>Quyền năng của Trì hoãn:</strong> HP đã thay đổi toàn bộ SCM: Họ sản xuất một cái "Máy in Cốt lõi" không có nguồn điện, giao từ Châu Á sang Châu Âu. Khi đại lý ở Pháp đặt mua, nhân viên kho ở Pháp mới đóng hộp cái máy in chung đó CÙNG VỚI sợi dây điện kiểu Pháp và sách tiếng Pháp. </li>
+                <li><strong>Triệt tiêu Biến động:</strong> Chiến lược Postponement giữ cho sản phẩm ở <em>trạng thái tiêu chuẩn hóa (Generic state)</em> lâu nhất có thể. Điều này giúp gộp chung rủi ro (Risk Pooling). Bạn sẽ tốn thêm một chút chi phí để mua máy nhuộm màu đặt tại Châu Âu, nhưng nó là cái giá quá hời để triệt tiêu hoàn toàn Tồn kho ế thừa!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function rollTrend() {
+            document.getElementById('tBox').style.display = 'block';
+
+            // Card A (Speculation)
+            let resA = document.getElementById('resA');
+            resA.innerHTML = `
+                <span style="color:var(--danger)"><b>THẢM HỌA:</b></span><br>
+                - Thiếu 1500 Áo Đỏ (Mất doanh thu).<br>
+                - Ế 1500 Áo màu khác (Phải đại hạ giá hoặc vứt bỏ).
+            `;
+            document.getElementById('cardA').style.borderColor = 'var(--danger)';
+            document.getElementById('profA').innerText = "LỖ -$30,000";
+            document.getElementById('profA').style.color = "var(--danger)";
+
+            // Card B (Postponement)
+            let resB = document.getElementById('resB');
+            resB.innerHTML = `
+                <span style="color:var(--success)"><b>HOÀN HẢO:</b></span><br>
+                Vì toàn bộ là Áo Trắng, kho hàng lập tức đổ thuốc nhuộm theo đúng tỷ lệ Trend (2500 Đỏ, 500 các màu còn lại). Không dư một cái nào!
+            `;
+            document.getElementById('cardB').style.borderColor = 'var(--success)';
+            document.getElementById('cardB').style.background = 'rgba(16, 185, 129, 0.1)';
+            document.getElementById('profB').innerText = "LÃI +$80,000";
+            document.getElementById('profB').style.color = "var(--success)";
+        }
+    </script>
+</body>
+</html>

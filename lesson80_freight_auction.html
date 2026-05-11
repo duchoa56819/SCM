@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 80: Đấu Thầu Vận Tải (Combinatorial Auctions)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .table-container { background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px;}
+        table { width: 100%; border-collapse: collapse; text-align: center;}
+        th, td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(255,255,255,0.05); color: var(--text-muted);}
+        
+        .bid-cell { font-size: 1.2rem; font-weight: bold; transition: all 0.3s;}
+        .bid-bundle { background: rgba(245, 158, 11, 0.2); border: 2px dashed var(--warning); border-radius: 8px;}
+        
+        .win-cell { background: rgba(16, 185, 129, 0.3) !important; color: white !important; box-shadow: 0 0 15px rgba(16,185,129,0.5);}
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;}
+        .dash-card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center;}
+        .stat-val { font-size: 2.5rem; font-weight: 900; margin-top: 10px;}
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-trad { background: linear-gradient(135deg, #475569, #1e293b); }
+        .btn-ai { background: linear-gradient(135deg, var(--warning), #b45309); }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 80: Đấu Thầu Tổ Hợp (Combinatorial Auction)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cuộc cách mạng mua sắm Logistics: Khi Tổng thể rẻ hơn Tổng các bộ phận.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Cuối năm, bạn mở thầu tìm Nhà xe cho 2 Tuyến đường (Lane):<br>
+            - Tuyến 1: Hà Nội ➔ Đà Nẵng.<br>
+            - Tuyến 2: Đà Nẵng ➔ Hà Nội.<br>
+            Có 3 nhà xe tham gia báo giá. Nhà xe Z báo giá từng tuyến đắt hơn X và Y. Nhưng Z có một "Vũ khí bí mật" là Gói thầu kết hợp (Bundle Bid).<br>
+            <em>Hành động: Chọn cách chấm thầu để xem sự chênh lệch chi phí!</em>
+        </div>
+
+        <div class="table-container">
+            <table id="bidTable">
+                <tr>
+                    <th>Nhà Xe (Carrier)</th>
+                    <th>Tuyến 1<br>(HN ➔ ĐN)</th>
+                    <th>Tuyến 2<br>(ĐN ➔ HN)</th>
+                    <th>GÓI TỔ HỢP<br>(Bao thầu cả 2 Tuyến)</th>
+                </tr>
+                <tr>
+                    <th>Nhà Xe X</th>
+                    <td id="bX1" class="bid-cell">$1,000</td>
+                    <td id="bX2" class="bid-cell">$1,500</td>
+                    <td class="bid-cell" style="color:var(--text-muted)">Không có</td>
+                </tr>
+                <tr>
+                    <th>Nhà Xe Y</th>
+                    <td id="bY1" class="bid-cell">$1,500</td>
+                    <td id="bY2" class="bid-cell">$1,000</td>
+                    <td class="bid-cell" style="color:var(--text-muted)">Không có</td>
+                </tr>
+                <tr>
+                    <th>Nhà Xe Z</th>
+                    <td id="bZ1" class="bid-cell" style="color:var(--danger)">$1,200</td>
+                    <td id="bZ2" class="bid-cell" style="color:var(--danger)">$1,200</td>
+                    <td id="bZB" class="bid-cell bid-bundle" style="color:var(--warning)">$1,800</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-trad" onclick="evalTrad()">📝 CHẤM THẦU TRUYỀN THỐNG (Từng Tuyến Lẻ)</button>
+            <button class="action-btn btn-ai" onclick="evalCombi()">🧠 CHẤM THẦU TỔ HỢP (Theo Gói)</button>
+        </div>
+
+        <div class="dashboard">
+            <div class="dash-card">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">NGƯỜI TRÚNG THẦU</div>
+                <div class="stat-val" id="winName" style="font-size: 1.5rem; color:white;">-</div>
+            </div>
+            <div class="dash-card">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">TỔNG TIỀN BẠN PHẢI TRẢ</div>
+                <div class="stat-val" id="totCost" style="color: var(--success);">-</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Combinatorial Auctions</h3>
+            <p>Đấu thầu tổ hợp (Combinatorial Optimization) là đỉnh cao của Bộ phận Mua sắm (Procurement/Sourcing) trong các tập đoàn tỷ đô.</p>
+            <ul>
+                <li><strong>Góc nhìn Cục bộ (Silos):</strong> Nếu bạn dùng Excel, bạn sẽ chấm thầu bằng cách dò tìm giá Rẻ nhất cho mỗi cột. Cột 1 bạn chọn Nhà xe X ($1000). Cột 2 bạn chọn Nhà xe Y ($1000). Tổng bạn trả là <strong>$2000</strong>. Khá tốt, nhưng chưa phải giỏi nhất!</li>
+                <li><strong>Bí mật của "Chuyến xe rỗng" (Empty Miles):</strong> Vì sao Nhà xe Z bán giá lẻ rất đắt ($1200) nhưng lại bán giá Gói chung siêu rẻ ($1800)? Bởi vì Tuyến 1 và Tuyến 2 tạo thành một "Vòng lặp khép kín" (Continuous Move). Nếu Z chở hàng vào Đà Nẵng, họ có ngay hàng để chở về Hà Nội, không xe nào chạy rỗng. Sự hiệu quả này cho phép họ giảm sâu giá thầu!</li>
+                <li><strong>Chiến thắng của Đấu thầu Tổ hợp (Win-Win):</strong> Bằng cách dùng AI để đánh giá hàng ngàn gói thầu kết hợp, Công ty của bạn chỉ phải trả <strong>$1800</strong> (Tiết kiệm $200). Đồng thời, Nhà xe Z cũng hạnh phúc vì xe của họ luôn đầy tải cả chiều đi lẫn chiều về. Giá trị khổng lồ được tạo ra không phải nhờ Ép giá, mà nhờ vào việc Khớp nối thông minh Mạng lưới (Network Synergies)!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function resetCells() {
+            document.querySelectorAll('.bid-cell').forEach(c => c.classList.remove('win-cell'));
+        }
+
+        function evalTrad() {
+            resetCells();
+            // Win individually
+            document.getElementById('bX1').classList.add('win-cell');
+            document.getElementById('bY2').classList.add('win-cell');
+
+            document.getElementById('winName').innerHTML = "Tuyến 1: Nhà xe X<br>Tuyến 2: Nhà xe Y";
+            document.getElementById('totCost').innerText = "$2,000";
+            document.getElementById('totCost').style.color = "white";
+        }
+
+        function evalCombi() {
+            resetCells();
+            // Win bundle
+            document.getElementById('bZB').classList.add('win-cell');
+
+            document.getElementById('winName').innerHTML = "<b style='color:var(--warning)'>Trọn gói cả 2 tuyến: Nhà xe Z!</b>";
+            document.getElementById('totCost').innerText = "$1,800 (Rẻ nhất!)";
+            document.getElementById('totCost').style.color = "var(--warning)";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 72: Địa Chính Trị & Nearshoring</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .map-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .loc-card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.5s;}
+        .loc-card h2 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;}
+        
+        .cost-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1rem;}
+        .cost-row span { color: var(--text-muted); }
+        .cost-row strong { color: white; }
+        
+        .total-box { margin-top: 15px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px dashed var(--border);}
+        .total-val { font-size: 2rem; font-weight: 900;}
+
+        .news-flash { background: rgba(239, 68, 68, 0.2); border: 2px solid var(--danger); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; display: none; animation: shake 0.5s;}
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--danger), #991b1b); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);}
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 72: Địa Chính Trị & Nearshoring</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự sụp đổ của Toàn cầu hóa và kỷ nguyên đưa Nhà máy về nhà.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Thị trường tiêu thụ của bạn là <strong>Nước Mỹ</strong>.<br>
+            - <strong>Mô hình A (Offshoring):</strong> Đặt nhà máy tại Châu Á cách nửa vòng trái đất. Nhân công siêu rẻ.<br>
+            - <strong>Mô hình B (Nearshoring):</strong> Đặt nhà máy tại Mexico (Sát vách Mỹ). Nhân công đắt hơn.<br>
+            <em>Hành động: Bảng giá hiện tại cho thấy Châu Á chiến thắng. Nhưng hãy nhấn nút "Khởi động Chiến tranh Thương mại" để xem Địa chính trị định hình lại bản đồ chuỗi cung ứng thế nào!</em>
+        </div>
+
+        <div class="map-box">
+            <!-- Offshore -->
+            <div class="loc-card" id="cardA">
+                <h2 style="color: #60a5fa;">🌏 OFFSHORING (Châu Á)</h2>
+                <div class="cost-row"><span>Nhân công sản xuất:</span> <strong id="c1a">$5.00</strong></div>
+                <div class="cost-row"><span>Cước tàu biển (Xuyên Thái Bình Dương):</span> <strong id="c2a">$2.00</strong></div>
+                <div class="cost-row"><span>Thuế quan (Tariff):</span> <strong id="c3a" style="color:var(--success)">$0.00</strong></div>
+                <div class="total-box">
+                    <div style="font-size:0.8rem; color:var(--text-muted);">TỔNG CHI PHÍ / SP</div>
+                    <div class="total-val" id="totA" style="color: var(--success);">$7.00</div>
+                    <div id="badgeA" style="background:var(--success); color:white; border-radius:5px; font-size:0.8rem; display:inline-block; padding:3px 10px; margin-top:5px;">Lợi thế Cạnh tranh!</div>
+                </div>
+            </div>
+
+            <!-- Nearshore -->
+            <div class="loc-card" id="cardB">
+                <h2 style="color: #f59e0b;">🌮 NEARSHORING (Mexico)</h2>
+                <div class="cost-row"><span>Nhân công sản xuất:</span> <strong id="c1b">$8.00</strong></div>
+                <div class="cost-row"><span>Cước xe tải (Chạy qua biên giới):</span> <strong id="c2b">$1.00</strong></div>
+                <div class="cost-row"><span>Thuế quan (USMCA Free Trade):</span> <strong id="c3b">$0.00</strong></div>
+                <div class="total-box">
+                    <div style="font-size:0.8rem; color:var(--text-muted);">TỔNG CHI PHÍ / SP</div>
+                    <div class="total-val" id="totB" style="color: var(--warning);">$9.00</div>
+                    <div id="badgeB" style="background:transparent; display:none; color:white; border-radius:5px; font-size:0.8rem; padding:3px 10px; margin-top:5px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="action-btn" id="btnCrisis" onclick="triggerCrisis()">💥 BÙNG NỔ CHIẾN TRANH THƯƠNG MẠI!</button>
+
+        <div class="news-flash" id="news">
+            <h2 style="margin:0 0 10px 0; color:var(--danger)">🚨 BREAKING NEWS: CĂNG THẲNG ĐỊA CHÍNH TRỊ</h2>
+            <p style="margin:0; font-size:1.1rem; color:white;">Tổng thống Mỹ vừa áp thuế Trừng phạt 25% lên toàn bộ hàng hóa nhập khẩu từ Châu Á. Đồng thời Cảng biển đình công khiến cước tàu tăng phi mã!</p>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Chuyển dịch Chuỗi cung ứng (Nearshoring)</h3>
+            <p>Trong 30 năm qua, "Bán cầu Tây tiêu thụ, Bán cầu Đông sản xuất" là chân lý bất diệt. Nhưng Covid-19 và Chiến tranh thương mại đã phá nát chân lý đó.</p>
+            <ul>
+                <li><strong>Cái chết của Chi phí rẻ:</strong> Nhân công rẻ ở Châu Á không còn bù đắp nổi cho Rủi ro Hệ thống. Khi bị áp thuế 25% (Tariff), chi phí sản phẩm lập tức đội lên trời. Tàu kẹt ở cảng làm đứt gãy dòng tiền. Những công ty mù quáng bám víu vào "Offshoring" đang bị bóp nghẹt biên lợi nhuận.</li>
+                <li><strong>Trào lưu Nearshoring (Mexico, Việt Nam, Đông Âu):</strong> Đưa nhà máy về các quốc gia "sát vách" hoặc các nước "đồng minh" (Friendshoring). Tại Mexico, nhân công đắt hơn 60%, nhưng hàng hóa chỉ mất 2 ngày chạy xe tải là vào thẳng siêu thị Mỹ (thay vì 30 ngày đi tàu). Đổi lại, họ được miễn thuế 100% nhờ Hiệp định thương mại tự do (USMCA).</li>
+                <li><strong>Tương lai của SCM:</strong> Chuỗi cung ứng không còn ưu tiên "Rẻ nhất" (Cost-driven). Mà chuyển sang ưu tiên "Kháng cự Rủi ro Tốt nhất" (Resilience-driven). Đưa sản xuất về gần thị trường tiêu thụ là xu hướng không thể đảo ngược trong thập kỷ tới!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function triggerCrisis() {
+            document.getElementById('btnCrisis').style.display = 'none';
+            document.getElementById('news').style.display = 'block';
+
+            // Update Card A (Asia hit by Tariff and Freight spike)
+            document.getElementById('cardA').style.borderColor = 'var(--danger)';
+            document.getElementById('cardA').style.background = 'rgba(239, 68, 68, 0.1)';
+            
+            document.getElementById('c2a').innerText = "$5.00 (Kẹt Cảng)";
+            document.getElementById('c2a').style.color = "var(--danger)";
+            
+            document.getElementById('c3a').innerText = "$2.50 (Thuế 25%)";
+            document.getElementById('c3a').style.color = "var(--danger)";
+
+            document.getElementById('totA').innerText = "$12.50";
+            document.getElementById('totA').style.color = "var(--danger)";
+            
+            document.getElementById('badgeA').innerText = "THẢM HỌA ĐỨT GÃY";
+            document.getElementById('badgeA').style.background = "var(--danger)";
+
+            // Update Card B (Mexico stays stable)
+            document.getElementById('cardB').style.borderColor = 'var(--success)';
+            document.getElementById('cardB').style.background = 'rgba(16, 185, 129, 0.1)';
+            
+            document.getElementById('totB').style.color = "var(--success)";
+            
+            document.getElementById('badgeB').style.display = 'inline-block';
+            document.getElementById('badgeB').innerText = "THẮNG ĐẬM (MIỄN THUẾ)";
+            document.getElementById('badgeB').style.background = "var(--success)";
+        }
+    </script>
+</body>
+</html>

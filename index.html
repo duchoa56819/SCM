@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Đào tạo Quản trị Chuỗi cung ứng (SCM Masterclass)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text-main); margin: 0; padding: 30px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { text-align: center; margin-bottom: 40px; }
+        h1 { font-weight: 800; font-size: 3rem; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        .subtitle { font-size: 1.2rem; color: var(--text-muted); }
+
+        .category-title { font-size: 1.5rem; font-weight: bold; margin: 30px 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border); color: #818cf8; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.3s; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.4); border-color: var(--primary); }
+        
+        .card-num { background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; display: inline-block; margin-bottom: 10px; color: var(--success);}
+        .card-title { font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; line-height: 1.4; color: white;}
+        .card-desc { font-size: 0.9rem; color: var(--text-muted); flex-grow: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MBA: Quản trị Chuỗi Cung Ứng & Vận Hành</h1>
+            <div class="subtitle">Hệ thống 32+ Bài Mô Phỏng Tương Tác Cấp Độ Chuyên Gia (Masterclass)</div>
+        </div>
+
+        <div class="category-title">Phần 1: Căn Bản về Mạng Lưới & Tồn Kho (Operations & Inventory)</div>
+        <div class="grid">
+            <a href="laptop_supply_chain_sim.html" class="card"><span class="card-num">Bài 1</span><div class="card-title">Chuỗi Cung Ứng Laptop</div><div class="card-desc">Khái niệm cơ bản về sản xuất, tồn kho và cung cầu.</div></a>
+            <a href="logistics_network_sim.html" class="card"><span class="card-num">Bài 2</span><div class="card-title">Mạng Lưới Phân Phối</div><div class="card-desc">Quản lý kho tổng và các điểm bán lẻ (DC to Stores).</div></a>
+            <a href="lesson3_sourcing_risk.html" class="card"><span class="card-num">Bài 3</span><div class="card-title">Rủi Ro Nguồn Cung</div><div class="card-desc">Đa dạng hóa nhà cung cấp (Sole-sourcing vs Multi-sourcing).</div></a>
+            <a href="lesson4_revenue_management.html" class="card"><span class="card-num">Bài 4</span><div class="card-title">Quản trị Doanh thu Cơ bản</div><div class="card-desc">Thiết lập giá bán theo cung cầu thị trường.</div></a>
+            <a href="lesson5_reverse_logistics.html" class="card"><span class="card-num">Bài 5</span><div class="card-title">Logistics Thu Hồi</div><div class="card-desc">Xử lý hàng trả về (Returns) trong Thương mại điện tử.</div></a>
+            <a href="lesson6_bullwhip_effect.html" class="card"><span class="card-num">Bài 6</span><div class="card-title">Hiệu Ứng Cái Roi Da (Bullwhip)</div><div class="card-desc">Sự méo mó thông tin từ Nhà bán lẻ đến Nhà máy.</div></a>
+            <a href="lesson7_transportation.html" class="card"><span class="card-num">Bài 7</span><div class="card-title">Vận Tải Đa Phương Thức</div><div class="card-desc">Lựa chọn Tàu biển (Rẻ/Chậm) hay Máy bay (Đắt/Nhanh).</div></a>
+            <a href="lesson8_supplier_selection.html" class="card"><span class="card-num">Bài 8</span><div class="card-title">Chấm Điểm Nhà Cung Cấp</div><div class="card-desc">Mô hình Weighted Scoring Model trong Mua sắm (Procurement).</div></a>
+        </div>
+
+        <div class="category-title">Phần 2: Chiến Thuật Vận Hành (Tactical Operations)</div>
+        <div class="grid">
+            <a href="lesson9_postponement.html" class="card"><span class="card-num">Bài 9</span><div class="card-title">Chiến Lược Trì Hoãn</div><div class="card-desc">Postponement: Chờ đơn hàng mới nhuộm màu sản phẩm.</div></a>
+            <a href="lesson10_consolidation.html" class="card"><span class="card-num">Bài 10</span><div class="card-title">Gom Hàng (Load Consolidation)</div><div class="card-desc">Tối ưu khối lượng kinh tế EOQ để đủ chuyến xe.</div></a>
+            <a href="lesson11_options_contract.html" class="card"><span class="card-num">Bài 11</span><div class="card-title">Hợp Đồng Quyền Chọn</div><div class="card-desc">Hedging: Khóa giá tương lai để chống rủi ro tăng giá.</div></a>
+            <a href="lesson12_bottleneck.html" class="card"><span class="card-num">Bài 12</span><div class="card-title">Lý Thuyết Điểm Nghẽn (TOC)</div><div class="card-desc">Tìm và khai thông Nút thắt cổ chai trong dây chuyền.</div></a>
+            <a href="lesson13_bidding_game.html" class="card"><span class="card-num">Bài 13</span><div class="card-title">Lý Thuyết Trò Chơi (Bidding)</div><div class="card-desc">Tránh "Lời nguyền của kẻ chiến thắng" trong đấu thầu.</div></a>
+            <a href="lesson14_kanban.html" class="card"><span class="card-num">Bài 14</span><div class="card-title">Hệ Thống Kéo (Push vs Pull)</div><div class="card-desc">Hệ thống Kanban của Toyota loại bỏ lãng phí Tồn kho.</div></a>
+            <a href="lesson15_last_mile.html" class="card"><span class="card-num">Bài 15</span><div class="card-title">Giao Hàng Chặng Cuối (TSP)</div><div class="card-desc">Thuật toán tìm đường đi ngắn nhất cho Shiper.</div></a>
+            <a href="lesson16_revenue_sharing.html" class="card"><span class="card-num">Bài 16</span><div class="card-title">Hợp Đồng Chia Sẻ Doanh Thu</div><div class="card-desc">Giải quyết bài toán Double Marginalization (Blockbuster).</div></a>
+        </div>
+
+        <div class="category-title">Phần 3: Tối Ưu Hóa & Đổi Mới (Advanced Optimization & Innovation)</div>
+        <div class="grid">
+            <a href="lesson17_cross_docking.html" class="card"><span class="card-num">Bài 17</span><div class="card-title">Xếp Dỡ Chéo (Cross-Docking)</div><div class="card-desc">Chuyển hàng trực tiếp qua xe tải, bỏ qua lưu kho (Walmart).</div></a>
+            <a href="lesson18_quality_control.html" class="card"><span class="card-num">Bài 18</span><div class="card-title">Quản Trị Chất Lượng (AQL)</div><div class="card-desc">Lấy mẫu thống kê (Acceptance Sampling) & Six Sigma.</div></a>
+            <a href="lesson19_circular_economy.html" class="card"><span class="card-num">Bài 19</span><div class="card-title">Kinh Tế Tuần Hoàn (Circular)</div><div class="card-desc">Thiết kế Sinh thái (Eco-Design) & Đánh giá Vòng đời (LCA).</div></a>
+            <a href="lesson20_global_sourcing.html" class="card"><span class="card-num">Bài 20</span><div class="card-title">Thu Mua Toàn Cầu (TLC)</div><div class="card-desc">Total Landed Cost: Offshoring vs Nearshoring (Mexico).</div></a>
+            <a href="lesson21_abc_slotting.html" class="card"><span class="card-num">Bài 21</span><div class="card-title">Phân Loại ABC & Slotting</div><div class="card-desc">Tối ưu Layout kho bãi để giảm bước chân công nhân.</div></a>
+            <a href="lesson22_omnichannel.html" class="card"><span class="card-num">Bài 22</span><div class="card-title">Bán Lẻ Đa Kênh (Omnichannel)</div><div class="card-desc">Ship từ Kho Tổng hay lấy hàng trực tiếp từ Cửa Hàng?</div></a>
+            <a href="lesson23_forecasting.html" class="card"><span class="card-num">Bài 23</span><div class="card-title">AI Dự Báo (Exp Smoothing)</div><div class="card-desc">Sử dụng hệ số Alpha để dự báo nhu cầu tương lai.</div></a>
+            <a href="lesson24_resilience.html" class="card"><span class="card-num">Bài 24</span><div class="card-title">Mạng Lưới Đàn Hồi (Resilience)</div><div class="card-desc">Xử lý Thiên Nga Đen: Tập trung vs Phân tán rủi ro.</div></a>
+        </div>
+
+        <div class="category-title">Phần 4: Chuyên Sâu Ngành (Deep-Dive Industry Ops)</div>
+        <div class="grid">
+            <a href="lesson25_port_congestion.html" class="card"><span class="card-num">Bài 25</span><div class="card-title">Kẹt Cảng (Demurrage)</div><div class="card-desc">Chi phí lưu bãi, lưu Container và bài toán Điều phối Xe tải.</div></a>
+            <a href="lesson26_oee.html" class="card"><span class="card-num">Bài 26</span><div class="card-title">Hiệu Suất Tổng Thể (OEE)</div><div class="card-desc">Sẵn Sàng x Hiệu Năng x Chất Lượng trong Nhà Máy.</div></a>
+            <a href="lesson27_freight_market.html" class="card"><span class="card-num">Bài 27</span><div class="card-title">Chợ Vận Tải (Spot vs Contract)</div><div class="card-desc">Phân bổ rủi ro cước xe tải theo mùa vụ.</div></a>
+            <a href="lesson28_blockchain_traceability.html" class="card"><span class="card-num">Bài 28</span><div class="card-title">Truy Xuất Nguồn Gốc (Blockchain)</div><div class="card-desc">Surgical Recall: Giải cứu siêu thị khỏi rau nhiễm khuẩn.</div></a>
+            <a href="lesson29_revenue_management.html" class="card"><span class="card-num">Bài 29</span><div class="card-title">Quy Tắc Littlewood (Yield)</div><div class="card-desc">Tính toán ghế trống máy bay để tối đa hóa doanh thu.</div></a>
+            <a href="lesson30_decoupling_point.html" class="card"><span class="card-num">Bài 30</span><div class="card-title">Điểm Tách Biệt (Decoupling)</div><div class="card-desc">Ranh giới Push/Pull (Tùy biến muộn của DELL).</div></a>
+            <a href="lesson31_hub_and_spoke.html" class="card"><span class="card-num">Bài 31</span><div class="card-title">Hub-and-Spoke (Trạm Chuyển)</div><div class="card-desc">Bí quyết mạng lưới của FedEx và bưu điện.</div></a>
+            <a href="lesson32_bin_packing.html" class="card"><span class="card-num">Bài 32</span><div class="card-title">Xếp Hàng 3D (Bin Packing)</div><div class="card-desc">Thuật toán nhồi container để tiết kiệm thùng xe (Tetris).</div></a>
+        </div>
+        
+        <div class="category-title">Phần 5: Các Bài Toán Tối Ưu Tiên Phong (Frontier Operations)</div>
+        <div class="grid" id="new-lessons">
+            <a href="lesson33_picker_routing.html" class="card"><span class="card-num">Bài 33</span><div class="card-title">Thuật toán Lấy hàng (Picker Routing)</div><div class="card-desc">S-Shape vs Return: Định tuyến đường đi trong Kho.</div></a>
+            <a href="lesson34_scf_factoring.html" class="card"><span class="card-num">Bài 34</span><div class="card-title">Tài chính Chuỗi Cung ứng (SCF)</div><div class="card-desc">Reverse Factoring: Trả chậm nhưng xưởng vẫn sống khỏe.</div></a>
+            <a href="lesson35_line_balancing.html" class="card"><span class="card-num">Bài 35</span><div class="card-title">Cân Bằng Chuyền (Line Balancing)</div><div class="card-desc">Phân bổ lại Nút thắt để tăng 70% Năng suất.</div></a>
+            <a href="lesson36_drone_delivery.html" class="card"><span class="card-num">Bài 36</span><div class="card-title">Giao Hàng Drone (Flying Sidekick)</div><div class="card-desc">Mô hình Xe tải chở Drone tác chiến song song.</div></a>
+        </div>
+
+        <div class="category-title">Phần 6: Kỷ nguyên Digital & Automation (Logistics 5.0)</div>
+        <div class="grid">
+            <a href="lesson37_workforce_scheduling.html" class="card"><span class="card-num">Bài 37</span><div class="card-title">Tối ưu Nhân sự (Workforce Scheduling)</div><div class="card-desc">Flexible Shifts: Sắp xếp ca làm việc theo biểu đồ chu kỳ.</div></a>
+            <a href="lesson38_cold_chain.html" class="card"><span class="card-num">Bài 38</span><div class="card-title">Chuỗi Cung Ứng Lạnh (Cold Chain)</div><div class="card-desc">Vận chuyển Vaccine Âm 70 độ C và rủi ro chậm trễ.</div></a>
+            <a href="lesson39_3d_printing.html" class="card"><span class="card-num">Bài 39</span><div class="card-title">Tồn kho Kỹ thuật số (3D Printing)</div><div class="card-desc">Additive Manufacturing: Truyền File thay vì Giao hàng.</div></a>
+            <a href="lesson40_digital_twin.html" class="card"><span class="card-num">Bài 40</span><div class="card-title">Bảo Trì Dự Đoán (Digital Twin & IoT)</div><div class="card-desc">AI tiên đoán ngày hỏng hóc để bảo trì động cơ sớm.</div></a>
+        </div>
+
+        <div class="category-title">Phần 7: Toán học Tối ưu hóa (Operations Research)</div>
+        <div class="grid">
+            <a href="lesson41_abc_costing.html" class="card"><span class="card-num">Bài 41</span><div class="card-title">Kế toán Chi phí Thực (ABC Costing)</div><div class="card-desc">Chỉ ra khách hàng đang hút máu lợi nhuận ngầm.</div></a>
+            <a href="lesson42_knapsack.html" class="card"><span class="card-num">Bài 42</span><div class="card-title">Bài toán Xếp Ba lô (Knapsack)</div><div class="card-desc">Tối đa hóa Lợi nhuận hàng hóa trên máy bay tải trọng hẹp.</div></a>
+            <a href="lesson43_kraljic_matrix.html" class="card"><span class="card-num">Bài 43</span><div class="card-title">Chiến lược Mua sắm Kraljic</div><div class="card-desc">4 Ô chiến thuật: Đòn bẩy, Nút thắt, Thường quy, Cốt lõi.</div></a>
+            <a href="lesson44_queuing_theory.html" class="card"><span class="card-num">Bài 44</span><div class="card-title">Lý thuyết Xếp hàng (Queuing)</div><div class="card-desc">M/M/1 vs M/M/2: Phép màu của trạm phục vụ song song.</div></a>
+        </div>
+
+        <div class="category-title">Phần 8: Phân tích Định lượng & Quyết định Đầu tư</div>
+        <div class="grid">
+            <a href="lesson45_linear_programming.html" class="card"><span class="card-num">Bài 45</span><div class="card-title">Quy hoạch Tuyến tính (Linear Programming)</div><div class="card-desc">Bài toán Pha trộn: Tối ưu chi phí và dinh dưỡng.</div></a>
+            <a href="lesson46_newsvendor.html" class="card"><span class="card-num">Bài 46</span><div class="card-title">Tồn kho Báo chí (Newsvendor Model)</div><div class="card-desc">Xử lý Hàng dễ hỏng với Phân phối chuẩn.</div></a>
+            <a href="lesson47_center_of_gravity.html" class="card"><span class="card-num">Bài 47</span><div class="card-title">Trung tâm Trọng lực (Center of Gravity)</div><div class="card-desc">Tìm tọa độ Vàng để đặt Kho phân phối.</div></a>
+            <a href="lesson48_lease_vs_buy.html" class="card"><span class="card-num">Bài 48</span><div class="card-title">Tài chính: Mua hay Thuê Kho (DCF Analysis)</div><div class="card-desc">Dùng Net Present Value lật ngược báo cáo Kế toán.</div></a>
+        </div>
+
+        <div class="category-title">Phần 9: Động lực học Mạng lưới & Quản trị Rủi ro</div>
+        <div class="grid">
+            <a href="lesson49_hhi_supplier_risk.html" class="card"><span class="card-num">Bài 49</span><div class="card-title">Chỉ số Độc quyền (HHI Risk)</div><div class="card-desc">Bắt mạch mức độ mỏng manh của nguồn cung ứng.</div></a>
+            <a href="lesson50_combinatorial_auction.html" class="card"><span class="card-num">Bài 50</span><div class="card-title">Đấu giá Tổ hợp Vận tải (Combinatorial)</div><div class="card-desc">Sự kỳ diệu của Gói thầu khép kín chống chạy rỗng.</div></a>
+            <a href="lesson51_beer_game_delays.html" class="card"><span class="card-num">Bài 51</span><div class="card-title">Trò chơi Đội Bia (Beer Game)</div><div class="card-desc">Động lực học Hệ thống và Thảm họa từ Độ trễ.</div></a>
+            <a href="lesson52_sustainable_packaging.html" class="card"><span class="card-num">Bài 52</span><div class="card-title">Bao bì Bền vững (Cube Utilization)</div><div class="card-desc">Chở Không Khí: Tại sao Xanh là đòn bẩy Lợi nhuận.</div></a>
+        </div>
+
+        <div class="category-title">Phần 10: Logistics Hiện Đại & Mô Hình Kinh Doanh Mới</div>
+        <div class="grid">
+            <a href="lesson53_product_lifecycle.html" class="card"><span class="card-num">Bài 53</span><div class="card-title">Vòng đời Sản phẩm & Phụ tùng (EOL)</div><div class="card-desc">Cú lừa của việc vứt bỏ khuôn đúc quá sớm.</div></a>
+            <a href="lesson54_cross_border_ecommerce.html" class="card"><span class="card-num">Bài 54</span><div class="card-title">Thương mại Xuyên biên giới (CBEC)</div><div class="card-desc">Kho Ngoại quan vs Giao thẳng bằng Máy bay.</div></a>
+            <a href="lesson55_meio_risk_pooling.html" class="card"><span class="card-num">Bài 55</span><div class="card-title">Gộp Rủi ro Đa cấp (MEIO / Risk Pooling)</div><div class="card-desc">Phép màu Toán học cắt giảm một nửa Tồn kho.</div></a>
+            <a href="lesson56_vendor_managed_inventory.html" class="card"><span class="card-num">Bài 56</span><div class="card-title">Nhà cung cấp Quản lý Tồn kho (VMI)</div><div class="card-desc">Bí quyết giúp Walmart đè bẹp các đối thủ bán lẻ.</div></a>
+        </div>
+
+        <div class="category-title">Phần 11: Chuyển Đổi Số & Tiêu Chuẩn Toàn Cầu</div>
+        <div class="grid">
+            <a href="lesson57_ant_colony_picking.html" class="card"><span class="card-num">Bài 57</span><div class="card-title">Thuật toán Đàn Kiến (ACO / Batching)</div><div class="card-desc">AI điều hướng Robot cắt giảm 60% đường đi kho.</div></a>
+            <a href="lesson58_dynamic_pricing.html" class="card"><span class="card-num">Bài 58</span><div class="card-title">Định giá Động (Dynamic Pricing)</div><div class="card-desc">Thao túng giá cước bằng thuật toán Cung - Cầu.</div></a>
+            <a href="lesson59_fmea_risk.html" class="card"><span class="card-num">Bài 59</span><div class="card-title">Ma trận Rủi ro FMEA (Six Sigma)</div><div class="card-desc">Sự nguy hiểm chết người của Lỗi không phát hiện được.</div></a>
+            <a href="lesson60_esg_sourcing.html" class="card"><span class="card-num">Bài 60</span><div class="card-title">Tiêu chuẩn Đạo đức ESG</div><div class="card-desc">Rủi ro Danh tiếng có thể bốc hơi tỷ đô Cổ phiếu.</div></a>
+        </div>
+
+        <div class="category-title">Phần 12: Đổi Mới Sáng Tạo & Mô Hình Tương Lai</div>
+        <div class="grid">
+            <a href="lesson61_3pl_4pl_models.html" class="card"><span class="card-num">Bài 61</span><div class="card-title">Mô hình Thuê Ngoài (3PL vs 4PL)</div><div class="card-desc">Sự tiến hóa từ tự làm sang thuê Kiến trúc sư SCM.</div></a>
+            <a href="lesson62_dark_store_qcommerce.html" class="card"><span class="card-num">Bài 62</span><div class="card-title">Cửa hàng Bóng tối (Dark Store & Q-Commerce)</div><div class="card-desc">Cuộc chiến Giao hàng siêu tốc 15 phút đốt tiền tỷ.</div></a>
+            <a href="lesson63_cost_to_serve.html" class="card"><span class="card-num">Bài 63</span><div class="card-title">Phân tích Chi phí Phục vụ (Cost-to-Serve)</div><div class="card-desc">Bóc trần lớp mặt nạ doanh thu của khách hàng lắt nhắt.</div></a>
+            <a href="lesson64_sop_planning.html" class="card"><span class="card-num">Bài 64</span><div class="card-title">Hoạch định S&OP</div><div class="card-desc">Cuộc chiến đẫm máu giữa Phòng Sales và Phòng Sản Xuất.</div></a>
+        </div>
+
+        <div class="category-title">Phần 13: Mô Hình Kinh Doanh & Công Nghệ Tiên Phong</div>
+        <div class="grid">
+            <a href="lesson65_dropshipping.html" class="card"><span class="card-num">Bài 65</span><div class="card-title">Drop-shipping vs Bán sỉ</div><div class="card-desc">Sở hữu Tồn kho hay Bán hàng Không cần Vốn?</div></a>
+            <a href="lesson66_rfid_tracking.html" class="card"><span class="card-num">Bài 66</span><div class="card-title">RFID vs Mã Vạch (Barcode)</div><div class="card-desc">Sự khác biệt giữa Quét từng cái và Quét bằng sóng vô tuyến.</div></a>
+            <a href="lesson67_scope_emissions.html" class="card"><span class="card-num">Bài 67</span><div class="card-title">Phát thải Carbon (Scope 1-2-3)</div><div class="card-desc">Trò chơi trốn tìm của khí nhà kính toàn cầu.</div></a>
+            <a href="lesson68_goods_to_person_robotics.html" class="card"><span class="card-num">Bài 68</span><div class="card-title">Robot Kiva (Goods-to-Person)</div><div class="card-desc">Đảo ngược quy trình, bắt kệ hàng đi tìm con người.</div></a>
+        </div>
+
+        <div class="category-title">Phần 14: Triết Lý Mạng Lưới & Địa Chính Trị</div>
+        <div class="grid">
+            <a href="lesson69_agile_vs_lean.html" class="card"><span class="card-num">Bài 69</span><div class="card-title">Agile vs Lean Supply Chain</div><div class="card-desc">Toyota (Tinh gọn) đối đầu với Zara (Linh hoạt).</div></a>
+            <a href="lesson70_control_tower.html" class="card"><span class="card-num">Bài 70</span><div class="card-title">Tháp Điều Khiển (Control Tower)</div><div class="card-desc">Tầm nhìn vệ tinh xóa tan sương mù đứt gãy.</div></a>
+            <a href="lesson71_milk_run.html" class="card"><span class="card-num">Bài 71</span><div class="card-title">Tuyến Giao Milk Run</div><div class="card-desc">Toyota gom phụ tùng như thế nào để kho luôn trống?</div></a>
+            <a href="lesson72_nearshoring_geopolitics.html" class="card"><span class="card-num">Bài 72</span><div class="card-title">Địa Chính Trị & Nearshoring</div><div class="card-desc">Sự sụp đổ của toàn cầu hóa và bẫy thuế quan.</div></a>
+        </div>
+
+        <div class="category-title">Phần 15: Phân Tích Lean & Thuật Ngữ Cốt Lõi</div>
+        <div class="grid">
+            <a href="lesson73_value_stream_mapping.html" class="card"><span class="card-num">Bài 73</span><div class="card-title">Value Stream Mapping (VSM)</div><div class="card-desc">Phơi bày 95% lãng phí nằm trong sự chờ đợi.</div></a>
+            <a href="lesson74_incoterms.html" class="card"><span class="card-num">Bài 74</span><div class="card-title">Incoterms 2020</div><div class="card-desc">Tàu chìm giữa biển, ai là người phải đền tiền?</div></a>
+            <a href="lesson75_six_sigma_dmaic.html" class="card"><span class="card-num">Bài 75</span><div class="card-title">Six Sigma (Mô hình DMAIC)</div><div class="card-desc">Triệt tiêu lỗi lầm xuống mức 3.4 trên 1 triệu cơ hội.</div></a>
+            <a href="lesson76_takt_time.html" class="card"><span class="card-num">Bài 76</span><div class="card-title">Takt Time vs Cycle Time</div><div class="card-desc">Bắt nhịp độ sản xuất đồng điệu với nhịp mua hàng.</div></a>
+        </div>
+
+        <div class="category-title">Phần 16: Luật Lệ & Tối Ưu Hóa Tuyến Đường</div>
+        <div class="grid">
+            <a href="lesson77_customs_clearance.html" class="card"><span class="card-num">Bài 77</span><div class="card-title">Hải Quan & Mã HS Code</div><div class="card-desc">Án phạt hàng triệu Đô chỉ vì khai sai 1 chữ số.</div></a>
+            <a href="lesson78_vehicle_routing.html" class="card"><span class="card-num">Bài 78</span><div class="card-title">Bài toán Định Tuyến Xe (VRP)</div><div class="card-desc">Sự sụp đổ của tuyến đường hình bát mì Ý.</div></a>
+            <a href="lesson79_transportation_problem.html" class="card"><span class="card-num">Bài 79</span><div class="card-title">Bài Toán Vận Tải (Quy hoạch Tuyến tính)</div><div class="card-desc">Thuật toán Simplex đánh bại linh cảm con người.</div></a>
+            <a href="lesson80_slow_steaming.html" class="card"><span class="card-num">Bài 80</span><div class="card-title">Tàu Chạy Chậm (Slow Steaming)</div><div class="card-desc">Hãng tàu giảm tốc độ để tạo khan hiếm và đẩy giá.</div></a>
+        </div>
+
+        <div class="category-title">Phần 17: Kho Bãi Công Thái Học & Bổ Sung Hàng</div>
+        <div class="grid">
+            <a href="lesson81_ergonomics.html" class="card"><span class="card-num">Bài 81</span><div class="card-title">Công Thái Học (Ergonomics)</div><div class="card-desc">Thiết kế nhà kho bảo vệ cột sống của con người.</div></a>
+            <a href="lesson82_peak_season.html" class="card"><span class="card-num">Bài 82</span><div class="card-title">Phụ phí Mùa Cao Điểm (PSS)</div><div class="card-desc">Lưỡi dao cạo cứa đứt cổ họng nhà bán lẻ mùa Giáng Sinh.</div></a>
+            <a href="lesson83_crp_replenishment.html" class="card"><span class="card-num">Bài 83</span><div class="card-title">Bổ Sung Liên Tục (CRP)</div><div class="card-desc">Nhà máy tự động bơm hàng nhờ tích hợp dữ liệu POS.</div></a>
+            <a href="lesson84_pick_to_light.html" class="card"><span class="card-num">Bài 84</span><div class="card-title">Kho Hàng Nhấp Nháy (Pick-to-Light)</div><div class="card-desc">Trò chơi phản xạ ánh sáng giải phóng đôi tay công nhân.</div></a>
+        </div>
+
+        <div class="category-title">Phần 18: Hiệu suất Toàn cầu & Đo lường Rủi ro</div>
+        <div class="grid">
+            <a href="lesson85_scor_model.html" class="card"><span class="card-num">Bài 85</span><div class="card-title">Mô Hình SCOR</div><div class="card-desc">Khung xương sống (Framework) của mọi Tập đoàn Đa quốc gia.</div></a>
+            <a href="lesson86_otif_metric.html" class="card"><span class="card-num">Bài 86</span><div class="card-title">Chỉ số OTIF (On-Time In-Full)</div><div class="card-desc">Ác mộng của mọi Giám đốc Chuỗi cung ứng bị phạt tiền.</div></a>
+            <a href="lesson87_currency_hedging.html" class="card"><span class="card-num">Bài 87</span><div class="card-title">Phòng Hộ Tiền Tệ (Currency Hedging)</div><div class="card-desc">Tỷ giá hối đoái có thể san phẳng toàn bộ lợi nhuận trong 1 đêm.</div></a>
+            <a href="lesson88_economies_of_scope.html" class="card"><span class="card-num">Bài 88</span><div class="card-title">Tính Kinh Tế Theo Phạm Vi</div><div class="card-desc">Tại sao Amazon bán chung cả máy tính, sách và thực phẩm?</div></a>
+        </div>
+
+        <div class="category-title">Phần 19: Chiến Lược Tồn Kho & Cơ Sở Hạ Tầng</div>
+        <div class="grid">
+            <a href="lesson89_fifo_lifo_fefo.html" class="card"><span class="card-num">Bài 89</span><div class="card-title">Chiến Thuật FIFO, LIFO, FEFO</div><div class="card-desc">Sự màu nhiệm của việc ưu tiên xuất hàng cận Date.</div></a>
+            <a href="lesson90_break_even_point.html" class="card"><span class="card-num">Bài 90</span><div class="card-title">Phân Tích Điểm Hòa Vốn</div><div class="card-desc">Bài toán đánh đổi kinh điển: Tự xây kho hay đi thuê 3PL?</div></a>
+            <a href="lesson91_consignment_inventory.html" class="card"><span class="card-num">Bài 91</span><div class="card-title">Tồn Kho Ký Gửi (Consignment)</div><div class="card-desc">Tuyệt chiêu đặt hàng nhà người khác mà chưa cần trả tiền.</div></a>
+            <a href="lesson92_automated_sortation.html" class="card"><span class="card-num">Bài 92</span><div class="card-title">Phân Loại Tự Động (Sortation)</div><div class="card-desc">Cách máy móc chia 1 triệu bưu kiện trong một đêm.</div></a>
+        </div>
+
+        <div class="category-title">Phần 20: Chiến Lược Đại Dương & Dòng Tiền</div>
+        <div class="grid">
+            <a href="lesson93_liner_vs_tramp.html" class="card"><span class="card-num">Bài 93</span><div class="card-title">Vận Tải Biển (Liner vs Tramp)</div><div class="card-desc">Sự khác biệt giữa đi Xe Buýt và đi Taxi trên biển khơi.</div></a>
+            <a href="lesson94_tco_analysis.html" class="card"><span class="card-num">Bài 94</span><div class="card-title">Tổng Chi Phí Sở Hữu (TCO)</div><div class="card-desc">Tảng băng chìm của cái bẫy mua sắm "Giá rẻ".</div></a>
+            <a href="lesson95_retail_death_spiral.html" class="card"><span class="card-num">Bài 95</span><div class="card-title">Vòng Xoáy Tử Thần Bán Lẻ</div><div class="card-desc">Sự sụp đổ mang tính hệ thống khi dự báo tồn kho sai.</div></a>
+            <a href="lesson96_dim_weight_pricing.html" class="card"><span class="card-num">Bài 96</span><div class="card-title">Cước Trọng Lượng Thể Tích (DIM)</div><div class="card-desc">Sự trừng phạt tàn khốc khi bạn đóng hộp Không khí.</div></a>
+        </div>
+
+        <div class="category-title" style="color:#fbbf24; border-bottom: 2px solid #fbbf24;">Phần 21: Đỉnh Cao Chiến Lược & Tổng Kết Masterclass</div>
+        <div class="grid">
+            <a href="lesson97_square_root_law.html" class="card" style="border-color:#fbbf24;"><span class="card-num" style="background:#fbbf24; color:black;">Bài 97</span><div class="card-title">Định Luật Căn Bậc Hai (Square Root Law)</div><div class="card-desc">Sự màu nhiệm của Toán học thống kê khi gộp kho bãi.</div></a>
+            <a href="lesson98_esg_procurement.html" class="card" style="border-color:#fbbf24;"><span class="card-num" style="background:#fbbf24; color:black;">Bài 98</span><div class="card-title">Mua Sắm Bền Vững (ESG Procurement)</div><div class="card-desc">Tiết kiệm 10 triệu đô có thể thổi bay 2 tỷ đô vốn hóa.</div></a>
+            <a href="lesson99_anticipatory_shipping.html" class="card" style="border-color:#fbbf24;"><span class="card-num" style="background:#fbbf24; color:black;">Bài 99</span><div class="card-title">Giao Hàng Dự Đoán (Anticipatory Shipping)</div><div class="card-desc">Gửi hàng đi TRƯỚC KHI khách hàng bấm nút Mua.</div></a>
+            <a href="lesson100_scm_mastermind.html" class="card" style="border-color:#fbbf24; background:rgba(245,158,11,0.1);"><span class="card-num" style="background:#fbbf24; color:black;">Bài 100</span><div class="card-title" style="color:#fbbf24;">Kỹ Sư Trưởng Chuỗi Cung Ứng (TỐT NGHIỆP)</div><div class="card-desc">Sự cân bằng của Tạo hóa và Nghệ thuật Đánh đổi.</div></a>
+        </div>
+
+    </div>
+</body>
+</html>

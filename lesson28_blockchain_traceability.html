@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 28: Truy xuất Nguồn gốc (Blockchain Traceability)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #6ee7b7, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .sys-status { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; transition: all 0.5s;}
+        .sys-status.paper { border-color: var(--warning); }
+        .sys-status.blockchain { border-color: var(--primary); background: rgba(16, 185, 129, 0.1); }
+        
+        .alert-box { background: rgba(239, 68, 68, 0.2); border: 2px dashed var(--danger); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; animation: pulse 1.5s infinite;}
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 15px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+
+        .map-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin-bottom: 20px; }
+        .store { background: var(--success); height: 40px; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 0.8rem; transition: all 0.3s;}
+        .store.recalled { background: var(--danger); opacity: 0.5; text-decoration: line-through; }
+
+        .btn-upgrade { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, #fbbf24, #d97706); color: white; cursor: pointer; transition: all 0.3s; width: 100%; margin-bottom: 10px;}
+        .btn-upgrade:hover { filter: brightness(1.2); }
+        .btn-upgrade.bought { background: #333; color: #777; cursor: not-allowed; }
+
+        .btn-recall { padding: 20px; font-size: 1.5rem; font-weight: 900; border: none; border-radius: 12px; background: var(--danger); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .btn-recall:hover { filter: brightness(1.2); box-shadow: 0 0 20px var(--danger); }
+        .btn-recall:disabled { background: #333; cursor: not-allowed; animation: none;}
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 28: Truy xuất Nguồn gốc (Track & Trace)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Ứng dụng Blockchain vào Chuỗi Cung Ứng Thực Phẩm. Bài toán giải cứu Walmart.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Siêu thị của bạn có <strong>50 Cửa hàng</strong> đang bán Rau chân vịt thu mua từ 10 Nông trại khác nhau.<br>
+            Cục Quản lý Thực phẩm (FDA) vừa gọi điện báo: <em>"Phát hiện vi khuẩn E. Coli chết người trong rau của bạn! Yêu cầu thu hồi (Recall) ngay lập tức!"</em><br>
+            Bạn cần phải tìm ra rau nhiễm khuẩn đến từ Nông trại nào, và hiện đang nằm ở những cửa hàng nào để vứt bỏ.
+        </div>
+
+        <div class="sys-status paper" id="sysBox">
+            <h2 style="margin: 0 0 10px 0;">HỆ THỐNG HIỆN TẠI: Giấy tờ & Excel (Silo)</h2>
+            <div style="color: var(--text-muted);">Thông tin nằm rải rác. Kế toán lưu 1 file, tài xế giữ 1 tờ giấy, nông dân ghi sổ tay.</div>
+        </div>
+
+        <button class="btn-upgrade" id="btnUpgrade" onclick="buyBlockchain()">⛓️ NÂNG CẤP HỆ THỐNG BLOCKCHAIN ($50,000) ➔</button>
+
+        <div class="alert-box" id="alertBox">
+            <h2 style="margin: 0; color: var(--danger);">🚨 KHẨN CẤP: LỆNH THU HỒI TỪ FDA! 🚨</h2>
+        </div>
+
+        <button class="btn-recall" id="btnRecall" onclick="startRecall()">BẤM ĐỂ TRUY XUẤT VÀ THU HỒI!</button>
+
+        <h3 style="margin-top: 20px; text-align: center;">MẠNG LƯỚI 50 CỬA HÀNG (STORES)</h3>
+        <div class="map-grid" id="storeMap">
+            <!-- 50 Stores -->
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #34d399; margin-top: 0;">📚 Cẩm nang Công nghệ Chuỗi (Blockchain SCM)</h3>
+            <p>Vào năm 2018, chuỗi cung ứng Rau xà lách Romaine ở Bắc Mỹ bị nhiễm E.Coli.</p>
+            <ul>
+                <li><strong>Hệ thống Giấy tờ (Truyền thống):</strong> Walmart mất tới <strong>7 Ngày</strong> để lật tung các đống hóa đơn giấy và gọi điện thoại cho hàng trăm nhà phân phối để tìm xem bó rau bẩn đến từ trang trại nào. Vì quá chậm, để bảo vệ sinh mạng khách hàng, họ buộc phải tiến hành <strong>Blanket Recall (Thu hồi mù)</strong>: Vứt bỏ TẤT CẢ rau xà lách trên kệ của 5.000 siêu thị. Thiệt hại lên tới hàng chục triệu Đô la!</li>
+                <li><strong>Hệ thống Blockchain (IBM Food Trust):</strong> Sau vụ đó, Walmart yêu cầu toàn bộ nhà cung cấp dùng Blockchain. Khi thu hoạch, nông dân quét mã QR lưu lên Blockchain. Khi lên xe tải, tài xế quét mã. Dữ liệu phi tập trung và không thể sửa đổi. Lần tiếp theo có sự cố, Walmart chỉ mất <strong>2.2 Giây</strong> để truy xuất chính xác lô hàng đó đang nằm ở 3 siêu thị nào. Họ chỉ phải thu hồi rau ở 3 siêu thị đó. Các siêu thị khác vẫn bán bình thường (Surgical Recall). Tiết kiệm một số tiền khổng lồ. <strong>Bài học: Công nghệ Minh bạch hóa Chuỗi cung ứng (Traceability) không phải là "tiện ích", nó là "Bảo hiểm rủi ro".</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let hasBlockchain = false;
+        let logs = [];
+
+        function addLog(msg) { logs.unshift(`<div class="log-entry">${msg}</div>`); renderLogs(); }
+        function renderLogs() { document.getElementById('logContent').innerHTML = logs.join(''); }
+
+        // Render 50 stores
+        function initStores() {
+            let html = '';
+            for(let i=1; i<=50; i++) {
+                html += `<div class="store" id="st${i}">${i}</div>`;
+            }
+            document.getElementById('storeMap').innerHTML = html;
+        }
+
+        function buyBlockchain() {
+            hasBlockchain = true;
+            let btn = document.getElementById('btnUpgrade');
+            btn.innerText = "✅ ĐÃ NÂNG CẤP BLOCKCHAIN ($50,000)";
+            btn.classList.add('bought');
+            btn.onclick = null;
+
+            let sys = document.getElementById('sysBox');
+            sys.className = "sys-status blockchain";
+            sys.innerHTML = `
+                <h2 style="margin: 0 0 10px 0; color: var(--primary);">HỆ THỐNG HIỆN TẠI: IBM Food Trust (Blockchain)</h2>
+                <div style="color: var(--text-main);">Dữ liệu ghi chuỗi theo thời gian thực (Nông dân -> Logistics -> Kho -> Kệ hàng). Bất biến và Minh bạch!</div>
+            `;
+            addLog(`<span style="color:var(--primary); font-weight:bold;">Đã đầu tư $50,000 nâng cấp hệ thống Blockchain Traceability.</span>`);
+        }
+
+        async function startRecall() {
+            document.getElementById('btnRecall').disabled = true;
+            let btn = document.getElementById('btnRecall');
+
+            if (!hasBlockchain) {
+                // TRUYỀN THỐNG: Tốn 7 ngày. Blanket Recall.
+                addLog(`🔍 Đang lật sổ sách Kế toán...`); await new Promise(r => setTimeout(r, 1000));
+                btn.innerText = "TRUY VẾT: NGÀY 1...";
+                addLog(`🔍 Gọi điện cho Nhà xe phân phối... (Họ không bắt máy)`); await new Promise(r => setTimeout(r, 1000));
+                btn.innerText = "TRUY VẾT: NGÀY 3...";
+                addLog(`🔍 Tìm thấy kho trung chuyển, nhưng hàng đã trộn lẫn lộn!`); await new Promise(r => setTimeout(r, 1000));
+                btn.innerText = "TRUY VẾT: NGÀY 7...";
+                
+                addLog(`🚨 <strong style="color:var(--danger)">THẤT BẠI TRUY VẾT!</strong> Không thể xác định lô hàng bẩn đang ở đâu.`);
+                addLog(`🔥 Buộc phải thực hiện <strong>Blanket Recall (Thu hồi Toàn bộ)</strong> để đảm bảo an toàn.`);
+                
+                // Đỏ toàn bộ 50 cửa hàng
+                for(let i=1; i<=50; i++) {
+                    document.getElementById('st'+i).classList.add('recalled');
+                }
+                
+                addLog(`<span style="color:var(--danger); font-size:1.1rem; font-weight:bold;">📉 TỔNG KẾT: Đã vứt bỏ 50/50 cửa hàng. Thiệt hại Mất Trắng: $5,000,000! Danh tiếng công ty sụp đổ.</span>`);
+                btn.innerText = "SỤP ĐỔ: MẤT $5,000,000";
+
+            } else {
+                // BLOCKCHAIN: Tốn 2 giây. Surgical Recall.
+                btn.innerText = "ĐANG TRUY XUẤT BLOCKCHAIN...";
+                addLog(`⚡ <strong style="color:var(--primary)">Hệ thống Blockchain quét Hash lô hàng #8A4F...</strong>`); 
+                await new Promise(r => setTimeout(r, 800)); // Nhanh
+                
+                addLog(`✅ <strong>TRUY XUẤT THÀNH CÔNG SAU 2.2 GIÂY!</strong> Phát hiện lô rau bẩn đến từ Nông trại X.`);
+                addLog(`📍 Lô rau đó đang nằm chính xác tại Cửa hàng: #12, #34, #48.`);
+                
+                // Chỉ đỏ 3 cửa hàng
+                document.getElementById('st12').classList.add('recalled');
+                document.getElementById('st34').classList.add('recalled');
+                document.getElementById('st48').classList.add('recalled');
+
+                addLog(`💉 Thực hiện <strong>Surgical Recall (Thu hồi Cắt lớp)</strong> chỉ ở 3 cửa hàng này. 47 cửa hàng khác vẫn bán bình thường.`);
+                
+                addLog(`<span style="color:var(--success); font-size:1.1rem; font-weight:bold;">🎉 TỔNG KẾT: Thu hồi thành công 3/50 cửa hàng. Thiệt hại: $300,000. Cứu được $4,700,000! Thương hiệu được ca ngợi vì xử lý nhanh.</span>`);
+                btn.innerText = "GIẢI CỨU THÀNH CÔNG!";
+                btn.style.background = "var(--success)";
+            }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = initStores;
+    </script>
+</body>
+</html>

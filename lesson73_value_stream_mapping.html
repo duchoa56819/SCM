@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 73: Value Stream Mapping (VSM)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .box-area { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin-bottom: 20px;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 73: Bản đồ Chuỗi Giá Trị (VSM)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự thật phũ phàng: 95% thời gian trong Nhà máy là lãng phí.</p>
+        </header>
+
+        <div class="box-area">
+            <h2 style="color:white; margin-top:0;">Thời Gian Lĩnh Hàng (Lead Time) = 22 Ngày</h2>
+            <div style="font-size: 1.2rem; color: var(--success); font-weight: bold;">⏳ Value-Added Time (Chế tác thực sự): Chỉ có 10 Phút!</div>
+            <div style="font-size: 1.2rem; color: var(--danger); font-weight: bold; margin-top: 10px;">❌ Non Value-Added (Chờ đợi, Lưu kho): 21 Ngày, 23 Giờ, 50 Phút!</div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Value Stream Mapping (VSM)</h3>
+            <p>VSM là công cụ chẩn đoán sức khỏe tuyệt đỉnh của phương pháp Lean Manufacturing.</p>
+            <ul>
+                <li><strong>Góc khuất của Công nhân:</strong> Giám đốc thường ép công nhân phải làm việc nhanh hơn (giảm thời gian Value-Added từ 10 phút xuống 8 phút). Nhưng họ không nhìn ra rằng, sản phẩm sau khi làm xong lại bị quăng vào kho chờ 14 ngày trước khi được đem đi sơn!</li>
+                <li><strong>Sức mạnh của VSM:</strong> Bằng cách vẽ lại toàn bộ dòng chảy Vật Chất và Thông Tin, VSM vạch trần những đống Tồn Kho (WIP) nằm ứ đọng giữa các trạm máy. Thay vì vắt kiệt sức công nhân, Lean Manager sẽ thay đổi Layout nhà xưởng để hàng làm xong được chuyển đi sơn ngay lập tức, cắt giảm Lead Time từ 22 ngày xuống còn 2 ngày!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 71: Milk Run Logistics</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        .card h2 { margin-top: 0; color: white;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--success); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 71: Tuyến Giao Của Người Vắt Sữa (Milk Run)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Toyota gom phụ tùng như thế nào để kho luôn trống?</p>
+        </header>
+
+        <div class="grid-2">
+            <div class="card" style="border-color: var(--danger);">
+                <h2>🚚 Giao Trực Tiếp (Direct)</h2>
+                <div style="font-weight:bold; color:var(--danger); margin-bottom: 10px;">Nhà cung cấp tự mang hàng tới</div>
+                <div style="color:var(--text-muted); font-size:0.95rem; text-align: left;">
+                    - Nhà CC A chờ đủ 1 xe tải lớn rồi mới giao.<br>
+                    - Nhà CC B, C cũng vậy.<br>
+                    - <b>Hậu quả:</b> Kho của bạn thỉnh thoảng lại nhận một khối lượng hàng khổng lồ, gây tràn kho. Thời gian chờ đợi giữa các chuyến rất lâu.
+                </div>
+            </div>
+            <div class="card" style="border-color: var(--success);">
+                <h2>🥛 Milk Run (Vòng Lặp Thu Gom)</h2>
+                <div style="font-weight:bold; color:var(--success); margin-bottom: 10px;">Bạn tự cho 1 xe đi gom hàng</div>
+                <div style="color:var(--text-muted); font-size:0.95rem; text-align: left;">
+                    - Thay vì đợi, bạn phái 1 chiếc xe tải chạy vòng qua nhà máy A, B, C mỗi buổi sáng.<br>
+                    - Lấy mỗi nơi 1 ít hàng hóa vừa đủ dùng trong ngày.<br>
+                    - <b>Kết quả:</b> Hàng về liên tục mỗi ngày, số lượng nhỏ. Tồn kho nhà máy gần như bằng 0 (JIT).
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #10b981;">📚 Cẩm nang Milk Run</h3>
+            <p>Thuật ngữ này xuất phát từ thói quen của người giao sữa thời xưa: Chạy một vòng đi qua mọi nhà, vừa bỏ sữa mới vừa thu vỏ chai cũ về.</p>
+            <ul>
+                <li><strong>Triết lý Just-In-Time:</strong> Đừng bắt nhà cung cấp chở nguyên 1 xe tải hàng tốn 1 tháng sản xuất đến cho bạn. Tồn kho đó sẽ làm kẹt vốn. Hãy tự điều 1 chiếc xe chạy tuyến cố định (Cyclic routing) qua nhà các Supplier để nhặt hàng mỗi ngày. Cứ lấy đủ dùng cho xưởng sản xuất hôm nay là được!</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

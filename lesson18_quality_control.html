@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 18: Quản trị Chất lượng (Six Sigma & AQL)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #2e1065, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #d946ef, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .qc-box { background: rgba(0,0,0,0.4); border: 2px solid var(--warning); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 50%; text-align: left; font-weight: bold; font-size: 1.1rem;}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--warning);}
+        .slider-val { width: 10%; font-size: 1.5rem; font-weight: 900; color: var(--primary); text-align: right;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--warning), #ea580c); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 18: Lấy Mẫu Chất Lượng (Acceptance Sampling)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự cân bằng giữa Chi phí Kiểm định (Inspection Cost) và Chi phí Đền bù (COPQ).</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Mỗi Lô hàng gồm <strong>10,000 Microchips</strong>. Tỷ lệ lỗi ngẫu nhiên: 0.5% - 5%.<br>
+            - Phí thuê kỹ sư kiểm định (Test): <strong>$1 / 1 chip</strong>.<br>
+            - Phí đền bù nếu chip lỗi lọt tới tay Khách (COPQ): <strong>$100 / 1 chip lỗi</strong>.<br>
+            <em>Bạn sẽ thiết lập Chính sách Kiểm tra thế nào để Lãng phí là THẤP NHẤT sau 10 lô hàng?</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">LÔ HÀNG (BATCH)</div><div class="stat-value" id="batchStat">1 / 10</div></div>
+            <div><div style="color: var(--text-muted);">LỖI ĐÃ LỌT (PPM)</div><div class="stat-value" id="defectStat" style="color: var(--danger)">0</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG LÃNG PHÍ ($)</div><div class="stat-value" id="costStat" style="color: var(--warning)">$0</div></div>
+        </div>
+
+        <div class="qc-box">
+            <h2 style="margin-top: 0; color: var(--warning);">CHÍNH SÁCH KIỂM TRA (AQL)</h2>
+            
+            <div class="slider-group">
+                <div class="slider-label">Cỡ Mẫu Kiểm Tra (Sample Size):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Bạn rút ra bao nhiêu chip để test?)</span></div>
+                <input type="range" id="sampleSize" min="0" max="10000" step="50" value="0" oninput="updateSliders()">
+                <div class="slider-val" id="valSample">0</div>
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label">Mức Chấp Nhận Lỗi (Acceptance C):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Nếu trong mẫu có > C lỗi, Trả về nguyên lô)</span></div>
+                <input type="range" id="acceptNum" min="0" max="50" value="0" oninput="updateSliders()">
+                <div class="slider-val" id="valAccept">0</div>
+            </div>
+            
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 20px;">
+                <em>Chi phí Kiểm tra dự kiến mỗi lô: <strong id="estCost" style="color: white; font-size: 1.2rem;">$0</strong></em>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="processBatch()" style="flex: 1.5;">NHẬP KHO LÔ NÀY ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="none">Mẫu 1: Niềm tin tuyệt đối (Test = 0)</option>
+                    <option value="full">Mẫu 2: Cực đoan 100% (Test = 10,000)</option>
+                    <option value="aql">Mẫu 3: Tiêu chuẩn AQL (Test = 200, C = 2)</option>
+                </select>
+                <button class="action-btn" onclick="applyTemplate()" style="flex: 1; background: #475569; margin: 0; padding: 10px;">Gắn Mẫu</button>
+                <button class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success); margin: 0; padding: 10px;">🤖 AI XỬ LÝ</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #8b5cf6; margin-top: 0;">📚 Cẩm nang Quản trị Chất lượng (Six Sigma)</h3>
+            <p>Bài toán này mô phỏng Khái niệm <strong>Cost of Poor Quality (COPQ)</strong> - Chi phí của Sự yếu kém.</p>
+            <ul>
+                <li><strong>Không kiểm tra (Niềm tin tuyệt đối):</strong> Bạn tiết kiệm được 100% tiền kiểm định. Nhưng nếu xui xẻo nhận trúng 1 lô hàng có 5% lỗi (500 chip hỏng), khi xuất cho Khách, bạn bị phạt đền bù $50,000! Một đòn chí mạng phá sản công ty.</li>
+                <li><strong>Kiểm tra 100% (Cực đoan):</strong> Bạn bắt được mọi lỗi. Bạn không bao giờ bị đền bù. NHƯNG phí kiểm tra là $10,000/lô. Sau 10 lô bạn đốt $100,000 tiền thuê kỹ sư kiểm tra. Đây là sự lãng phí tài nguyên khủng khiếp. Không có nhà máy nào làm vậy.</li>
+                <li><strong>Lấy mẫu Thống kê (Acceptance Sampling - Chuẩn quân đội MIL-STD-105):</strong> Bạn chỉ rút ra 200 con chip để kiểm (Tốn $200). 
+                <br>➔ Nếu phát hiện >= 3 lỗi trong 200 con này, xác suất cao lô này là "Lô rác". Bạn <strong>Trả Về (Reject)</strong> nguyên lô 10,000 cái cho NCC, không tốn 1 cắc đền bù khách hàng. 
+                <br>➔ Nếu chỉ có 1 lỗi, lô này khá sạch. Bạn Chấp Nhận (Accept) nguyên lô. Sẽ có vài con chip lỗi lọt lưới (tốn vài trăm đô đền bù), nhưng con số này RẤT NHỎ so với 10 ngàn đô nếu phải đi test toàn bộ. Tổng lãng phí được tối thiểu hóa (Minimizing Total Cost of Quality)!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { batch: 1, maxBatches: 10, defectsLeaked: 0, totalWaste: 0, logs: [] };
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Lô ${state.batch}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function updateSliders() {
+            let s = document.getElementById('sampleSize').value;
+            let a = document.getElementById('acceptNum').value;
+            document.getElementById('valSample').innerText = s;
+            document.getElementById('valAccept').innerText = a;
+            document.getElementById('estCost').innerText = '$' + parseInt(s).toLocaleString();
+        }
+
+        function applyTemplate() {
+            let strat = document.getElementById('aiStrategy').value;
+            if (strat === 'none') { document.getElementById('sampleSize').value = 0; document.getElementById('acceptNum').value = 0; }
+            if (strat === 'full') { document.getElementById('sampleSize').value = 10000; document.getElementById('acceptNum').value = 0; }
+            if (strat === 'aql') { document.getElementById('sampleSize').value = 200; document.getElementById('acceptNum').value = 2; }
+            updateSliders();
+        }
+
+        // Mô phỏng phân phối nhị thức (Binomial approximation)
+        function getDefectsInSample(sampleSize, defectRate) {
+            let found = 0;
+            for(let i=0; i<sampleSize; i++) {
+                if(Math.random() < defectRate) found++;
+            }
+            return found;
+        }
+
+        function processBatch() {
+            if (state.batch > state.maxBatches) return;
+
+            let sampleSize = parseInt(document.getElementById('sampleSize').value);
+            let acceptNum = parseInt(document.getElementById('acceptNum').value);
+            
+            // Random defect rate for this batch (0.1% to 5%)
+            let trueDefectRate = (Math.random() * 4.9 + 0.1) / 100;
+            let totalDefectsInBatch = Math.round(10000 * trueDefectRate);
+
+            let inspectionCost = sampleSize * 1;
+            let penaltyCost = 0;
+            let msg = "";
+
+            if (sampleSize === 10000) {
+                // Kiểm 100% -> Bắt hết
+                state.totalWaste += inspectionCost;
+                msg = `Test 100%. Phí test: $10,000. Bắt được toàn bộ ${totalDefectsInBatch} lỗi. Lãng phí tuần: <strong style="color:var(--warning)">$10,000</strong>.`;
+            } else if (sampleSize === 0) {
+                // Không kiểm -> Lọt lưới 100%
+                penaltyCost = totalDefectsInBatch * 100;
+                state.defectsLeaked += totalDefectsInBatch;
+                state.totalWaste += penaltyCost;
+                msg = `Không Test! Lô này có ${totalDefectsInBatch} lỗi lọt lưới. Đền bù: <strong style="color:var(--danger)">${format(penaltyCost)}</strong>! Lãng phí tuần: <strong style="color:var(--danger)">${format(penaltyCost)}</strong>.`;
+            } else {
+                // AQL Sampling
+                let foundInSample = getDefectsInSample(sampleSize, trueDefectRate);
+                
+                if (foundInSample > acceptNum) {
+                    // REJECT BATCH
+                    msg = `Test ${sampleSize} (tốn $${sampleSize}). Phát hiện ${foundInSample} lỗi > Limit(${acceptNum}). <strong>TRẢ VỀ NGUYÊN LÔ (Reject)!</strong> Lãng phí tuần: <strong style="color:var(--success)">$${sampleSize}</strong>.`;
+                    state.totalWaste += inspectionCost;
+                } else {
+                    // ACCEPT BATCH
+                    let remainingDefects = totalDefectsInBatch - foundInSample;
+                    penaltyCost = remainingDefects * 100;
+                    state.defectsLeaked += remainingDefects;
+                    state.totalWaste += (inspectionCost + penaltyCost);
+                    msg = `Test ${sampleSize} (tốn $${sampleSize}). Phát hiện ${foundInSample} lỗi <= Limit(${acceptNum}). <strong>CHẤP NHẬN LÔ (Accept)</strong>. Lọt lưới ${remainingDefects} lỗi (Phạt đền $${penaltyCost}). Lãng phí tuần: <strong style="color:var(--warning)">${format(inspectionCost + penaltyCost)}</strong>.`;
+                }
+            }
+
+            addLog(msg);
+            state.batch++;
+            renderUI();
+
+            if (state.batch > state.maxBatches) {
+                addLog(`<span style="color:var(--primary); font-size:1.1rem; font-weight:bold;">🎉 TỔNG KẾT: Có ${state.defectsLeaked} chip hỏng đến tay Khách. TỔNG LÃNG PHÍ (Tiền Test + Tiền Đền): ${format(state.totalWaste)}</span>`);
+            }
+        }
+
+        function renderUI() {
+            document.getElementById('batchStat').innerText = state.batch <= state.maxBatches ? `${state.batch} / 10` : "END";
+            document.getElementById('defectStat').innerText = state.defectsLeaked;
+            document.getElementById('costStat').innerText = format(state.totalWaste);
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.batch > state.maxBatches) return;
+            isPlaying = true;
+            applyTemplate();
+            
+            while(state.batch <= state.maxBatches) {
+                await new Promise(r => setTimeout(r, 400));
+                processBatch();
+                await new Promise(r => setTimeout(r, 600));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = updateSliders;
+    </script>
+</body>
+</html>

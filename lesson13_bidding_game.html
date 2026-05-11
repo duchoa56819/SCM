@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 13: Lời nguyền của Người thắng thầu (Game Theory)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #eab308; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #422006, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fde047, #ca8a04); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+        
+        .bid-area { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 16px; border: 1px solid var(--warning); text-align: center; margin-bottom: 20px;}
+        .cost-display { font-size: 3rem; font-weight: 900; color: var(--danger); margin: 10px 0; }
+        
+        input[type="number"] { width: 50%; padding: 15px; background: rgba(0,0,0,0.5); border: 2px solid var(--primary); color: white; border-radius: 8px; font-size: 1.5rem; text-align: center; font-weight: bold;}
+        
+        .action-btn { padding: 15px 40px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #a16207); color: white; cursor: pointer; transition: all 0.3s; margin-top: 20px; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(234, 179, 8, 0.4); }
+        
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .competitor { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .competitor.winner { background: rgba(16, 185, 129, 0.2); border-color: var(--success); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 13: Lời Nguyền Người Thắng (Winner's Curse)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Đấu thầu ngược B2B. Trả giá thấp thì thắng thầu nhưng lỗ vốn, trả cao thì trượt.</p>
+        </header>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">VÒNG ĐẤU</div><div class="stat-value" id="roundStat">1 / 10</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG LỢI NHUẬN</div><div class="stat-value" id="profitStat" style="color: var(--success)">$0</div></div>
+            <div><div style="color: var(--text-muted);">SỐ LẦN THẮNG</div><div class="stat-value" id="winStat" style="color: var(--primary)">0</div></div>
+        </div>
+
+        <div class="bid-area">
+            <h2 style="margin-top: 0; color: var(--text-muted);">GÓI THẦU VÒNG <span id="currentRound">1</span></h2>
+            <div style="font-size: 1.1rem;">Giá vốn thực tế của bạn để làm dự án này là:</div>
+            <div class="cost-display" id="myCost">$75</div>
+            <div style="font-size: 0.9rem; color: var(--warning); margin-bottom: 20px;"><em>(Lưu ý: 2 Đối thủ AI cũng có mức giá vốn sàn xấp xỉ bạn, nhưng họ không biết giá của bạn)</em></div>
+            
+            <label style="display: block; font-weight: bold; margin-bottom: 10px;">BẠN BÁO GIÁ BAO NHIÊU CHO KHÁCH HÀNG?</label>
+            <input type="number" id="myBid" placeholder="Nhập giá thầu...">
+            <br>
+            <button class="action-btn" onclick="submitBid()">NỘP HỒ SƠ THẦU ➔</button>
+
+            <div class="result-grid" id="resultGrid" style="display: none;">
+                <div class="competitor" id="compYou">
+                    <div>🙋‍♂️ BẠN</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; margin-top: 5px;" id="valYou">$0</div>
+                </div>
+                <div class="competitor" id="compA">
+                    <div>🤖 ĐỐI THỦ A</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; margin-top: 5px;" id="valA">$0</div>
+                </div>
+                <div class="competitor" id="compB">
+                    <div>🤖 ĐỐI THỦ B</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; margin-top: 5px;" id="valB">$0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #eab308; margin-top: 0;">📚 Cẩm nang Lý thuyết Trò chơi (Game Theory)</h3>
+            <p>Trong Đấu thầu mù (Sealed-bid Auction), bạn đối mặt với <strong>Lời nguyền của Người thắng (Winner's Curse)</strong>.</p>
+            <ul>
+                <li><strong>Trượt thầu (Lợi nhuận = 0):</strong> Nếu bạn cộng biên độ lợi nhuận quá dày (ví dụ Giá vốn 75, bạn báo 150), bạn sẽ vĩnh viễn trượt thầu vì các đối thủ sẵn sàng ăn lãi mỏng hơn.</li>
+                <li><strong>Thắng nhưng Lỗ:</strong> Nếu vì quá khát khao thắng, bạn báo giá 74. Bạn chắc chắn thắng, nhưng mỗi gói thầu bạn làm xong lại âm $1. Bạn càng làm càng nợ. Đây chính là Winner's Curse ngoài đời thực trong ngành Xây dựng và Logistics.</li>
+                <li><strong>Cân bằng Nash (Nash Equilibrium):</strong> Mức cộng giá (Markup) tối ưu thường rơi vào khoảng 10% - 20% trên giá vốn tùy thuộc vào số lượng đối thủ. (Ví dụ vốn 75, báo giá 85-90). Hãy chấp nhận việc <strong>bạn phải thua phần lớn số vòng</strong>. Việc bạn kiên nhẫn trượt thầu ở những vòng mà đối thủ phá giá, rồi ăn lãi gộp ở 1-2 vòng mà đối thủ đặt cao, mới là cách một tay chơi Lõi Đời sống sót!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { round: 1, maxRounds: 10, profit: 0, wins: 0, currentCost: 0, logs: [] };
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>Vòng ${state.round}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function generateCost() {
+            state.currentCost = Math.floor(Math.random() * 50) + 50; // Cost from 50 to 100
+            document.getElementById('myCost').innerText = format(state.currentCost);
+            document.getElementById('myBid').value = '';
+            document.getElementById('resultGrid').style.display = 'none';
+        }
+
+        function submitBid() {
+            if (state.round > state.maxRounds) return;
+            
+            let myBid = parseInt(document.getElementById('myBid').value);
+            if(isNaN(myBid) || myBid <= 0) { alert("Vui lòng nhập giá thầu hợp lệ!"); return; }
+
+            // AI Competitors logic (They estimate cost and add random markup)
+            let compAcost = state.currentCost + (Math.floor(Math.random() * 20) - 10); // Noise +/- 10
+            let compBcost = state.currentCost + (Math.floor(Math.random() * 20) - 10);
+            
+            let bidA = Math.floor(compAcost * (1 + (Math.random() * 0.3))); // 0% to 30% markup
+            let bidB = Math.floor(compBcost * (1 + (Math.random() * 0.3)));
+
+            // Find winner (Lowest bid)
+            let lowest = Math.min(myBid, bidA, bidB);
+            
+            document.getElementById('resultGrid').style.display = 'grid';
+            document.getElementById('valYou').innerText = format(myBid);
+            document.getElementById('valA').innerText = format(bidA);
+            document.getElementById('valB').innerText = format(bidB);
+            
+            document.querySelectorAll('.competitor').forEach(el => el.classList.remove('winner'));
+
+            if (myBid === lowest) {
+                document.getElementById('compYou').classList.add('winner');
+                let net = myBid - state.currentCost;
+                state.profit += net;
+                state.wins++;
+                let logColor = net >= 0 ? 'var(--success)' : 'var(--danger)';
+                let msg = net >= 0 ? `BẠN THẮNG! Lãi ròng: ${format(net)}.` : `🚨 DÍNH LỜI NGUYỀN! Bạn thắng thầu nhưng Giá thầu thấp hơn Giá vốn. LỖ: ${format(net)}!`;
+                addLog(msg, logColor);
+            } else if (bidA === lowest) {
+                document.getElementById('compA').classList.add('winner');
+                addLog(`Đối thủ A trúng thầu với giá ${format(bidA)}. Bạn trượt.`, 'var(--text-muted)');
+            } else {
+                document.getElementById('compB').classList.add('winner');
+                addLog(`Đối thủ B trúng thầu với giá ${format(bidB)}. Bạn trượt.`, 'var(--text-muted)');
+            }
+
+            state.round++;
+            renderUI();
+
+            if (state.round <= state.maxRounds) {
+                setTimeout(generateCost, 1500); // Next round after delay
+            } else {
+                setTimeout(() => {
+                    addLog(`🎉 KẾT THÚC! Bạn thắng ${state.wins}/10 vòng. TỔNG LỢI NHUẬN: ${format(state.profit)}`, 'var(--primary)');
+                    document.getElementById('roundStat').innerText = "END";
+                }, 1000);
+            }
+        }
+
+        function renderUI() {
+            if(state.round <= state.maxRounds) {
+                document.getElementById('roundStat').innerText = `${state.round} / 10`;
+                document.getElementById('currentRound').innerText = state.round;
+            }
+            document.getElementById('profitStat').innerText = format(state.profit);
+            document.getElementById('profitStat').style.color = state.profit < 0 ? 'var(--danger)' : 'var(--success)';
+            document.getElementById('winStat').innerText = state.wins;
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = generateCost;
+    </script>
+</body>
+</html>

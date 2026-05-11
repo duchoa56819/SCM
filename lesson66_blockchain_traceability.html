@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 66: Truy Xuất Nguồn Gốc Blockchain</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #0ea5e9; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #082f49, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #38bdf8, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--danger);}
+        
+        .network-area { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 30px 20px; position: relative; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .node { width: 100px; text-align: center; z-index: 2;}
+        .node-icon { width: 60px; height: 60px; background: var(--panel-bg); border: 2px solid var(--border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin: 0 auto 10px auto; transition: all 0.5s;}
+        .node-lbl { font-size: 0.8rem; font-weight: bold; color: var(--text-muted);}
+
+        .path-line { position: absolute; height: 4px; background: var(--border); z-index: 1; top: 60px; transition: all 0.5s;}
+        .p1 { left: 80px; right: 65%; }
+        .p2 { left: 35%; right: 35%; }
+        .p3 { left: 65%; right: 80px; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-trad { background: linear-gradient(135deg, #475569, #1e293b); }
+        .btn-block { background: linear-gradient(135deg, var(--primary), #0369a1); }
+        .btn-opt:hover { transform: translateY(-2px); filter: brightness(1.2);}
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-val { font-size: 1.8rem; font-weight: 900; color: white; margin-top: 5px; }
+
+        .status-msg { font-size: 1.1rem; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); min-height: 25px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 66: Blockchain Truy Xuất Nguồn Gốc</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cuộc giải cứu thương hiệu trị giá hàng triệu Đô la trong vài giây.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>🚨 BÁO ĐỘNG ĐỎ:</strong> Cục An Toàn Thực Phẩm vừa thông báo có 5 khách hàng bị ngộ độc sau khi uống Cà phê của hãng bạn tại Siêu thị.<br>
+            Bạn bắt buộc phải <strong>Thu hồi sản phẩm (Recall)</strong> để điều tra. Vấn đề là công ty bạn nhập cà phê từ hàng trăm Nông trại khác nhau, trộn lẫn rồi rang xay.<br>
+            <em>Hành động: Chọn phương pháp Truy vết để tìm ra chính xác Nông trại nào sử dụng thuốc trừ sâu cấm.</em>
+        </div>
+
+        <div class="network-area">
+            <div class="path-line p1" id="line1"></div>
+            <div class="path-line p2" id="line2"></div>
+            <div class="path-line p3" id="line3"></div>
+
+            <div class="node">
+                <div class="node-icon" id="nFarm">👨‍🌾</div>
+                <div class="node-lbl">100 Nông trại</div>
+            </div>
+            <div class="node">
+                <div class="node-icon" id="nRoast">🏭</div>
+                <div class="node-lbl">Nhà máy Rang Xay</div>
+            </div>
+            <div class="node">
+                <div class="node-icon" id="nDist">🚚</div>
+                <div class="node-lbl">Kho Phân phối</div>
+            </div>
+            <div class="node">
+                <div class="node-icon" id="nStore" style="border-color: var(--danger); box-shadow: 0 0 15px var(--danger);">🛒</div>
+                <div class="node-lbl" style="color:var(--danger)">Siêu thị (Phát hiện)</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-opt btn-trad" onclick="traceTrad()" id="btnTrad">Giấy tờ Truyền Thống (ERP cũ)</button>
+            <button class="btn-opt btn-block" onclick="traceBlock()" id="btnBlock">Sổ cái Blockchain (Smart Contract)</button>
+        </div>
+
+        <div class="status-msg" id="statusMsg">Đang chờ lệnh truy vết...</div>
+
+        <div class="dashboard">
+            <div><div style="color: var(--text-muted);">THỜI GIAN TRUY VẾT</div><div class="stat-val" id="timeStat">-</div></div>
+            <div><div style="color: var(--text-muted);">LƯỢNG HÀNG PHẢI THU HỒI</div><div class="stat-val" id="lossStat">-</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #38bdf8;">📚 Cẩm nang Blockchain trong Logistics</h3>
+            <p>Rất nhiều người nghĩ Blockchain chỉ dùng để chơi tiền ảo (Bitcoin). Nhưng Walmart và IBM đã dùng nó để cứu sống ngành công nghiệp thực phẩm.</p>
+            <ul>
+                <li><strong>Căn bệnh mù thông tin (Information Silos):</strong> Trong mô hình truyền thống, Nông trại dùng sổ tay, Nhà máy dùng phần mềm A, Kho dùng phần mềm B. Khi có sự cố ngộ độc, công ty phải gửi email, lục tung kho giấy tờ rách nát để dò ngược lại lô hàng. Việc này mất <strong>1 tuần đến 2 tháng</strong>! Trong thời gian đó, công ty buộc phải thu hồi TẤT CẢ các loại cà phê trên toàn quốc để đề phòng, thiệt hại hàng Chục triệu Đô.</li>
+                <li><strong>Quyền năng Sổ cái phân tán (Ledger):</strong> Với Blockchain, mỗi khi hạt cà phê chuyển tay (Từ nông dân -> Tài xế -> Nhà máy), một mã Hash điện tử không thể tẩy xóa được ghi vào hệ thống. Mọi thứ liên kết thành một chuỗi (Chain).</li>
+                <li><strong>Truy vết thần tốc:</strong> Khi có ca ngộ độc, Giám đốc chỉ cần gõ mã lô hàng trên vỏ hộp vào máy tính. Trong vòng <strong>2 Giây</strong>, Blockchain chỉ đích danh: "Đó là Cà phê của Nông trại X, thu hoạch ngày 15/10, do tài xế Y chở". Công ty chỉ việc thu hồi đúng 100 gói cà phê của lô đó. Danh tiếng được bảo vệ tuyệt đối, và chi phí thu hồi chỉ còn vài ngàn Đô la!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function resetNodes() {
+            document.querySelectorAll('.node-icon').forEach(n => {
+                n.style.borderColor = 'var(--border)';
+                n.style.background = 'var(--panel-bg)';
+                n.style.boxShadow = 'none';
+            });
+            document.getElementById('nStore').style.borderColor = 'var(--danger)';
+            document.getElementById('nStore').style.boxShadow = '0 0 15px var(--danger)';
+
+            document.querySelectorAll('.path-line').forEach(l => {
+                l.style.background = 'var(--border)';
+            });
+        }
+
+        function traceTrad() {
+            document.getElementById('btnTrad').disabled = true;
+            document.getElementById('btnBlock').disabled = true;
+            resetNodes();
+            
+            let msg = document.getElementById('statusMsg');
+            msg.innerText = "⏳ Đang lật tung kho hồ sơ giấy tờ và gửi email cho Nhà máy...";
+            msg.style.color = "var(--warning)";
+
+            // Step 1
+            setTimeout(() => {
+                document.getElementById('line3').style.background = "var(--warning)";
+                document.getElementById('nDist').style.borderColor = "var(--warning)";
+                msg.innerText = "⏳ Ngày 3: Tìm thấy hồ sơ tại Kho Phân Phối. Đang gọi điện hỏi Nhà máy...";
+            }, 1000);
+
+            // Step 2
+            setTimeout(() => {
+                document.getElementById('line2').style.background = "var(--warning)";
+                document.getElementById('nRoast').style.borderColor = "var(--warning)";
+                msg.innerText = "⏳ Ngày 7: Nhà máy báo cáo lô hàng bị trộn lẫn từ 50 nông trại khác nhau. Không thể phân biệt!";
+            }, 2500);
+
+            // Final
+            setTimeout(() => {
+                document.getElementById('line1').style.background = "var(--danger)";
+                document.getElementById('nFarm').style.borderColor = "var(--danger)";
+                document.getElementById('nFarm').style.background = "rgba(239, 68, 68, 0.2)";
+                
+                msg.innerText = "💥 THẤT BẠI: Mất 14 Ngày. Không tìm được thủ phạm chính xác. Buộc phải thu hồi TẤT CẢ!";
+                msg.style.color = "var(--danger)";
+                
+                document.getElementById('timeStat').innerText = "14 Ngày";
+                document.getElementById('timeStat').style.color = "var(--danger)";
+                document.getElementById('lossStat').innerText = "100% (Thiệt hại $10M)";
+                document.getElementById('lossStat').style.color = "var(--danger)";
+
+                document.getElementById('btnTrad').disabled = false;
+                document.getElementById('btnBlock').disabled = false;
+            }, 4000);
+        }
+
+        function traceBlock() {
+            resetNodes();
+            let msg = document.getElementById('statusMsg');
+            msg.innerText = "⚡ Quét mã Smart Contract trên mạng lưới Blockchain...";
+            msg.style.color = "var(--primary)";
+
+            // Instant Trace
+            setTimeout(() => {
+                document.querySelectorAll('.path-line').forEach(l => l.style.background = "var(--success)");
+                document.querySelectorAll('.node-icon').forEach(n => {
+                    n.style.borderColor = "var(--success)";
+                    n.style.boxShadow = "0 0 15px var(--success)";
+                });
+
+                msg.innerHTML = "✅ <b>HOÀN TẤT:</b> Nhận diện chính xác <u style='color:var(--success)'>Nông trại số 42</u> thu hoạch ngày 15/10 vi phạm hóa chất!";
+                msg.style.color = "var(--success)";
+                
+                document.getElementById('timeStat').innerText = "2 Giây";
+                document.getElementById('timeStat').style.color = "var(--success)";
+                document.getElementById('lossStat').innerText = "0.5% (Thiệt hại $10K)";
+                document.getElementById('lossStat').style.color = "var(--success)";
+            }, 500); // Super fast
+        }
+    </script>
+</body>
+</html>

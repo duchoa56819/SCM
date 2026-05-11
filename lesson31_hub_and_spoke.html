@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 31: Mạng lưới Trục-Nan hoa (Hub-and-Spoke)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #172554, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .btn-toggle { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .btn-opt { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary); border-radius: 8px; background: transparent; color: var(--text-main); cursor: pointer; transition: all 0.3s;}
+        .btn-opt.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(59,130,246,0.5);}
+
+        .map-container { position: relative; width: 400px; height: 300px; margin: 0 auto 20px auto; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid var(--border);}
+        
+        .city { position: absolute; width: 50px; height: 50px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black; z-index: 2;}
+        #cityHub { top: 125px; left: 175px; background: var(--danger); color: white; box-shadow: 0 0 15px var(--danger);} /* Center */
+        #cityB { top: 30px; left: 50px; }
+        #cityC { top: 30px; right: 50px; }
+        #cityD { bottom: 30px; left: 175px; }
+
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        line { stroke: rgba(255,255,255,0.2); stroke-width: 3; stroke-dasharray: 5,5; transition: all 0.5s; }
+        line.active { stroke: var(--primary); stroke-width: 4; stroke-dasharray: none; animation: dash 1s linear infinite;}
+        
+        @keyframes dash { to { stroke-dashoffset: -20; } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1.1rem; line-height: 1.6;}
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 31: Mạng lưới Trục - Nan hoa (Hub-and-Spoke)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bí mật giúp FedEx và Giao Hàng Tiết Kiệm vận hành hàng triệu bưu kiện mỗi đêm.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Có 3 Tỉnh (B, C, D) cần gửi hàng qua lại cho nhau (B gửi C, C gửi D, D gửi B...). Tổng cộng có 6 nhu cầu tuyến đường.<br>
+            - Phí cố định để mở 1 Tuyến Xe tải: <strong>$1,000/chuyến</strong>.<br>
+            - Phí phân loại tại Trạm trung chuyển (Hub - Điểm Đỏ): <strong>$100/chuyến</strong>.<br>
+            <em>Bạn sẽ mở Xe chạy thẳng (Point-to-Point) hay xây Trạm Hub tập trung?</em>
+        </div>
+
+        <div class="btn-toggle">
+            <button class="btn-opt active" id="btnP2P" onclick="switchMode('p2p')">Mạng Lưới Chạy Thẳng (Point-to-Point)</button>
+            <button class="btn-opt" id="btnHub" onclick="switchMode('hub')">Mạng Lưới Hub-and-Spoke (Qua Trạm Đỏ)</button>
+        </div>
+
+        <div class="map-container">
+            <svg id="lines">
+                <!-- P2P lines -->
+                <line id="l_bc" x1="75" y1="55" x2="325" y2="55" class="active"/>
+                <line id="l_bd" x1="75" y1="55" x2="200" y2="270" class="active"/>
+                <line id="l_cd" x1="325" y1="55" x2="200" y2="270" class="active"/>
+                
+                <!-- Hub lines -->
+                <line id="l_hb" x1="200" y1="150" x2="75" y2="55" />
+                <line id="l_hc" x1="200" y1="150" x2="325" y2="55" />
+                <line id="l_hd" x1="200" y1="150" x2="200" y2="270" />
+            </svg>
+            <div class="city" id="cityB">B</div>
+            <div class="city" id="cityC">C</div>
+            <div class="city" id="cityD">D</div>
+            <div class="city" id="cityHub" style="opacity: 0.3;">HUB</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">SỐ TUYẾN XE (ROUTES)</div><div class="stat-value" id="routeStat" style="color: var(--warning)">3 Tuyến</div></div>
+            <div><div style="color: var(--text-muted);">TỐC ĐỘ GIAO HÀNG</div><div class="stat-value" id="timeStat" style="color: var(--success)">Rất Nhanh</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG CHI PHÍ ($)</div><div class="stat-value" id="costStat" style="color: var(--danger)">$3,000</div></div>
+        </div>
+
+        <div class="detail-box" id="detailContent">
+            <!-- Filled by JS -->
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #3b82f6; margin-top: 0;">📚 Cẩm nang Network Design (Hub-and-Spoke)</h3>
+            <p>Cha đẻ của FedEx, Fred Smith, đã thay đổi thế giới Logistics bằng bài tiểu luận ở Đại học Yale về mô hình Hub-and-Spoke (dù giáo sư của ông cho điểm C vì cho rằng nó bất khả thi).</p>
+            <ul>
+                <li><strong>Point-to-Point (Chạy thẳng):</strong> Mỗi thành phố muốn gửi hàng cho nhau phải tự thuê 1 chiếc xe. Nếu có 100 thành phố, số chuyến xe cần mở là N*(N-1)/2 = 4,950 chuyến xe! Chi phí cố định (Tiền mua xe, thuê tài xế) là một con số khổng lồ, trong khi đa số xe chạy trống không (Vì lượng hàng từ xã A sang xã B rất ít). Bù lại hàng đi rất nhanh.</li>
+                <li><strong>Hub-and-Spoke (Quy tụ về Hub):</strong> Mở 1 Siêu Trạm (Hub) ở giữa. 100 thành phố chỉ cần đúng 100 chuyến xe chạy về Hub. Tại Hub, hàng hóa được phân loại (Sort) rồi chất lên các xe đi tỏa ra lại. Tiết kiệm được 4,850 chuyến xe! Lợi thế kinh tế nhờ quy mô (Economies of Scale) được phát huy tối đa. Hàng từ A lên xe tải đi chung với hàng đi C, D... chất đầy ắp xe tải, kéo chi phí trung bình trên mỗi kiện hàng xuống mức cực rẻ. Đổi lại, hàng đi chậm hơn vì phải vòng qua Hub.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function switchMode(mode) {
+            document.getElementById('btnP2P').classList.remove('active');
+            document.getElementById('btnHub').classList.remove('active');
+            
+            let lines = document.querySelectorAll('line');
+            lines.forEach(l => l.classList.remove('active'));
+
+            let dBox = document.getElementById('detailContent');
+
+            if (mode === 'p2p') {
+                document.getElementById('btnP2P').classList.add('active');
+                document.getElementById('cityHub').style.opacity = '0.3';
+                
+                document.getElementById('l_bc').classList.add('active');
+                document.getElementById('l_bd').classList.add('active');
+                document.getElementById('l_cd').classList.add('active');
+
+                // N = 3 nodes. Routes = 3.
+                // Note: Thực tế n*(n-1) = 6 chiều, nhưng gộp khứ hồi là 3 tuyến.
+                document.getElementById('routeStat').innerText = "3 Tuyến Khứ hồi";
+                document.getElementById('timeStat').innerText = "Nhanh (Đi thẳng)";
+                document.getElementById('timeStat').style.color = "var(--success)";
+                document.getElementById('costStat').innerText = "$3,000";
+                document.getElementById('costStat').style.color = "var(--danger)";
+
+                dBox.innerHTML = `
+                    <strong style="color:var(--danger)">CÔNG THỨC CHI PHÍ POINT-TO-POINT:</strong><br>
+                    - Cần duy trì 3 Tuyến xe tải riêng biệt. Mỗi tuyến tốn $1,000 phí cố định (Lương tài xế, Khấu hao xe).<br>
+                    - Tổng = 3 x $1,000 = <strong>$3,000</strong>.<br>
+                    - Lãng phí: Xe chạy từ B sang C mang rất ít hàng. Xe bị dư tải (chạy rỗng thùng) rất nhiều.
+                `;
+
+            } else {
+                document.getElementById('btnHub').classList.add('active');
+                document.getElementById('cityHub').style.opacity = '1';
+                
+                document.getElementById('l_hb').classList.add('active');
+                document.getElementById('l_hc').classList.add('active');
+                document.getElementById('l_hd').classList.add('active');
+                document.getElementById('l_hb').style.stroke = "var(--warning)";
+                document.getElementById('l_hc').style.stroke = "var(--warning)";
+                document.getElementById('l_hd').style.stroke = "var(--warning)";
+
+                // 3 routes to Hub.
+                document.getElementById('routeStat').innerText = "3 Tuyến Về HUB";
+                document.getElementById('timeStat').innerText = "Chậm (Phân loại)";
+                document.getElementById('timeStat').style.color = "var(--warning)";
+                document.getElementById('costStat').innerText = "$2,100";
+                document.getElementById('costStat').style.color = "var(--success)";
+
+                dBox.innerHTML = `
+                    <strong style="color:var(--success)">CÔNG THỨC CHI PHÍ HUB-AND-SPOKE:</strong><br>
+                    - Gom hàng: Hàng từ B đi C và D đều chất CHUNG lên 1 chiếc xe bự để chạy về HUB. Thùng xe đầy ắp! Lợi thế quy mô (Economies of Scale).<br>
+                    - Phí tuyến xe: Mặc dù vẫn là 3 tuyến (Hub-B, Hub-C, Hub-D), nhưng nếu mạng lưới mở rộng lên 10 tỉnh, số chuyến xe của Hub chỉ là 10 (thay vì 45 của P2P).<br>
+                    - Phí phân loại tại Hub: $100.<br>
+                    - Tổng chi phí tưởng tượng của Hub thấp hơn nhiều so với việc mở tuyến bừa bãi. Nhược điểm là Hàng từ B sang C phải chạy vòng qua Hub rồi mới tới C.
+                `;
+            }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { switchMode('p2p'); };
+    </script>
+</body>
+</html>

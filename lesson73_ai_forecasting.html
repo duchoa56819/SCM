@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 73: Dự Báo Nhu Cầu bằng AI (Machine Learning Forecasting)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #2e1065, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .chart-container { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px; position: relative; height: 350px; margin-bottom: 20px; display: flex; align-items: flex-end; justify-content: space-around;}
+        
+        .day-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; width: 12%; position: relative;}
+        .bar-real { position: absolute; bottom: 0; width: 30%; background: rgba(255,255,255,0.2); border-radius: 4px 4px 0 0; left: 10%;}
+        .bar-sma { position: absolute; bottom: 0; width: 30%; background: var(--danger); border-radius: 4px 4px 0 0; left: 45%;}
+        .bar-ai { position: absolute; bottom: 0; width: 30%; background: var(--primary); border-radius: 4px 4px 0 0; left: 80%; display: none;}
+        
+        .lbl { font-size: 0.8rem; margin-top: 5px; color: var(--text-muted); position: absolute; bottom: -25px; width: 100%; text-align: center;}
+
+        /* Weather indicator */
+        .weather { position: absolute; top: 20px; font-size: 1.5rem; }
+
+        .legend { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;}
+        .leg-item { display: flex; align-items: center; gap: 5px; font-size: 0.9rem;}
+        .leg-box { width: 15px; height: 15px; border-radius: 3px; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; flex: 1; color: white;}
+        .btn-sma { background: linear-gradient(135deg, #ef4444, #991b1b); }
+        .btn-ai { background: linear-gradient(135deg, var(--primary), #5b21b6); }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;}
+        .stat-val { font-size: 2rem; font-weight: 900; color: white; margin-top: 5px; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 73: AI Forecasting (Dự báo Nhu cầu)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự mù lòa của Dữ liệu Lịch sử trước những Biến động Thời tiết.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn điều hành Chuỗi cửa hàng Kem lạnh. Lượng bán các ngày T2, T3, T4 rất ổn định (Khoảng 30 ly/ngày).<br>
+            Đột nhiên, bản tin thời tiết báo Thứ 6 và Thứ 7 sẽ có <strong>Sóng Nhiệt Kỷ Lục (Nắng nóng cục bộ)</strong>.<br>
+            - <strong>Toán học cũ (Trung bình Động - SMA):</strong> Dự báo bằng cách cộng trung bình 3 ngày trước. Hệ thống mù quáng báo sản xuất 30 ly.<br>
+            - <strong>Machine Learning (AI):</strong> AI đọc được Dữ liệu Thời tiết API và Trend Twitter. Nó biết nắng nóng sẽ làm nhu cầu tăng gấp 3!<br>
+            <em>Bấm BẬT TRÍ TUỆ NHÂN TẠO để xem AI đã cứu bạn khỏi việc "Cháy hàng" như thế nào.</em>
+        </div>
+
+        <div class="legend">
+            <div class="leg-item"><div class="leg-box" style="background: rgba(255,255,255,0.3);"></div> Nhu cầu Thực tế (Khách Mua)</div>
+            <div class="leg-item"><div class="leg-box" style="background: var(--danger);"></div> Dự báo Cũ (SMA)</div>
+            <div class="leg-item"><div class="leg-box" style="background: var(--primary);"></div> Dự báo AI (Machine Learning)</div>
+        </div>
+
+        <div class="chart-container" id="chartArea">
+            <div class="day-col">
+                <div class="weather">☁️</div>
+                <div class="bar-real" style="height: 30%;"></div>
+                <div class="bar-sma" style="height: 30%;"></div>
+                <div class="bar-ai" style="height: 30%;"></div>
+                <div class="lbl">T2</div>
+            </div>
+            <div class="day-col">
+                <div class="weather">☁️</div>
+                <div class="bar-real" style="height: 35%;"></div>
+                <div class="bar-sma" style="height: 30%;"></div>
+                <div class="bar-ai" style="height: 35%;"></div>
+                <div class="lbl">T3</div>
+            </div>
+            <div class="day-col">
+                <div class="weather">⛅</div>
+                <div class="bar-real" style="height: 32%;"></div>
+                <div class="bar-sma" style="height: 32%;"></div>
+                <div class="bar-ai" style="height: 32%;"></div>
+                <div class="lbl">T4</div>
+            </div>
+            <div class="day-col">
+                <div class="weather">☀️</div>
+                <div class="bar-real" style="height: 40%;"></div>
+                <div class="bar-sma" style="height: 32%;"></div>
+                <div class="bar-ai" style="height: 40%;"></div>
+                <div class="lbl">T5</div>
+            </div>
+            <!-- SPIKE DAYS -->
+            <div class="day-col" style="background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                <div class="weather">🔥</div>
+                <div class="bar-real" style="height: 90%;"></div>
+                <div class="bar-sma" style="height: 35%;"></div>
+                <div class="bar-ai" style="height: 85%;"></div>
+                <div class="lbl">T6 (Nắng!)</div>
+            </div>
+            <div class="day-col" style="background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                <div class="weather">🔥</div>
+                <div class="bar-real" style="height: 95%;"></div>
+                <div class="bar-sma" style="height: 55%;"></div>
+                <div class="bar-ai" style="height: 92%;"></div>
+                <div class="lbl">T7 (Nắng!)</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-ai" id="btnRunAi" onclick="activateAI()">BẬT DỰ BÁO A.I. (KẾT HỢP DỮ LIỆU THỜI TIẾT)</button>
+        </div>
+
+        <div class="dashboard">
+            <div style="border-right: 1px solid var(--border);">
+                <div style="color: var(--danger); font-weight:bold;">MÔ HÌNH CŨ (TRUNG BÌNH)</div>
+                <div class="stat-val" style="color: var(--danger);">CHÁY HÀNG</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top:10px;">Thiếu hụt 60 ly kem vào Thứ 6.<br>Khách hàng chửi rủa bỏ đi.</div>
+            </div>
+            <div id="aiRes" style="opacity: 0.3;">
+                <div style="color: var(--primary); font-weight:bold;">MÔ HÌNH A.I.</div>
+                <div class="stat-val" style="color: var(--primary);" id="aiStatVal">...</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top:10px;" id="aiStatDesc">Đang chờ kích hoạt...</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Dự báo Nhu Cầu (Demand Planning)</h3>
+            <p>Trong kỷ nguyên biến động, Dữ liệu quá khứ không còn là Tấm gương phản chiếu Tương lai.</p>
+            <ul>
+                <li><strong>Căn bệnh của Time-Series (Chuỗi thời gian):</strong> Hàng thập kỷ, các công ty dùng SMA (Simple Moving Average) hoặc ARIMA. Bạn lấy tổng doanh thu 3 tháng trước chia 3 để dự báo tháng này. Điểm yếu chết người: Khi có biến cố bất ngờ (Covid, Khuyến mãi bùng nổ của đối thủ, Thời tiết cực đoan), những mô hình này <strong>LUÔN BỊ ĐỘ TRỄ (Lagging)</strong>. Nó nhận ra quá muộn, gây ra thảm họa đứt hàng (Stockout).</li>
+                <li><strong>Machine Learning (Mô hình đa biến):</strong> AI không chỉ nhìn vào Doanh thu quá khứ. Nó "ăn" hàng trăm biến số ngoại cảnh (External Variables): Dự báo thời tiết, Số lượt search Google Trend, Lịch nghỉ lễ, Lịch thi đấu World Cup, GDP vĩ mô. Thuật toán tìm ra sự tương quan: "Cứ nhiệt độ vượt 35°C thì nhu cầu kem tăng 300%".</li>
+                <li><strong>Kết quả:</strong> Vào ngày Thứ 6, trong khi hệ thống cũ ngủ quên và báo sản xuất 35 ly, AI cảnh báo bạn tăng cường nhân sự và sản xuất 85 ly. Khách ùn ùn kéo đến, bạn hốt trọn lợi nhuận mà không lọt một xu nào vào tay đối thủ!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function activateAI() {
+            document.getElementById('btnRunAi').disabled = true;
+            document.getElementById('btnRunAi').innerText = "✅ A.I. ĐÃ ĐƯỢC KÍCH HOẠT!";
+            
+            // Show AI Bars
+            let aiBars = document.querySelectorAll('.bar-ai');
+            aiBars.forEach(b => {
+                b.style.display = 'block';
+                // Trigger reflow for animation
+                let h = b.style.height;
+                b.style.height = '0%';
+                setTimeout(() => { b.style.height = h; }, 50);
+            });
+
+            // Make old SMA bars slightly transparent to highlight AI
+            let smaBars = document.querySelectorAll('.bar-sma');
+            smaBars.forEach(b => {
+                b.style.opacity = 0.3;
+            });
+
+            // Update Dashboard
+            let aiRes = document.getElementById('aiRes');
+            aiRes.style.opacity = 1;
+            
+            document.getElementById('aiStatVal').innerText = "THẮNG ĐẬM";
+            document.getElementById('aiStatDesc').innerHTML = "AI tăng sản xuất trước 1 ngày.<br>Bán sạch 85 ly kem. Khách cực kỳ hài lòng!";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 45: Quy hoạch Tuyến tính (Linear Programming - Blending Problem)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);}
+        
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .control-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px;}
+        .slider-group { margin-bottom: 20px;}
+        .slider-label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px;}
+        input[type="range"] { width: 100%; accent-color: var(--primary);}
+        
+        .result-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .req-bar-container { background: #333; height: 25px; border-radius: 12px; overflow: hidden; position: relative; margin-top: 5px; border: 1px solid var(--border);}
+        .req-bar-fill { height: 100%; width: 0%; background: var(--danger); transition: all 0.3s;}
+        .req-target-line { position: absolute; top: 0; bottom: 0; left: 100%; width: 2px; background: white; z-index: 10;}
+        .req-text { position: absolute; width: 100%; text-align: center; font-size: 0.85rem; font-weight: bold; line-height: 25px; z-index: 20; text-shadow: 0 0 5px black;}
+
+        .stat-huge { font-size: 3rem; font-weight: 900; color: white; margin: 10px 0;}
+        .status-msg { font-size: 1.1rem; font-weight: bold; height: 30px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 45: Quy hoạch Tuyến tính (Linear Programming)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bài toán Pha trộn (Blending Problem) kinh điển trong ngành Thức ăn chăn nuôi & Hóa chất.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Nhà máy sản xuất Cám Heo cần tạo ra 1 mẻ cám đạt chuẩn Dinh dưỡng tối thiểu: <strong>Ít nhất 40g Protein</strong> và <strong>Ít nhất 30g Tinh bột</strong>.<br>
+            Bạn có 2 nguyên liệu:<br>
+            - <strong>Bột Cá (A):</strong> Giá $4/kg. Mỗi kg chứa 5g Protein & 2g Tinh bột.<br>
+            - <strong>Bột Ngô (B):</strong> Giá $2/kg. Mỗi kg chứa 2g Protein & 6g Tinh bột.<br>
+            <em>Nhiệm vụ: Trộn A và B sao cho ĐẠT CHUẨN DINH DƯỠNG, nhưng CHI PHÍ (Cost) là RẺ NHẤT!</em>
+        </div>
+
+        <div class="dashboard">
+            <div class="control-panel">
+                <h3 style="margin-top: 0; color: var(--primary);">NHẬP LIỆU NGUYÊN LIỆU</h3>
+                <div class="slider-group">
+                    <div class="slider-label"><span>🐟 Bột Cá (A) - $4/kg</span> <span id="valA">0 kg</span></div>
+                    <input type="range" id="sliderA" min="0" max="20" value="0" oninput="calculate()">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>🌽 Bột Ngô (B) - $2/kg</span> <span id="valB">0 kg</span></div>
+                    <input type="range" id="sliderB" min="0" max="20" value="0" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="result-panel">
+                <h3 style="margin-top: 0; color: var(--success);">TỔNG CHI PHÍ SẢN XUẤT</h3>
+                <div class="stat-huge" id="costText">$0</div>
+                <div class="status-msg" id="statusMsg" style="color: var(--danger);">❌ Cám thiếu dinh dưỡng! Heo sẽ còi cọc.</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px;">
+            <div style="font-weight: bold; margin-bottom: 5px;">RÀNG BUỘC (CONSTRAINTS) DINH DƯỠNG:</div>
+            
+            <div style="margin-top: 15px;">Mục tiêu 1: Protein (Tối thiểu 40g)</div>
+            <div class="req-bar-container">
+                <div class="req-bar-fill" id="protFill"></div>
+                <div class="req-target-line" style="left: 66.6%;"></div> <!-- Target is 40 out of max 60 -->
+                <div class="req-text" id="protText">0 / 40g</div>
+            </div>
+
+            <div style="margin-top: 15px;">Mục tiêu 2: Tinh bột (Tối thiểu 30g)</div>
+            <div class="req-bar-container">
+                <div class="req-bar-fill" id="carbFill"></div>
+                <div class="req-target-line" style="left: 60%;"></div> <!-- Target is 30 out of max 50 -->
+                <div class="req-text" id="carbText">0 / 30g</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Vận trù học (Operations Research)</h3>
+            <p>Trong kinh doanh thực tế, bạn phải đối mặt với một hàm mục tiêu (Minimize Cost) và hàng tá rào cản (Constraints). Mô hình này được giải bằng thuật toán <strong>Simplex</strong> của George Dantzig.</p>
+            <ul>
+                <li><strong>Cạm bẫy "Xài đồ rẻ":</strong> Nếu bạn chỉ dùng toàn Bột Ngô (vì nó rẻ $2/kg). Bạn kéo thanh trượt Ngô lên tới 20kg. Tinh bột dư thừa dạt dào (120g). Protein đạt 40g (vừa đủ chuẩn). Tổng chi phí là <strong>$40</strong>. Cám hợp lệ, nhưng bạn đang bị hớ!</li>
+                <li><strong>Điểm cực trị (Corner Point):</strong> Toán học chứng minh rằng điểm tối ưu luôn nằm ở giao điểm của các đường ràng buộc. Hãy thử tổ hợp kết hợp cả Cá và Ngô. <br>Gợi ý: Hãy thử mức <strong>Cá (A) = 7kg</strong> và <strong>Ngô (B) = 3kg</strong>. Bạn sẽ thấy điều kỳ diệu! Chi phí giảm xuống chỉ còn <strong style="color:var(--success)">$34</strong> mà dinh dưỡng (Protein 41g, Tinh bột 32g) vẫn xuất sắc vượt chuẩn. Bạn vừa tiết kiệm được 15% ngân sách cho tập đoàn!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            let a = parseInt(document.getElementById('sliderA').value);
+            let b = parseInt(document.getElementById('sliderB').value);
+            
+            document.getElementById('valA').innerText = a + " kg";
+            document.getElementById('valB').innerText = b + " kg";
+
+            let cost = (a * 4) + (b * 2);
+            document.getElementById('costText').innerText = "$" + cost;
+
+            let prot = (a * 5) + (b * 2);
+            let carb = (a * 2) + (b * 6);
+
+            let protFill = document.getElementById('protFill');
+            let protText = document.getElementById('protText');
+            let carbFill = document.getElementById('carbFill');
+            let carbText = document.getElementById('carbText');
+
+            protText.innerText = prot + " / 40g";
+            carbText.innerText = carb + " / 30g";
+
+            // Visual scale (prot max 60, carb max 50)
+            protFill.style.width = Math.min((prot / 60) * 100, 100) + '%';
+            carbFill.style.width = Math.min((carb / 50) * 100, 100) + '%';
+
+            let isProtOk = prot >= 40;
+            let isCarbOk = carb >= 30;
+
+            protFill.style.background = isProtOk ? "var(--success)" : "var(--danger)";
+            carbFill.style.background = isCarbOk ? "var(--success)" : "var(--danger)";
+
+            let msg = document.getElementById('statusMsg');
+            if (isProtOk && isCarbOk) {
+                if (cost === 34) {
+                    msg.innerText = "🏆 TUYỆT ĐỈNH! TÌM ĐƯỢC ĐIỂM TỐI ƯU TOÁN HỌC ($34)!";
+                    msg.style.color = "var(--primary)";
+                    document.getElementById('costText').style.color = "var(--primary)";
+                } else {
+                    msg.innerText = "✅ Cám hợp lệ (Đạt chuẩn). Cố gắng ép giá xuống nữa!";
+                    msg.style.color = "var(--success)";
+                    document.getElementById('costText').style.color = "white";
+                }
+            } else {
+                msg.innerText = "❌ Cám thiếu dinh dưỡng! Heo sẽ còi cọc.";
+                msg.style.color = "var(--danger)";
+                document.getElementById('costText').style.color = "white";
+            }
+        }
+
+        window.onload = calculate;
+    </script>
+</body>
+</html>

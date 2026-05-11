@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 46: Mô hình Cậu bé bán báo (Newsvendor Model)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f43f5e; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #4c0519, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .dashboard { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; margin-bottom: 20px;}
+        
+        .control-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;}
+        
+        .number-input { background: rgba(255,255,255,0.1); border: 2px solid var(--primary); color: white; font-size: 2rem; font-weight: bold; width: 100px; text-align: center; border-radius: 8px; padding: 10px; margin: 15px 0;}
+        .number-input:focus { outline: none; border-color: var(--success); }
+
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; background: linear-gradient(135deg, var(--primary), #9f1239); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4); }
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 250px; overflow-y: auto; border: 1px solid var(--border);}
+        .log-entry { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+        .log-entry:nth-child(even) { background: rgba(255,255,255,0.02); }
+        .col-day { width: 60px; color: var(--text-muted); }
+        .col-dem { width: 120px; font-weight: bold;}
+        .col-sold { width: 100px; color: var(--primary);}
+        .col-prof { flex: 1; text-align: right; font-weight: bold;}
+
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 46: Mô hình Cậu bé bán báo (Newsvendor)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Quản trị tồn kho Hàng dễ hỏng, Vòng đời ngắn (Rau củ, Thời trang, Báo chí).</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Mỗi sáng, bạn phải quyết định mua bao nhiêu tờ báo để bán. Báo cũ của ngày hôm qua là tờ giấy lộn (Giá trị = $0).<br>
+            - <strong>Giá mua vào:</strong> $1/tờ. <strong>Giá bán ra:</strong> $3/tờ. ➔ Lời $2 (Cu). Nếu ế, lỗ $1 (Co).<br>
+            - Lượng khách mua mỗi ngày dao động ngẫu nhiên (Trung bình là 100 người, có hôm 80, có hôm 120).<br>
+            <em>Hỏi: Nhập đúng 100 tờ có phải là tối ưu không? Hãy nhập số lượng và chạy giả lập 10 ngày để xem kết quả!</em>
+        </div>
+
+        <div class="dashboard">
+            <div class="control-panel">
+                <h3 style="margin-top: 0; color: var(--text-muted);">SỐ BÁO MUA VÀO MỖI SÁNG</h3>
+                <input type="number" class="number-input" id="orderQty" value="100" min="50" max="150">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Thử các con số: 100, 110, 120...</div>
+                <button class="action-btn" onclick="runSim()">MỞ QUẦY BÁN (10 NGÀY)</button>
+            </div>
+
+            <div class="log-container" id="logContent">
+                <!-- Logs here -->
+                <div style="text-align: center; color: var(--text-muted); margin-top: 50px;">Bấm nút để chạy giả lập kinh doanh 10 ngày...</div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">TỔNG LỢI NHUẬN</div><div class="stat-value" id="totProfStat" style="color: var(--success)">$0</div></div>
+            <div><div style="color: var(--text-muted);">SỐ BÁO VỨT BỎ (Ế)</div><div class="stat-value" id="wasteStat" style="color: var(--danger)">0 Tờ</div></div>
+            <div><div style="color: var(--text-muted);">KHÁCH BỎ ĐI (HẾT HÀNG)</div><div class="stat-value" id="lostStat" style="color: var(--warning)">0 Người</div></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #fb7185;">📚 Cẩm nang Thống kê Học (Critical Ratio)</h3>
+            <p>Trực giác luôn bảo chúng ta: "Trung bình bán 100 tờ thì cứ nhập đúng 100 tờ". Đây là sai lầm chết người trong môn Quản trị Chuỗi cung ứng.</p>
+            <ul>
+                <li><strong>Phân tích Rủi ro Bất đối xứng:</strong> Nếu bạn bán thiếu 1 tờ (Understock), bạn mất cơ hội kiếm <strong>$2 tiền lời</strong>. Nhưng nếu bạn ế 1 tờ (Overstock), bạn chỉ <strong>mất $1 tiền vốn</strong>. Sự đau đớn khi Thiếu hàng cao gấp ĐÔI sự đau đớn khi Ế hàng!</li>
+                <li><strong>Tỷ lệ Tới hạn (Critical Ratio):</strong> Công thức toán học là: Cu / (Cu + Co) = 2 / (2 + 1) = 0.667 (66.7%). Nghĩa là bạn phải nhập một lượng hàng sao cho tỷ lệ đáp ứng (Service Level) đạt 66.7%.</li>
+                <li><strong>Lời giải Tối ưu (Optimal Q*):</strong> Áp dụng hàm phân phối chuẩn (Z-score của 66.7% là ~0.43). Số lượng đặt hàng hoàn hảo = Mean + (Z * StdDev) = 100 + (0.43 * 20) = <strong>109 tờ báo</strong>. Hãy thử nhập 109 và chạy giả lập nhiều lần, bạn sẽ thấy lợi nhuận trung bình luôn cao hơn so với việc nhập 100 tờ! <em>(Lưu ý: Do tính ngẫu nhiên, bạn phải chạy mô phỏng 2-3 lần để thấy xu hướng).</em></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Box-Muller transform for normal distribution
+        function randomNormal(mean, stdDev) {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+            num = num / 10.0 + 0.5; // Translate to 0 -> 1
+            if (num > 1 || num < 0) return randomNormal(mean, stdDev); // resample
+            num *= 10;
+            return Math.round((num - 5) * (stdDev*1.5) + mean);
+        }
+
+        function runSim() {
+            let q = parseInt(document.getElementById('orderQty').value);
+            if (isNaN(q) || q < 1) q = 100;
+
+            let logs = document.getElementById('logContent');
+            logs.innerHTML = '';
+            
+            let totalProfit = 0;
+            let totalWaste = 0;
+            let totalLost = 0;
+
+            for(let i=1; i<=10; i++) {
+                // Generate random demand (Mean 100, SD 20)
+                let demand = Math.round(randomNormal(100, 20));
+                
+                let sold = Math.min(q, demand);
+                let leftover = Math.max(0, q - demand);
+                let lostSales = Math.max(0, demand - q);
+                
+                // Profit = (Sold * 3) - (Q * 1)
+                // Equivalently: (Sold * 2) - (Leftover * 1)
+                let profit = (sold * 2) - (leftover * 1);
+
+                totalProfit += profit;
+                totalWaste += leftover;
+                totalLost += lostSales;
+
+                let color = profit > 180 ? 'var(--success)' : (profit < 100 ? 'var(--danger)' : 'white');
+
+                logs.innerHTML += `
+                    <div class="log-entry">
+                        <div class="col-day">Ngày ${i}</div>
+                        <div class="col-dem">Nhu cầu: ${demand}</div>
+                        <div class="col-sold">Bán: ${sold}</div>
+                        <div class="col-prof" style="color:${color}">Lãi: $${profit}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('totProfStat').innerText = "$" + totalProfit.toLocaleString();
+            document.getElementById('wasteStat').innerText = totalWaste + " Tờ";
+            document.getElementById('lostStat').innerText = totalLost + " Người";
+
+            // Scroll to bottom
+            logs.scrollTop = logs.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 27: Chiến lược Đấu giá Vận tải (Spot vs Contract Market)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #3b0764, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #d946ef, #7e22ce); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .contract-box { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 50%; text-align: left; font-weight: bold; font-size: 1.1rem;}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--primary);}
+        .slider-val { width: 15%; font-size: 1.5rem; font-weight: 900; color: var(--warning); text-align: right;}
+
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #6b21a8); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(107, 33, 168, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 27: Thị trường Vận tải (Spot vs Contract)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Bạn sẽ khóa giá Cố định với Hãng xe, hay thả nổi ra Thị trường Giao ngay (Hên xui)?</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Mỗi tháng bạn cần thuê <strong>10 Xe tải</strong> để giao hàng. Kế hoạch chạy trong 12 Tháng.<br>
+            - <strong>Giá Contract (Hợp đồng năm):</strong> Khóa cứng ở mức <strong>$1,200/xe</strong> cho cả năm. Rất an toàn.<br>
+            - <strong>Giá Spot (Thị trường Giao ngay):</strong> Biến động theo mùa! Tháng ế ẩm có thể rẻ mạt ($800/xe). Nhưng mùa Lễ tết, cháy xe, nó có thể vọt lên $2,500/xe!<br>
+            <em>Mục tiêu: Kéo thanh trượt để thiết lập Tỷ lệ pha trộn (Portfolio) giữa Contract và Spot sao cho Tổng chi phí 12 tháng là Thấp nhất.</em>
+        </div>
+
+        <div class="contract-box">
+            <h2 style="margin-top: 0; color: var(--primary);">PHÂN BỔ DANH MỤC XE TẢI (ĐẦU NĂM)</h2>
+            
+            <div class="slider-group">
+                <div class="slider-label" style="color: var(--success);">Tỷ lệ Hợp đồng Cố định (Contract Rate):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(An toàn nhưng Giá cao)</span></div>
+                <input type="range" id="contractPct" min="0" max="100" value="70" oninput="updateSliders()">
+                <div class="slider-val" id="valContract" style="color: var(--success);">70%</div>
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label" style="color: var(--warning);">Tỷ lệ Mua thị trường (Spot Market):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Phần còn lại - Hên xui theo mùa)</span></div>
+                <div style="flex: 1; margin: 0 15px;"></div>
+                <div class="slider-val" id="valSpot" style="color: var(--warning);">30%</div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">THÁNG</div><div class="stat-value" id="monthStat">1 / 12</div></div>
+            <div><div style="color: var(--text-muted);">GIÁ SPOT TRÊN THỊ TRƯỜNG</div><div class="stat-value" id="spotStat" style="color: var(--warning)">?</div></div>
+            <div><div style="color: var(--text-muted);">CHI PHÍ THỰC TẾ (CỦA BẠN)</div><div class="stat-value" id="costStat" style="color: var(--success)">$0</div></div>
+        </div>
+
+        <button class="action-btn" id="btnLaunch" onclick="runMonth()">CHẠY MÔ PHỎNG THÁNG 1 ➔</button>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #d946ef; margin-top: 0;">📚 Cẩm nang Thị trường Vận tải (Freight Procurement)</h3>
+            <p><strong>Routing Guide (Sổ tay điều xe)</strong> của các tập đoàn khổng lồ như P&G hay Unilever luôn phân bổ xe tải theo dạng Danh mục (Portfolio).</p>
+            <ul>
+                <li><strong>100% Contract (Bảo thủ):</strong> Rất nhàn nhã. Tuy nhiên, vào những tháng thấp điểm (Tháng 2, 3), giá xe ngoài đường có $800, nhưng bạn vẫn phải nghiến răng trả $1,200 cho nhà xe vì đã trót ký hợp đồng. Bạn mất tiền oan uổng.</li>
+                <li><strong>100% Spot (Liều mạng):</strong> Bạn ăn đẫm vào các tháng thấp điểm vì bắt được xe rẻ ($800). NHƯNG, đến mùa Black Friday (Tháng 11, 12), cháy xe toàn quốc, bạn buộc phải đấu giá $2,500/xe để cứu hàng. Tiền lời của 10 tháng trước bay sạch trong 1 tháng!</li>
+                <li><strong>Danh mục Tối ưu (Optimal Portfolio - Thường là 70-80% Contract, 20-30% Spot):</strong> Ký hợp đồng cứng cho nhu cầu vận tải cơ bản. Chừa lại 20-30% ra chợ Spot. 
+                <br>➔ Khi Spot rẻ: Bạn thuê ngoài 30% này để kéo chi phí trung bình xuống.
+                <br>➔ Khi Spot đắt vọt: Dù phải trả $2,500 cho 3 xe, bạn vẫn có 7 xe được bảo vệ giá ở mức $1,200. Bạn vừa hớt được váng mùa ế, vừa sống sót qua mùa cao điểm.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { month: 1, maxMonths: 12, myTotalCost: 0, fullContractCost: 0, fullSpotCost: 0, logs: [] };
+        let lockedPct = 0;
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Tháng ${state.month}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function updateSliders() {
+            if(state.month > 1) {
+                alert("Bạn chỉ được thiết lập tỷ lệ Portfolio 1 lần vào Đầu năm!");
+                document.getElementById('contractPct').value = lockedPct;
+                return;
+            }
+            let cPct = parseInt(document.getElementById('contractPct').value);
+            document.getElementById('valContract').innerText = cPct + '%';
+            document.getElementById('valSpot').innerText = (100 - cPct) + '%';
+        }
+
+        // Giá Spot giả lập theo mùa
+        const spotPrices = [
+            800,   // T1: Ế ẩm
+            750,   // T2: Ế ẩm
+            900,   // T3: Bình thường
+            1000,  // T4: Bình thường
+            1100,  // T5: Bình thường
+            1300,  // T6: Bắt đầu tăng
+            1200,  // T7: Đi ngang
+            1400,  // T8: Cao
+            1500,  // T9: Cao
+            1800,  // T10: Mùa Lễ Hội
+            2500,  // T11: Đỉnh điểm Black Friday
+            2000   // T12: Christmas
+        ];
+
+        function runMonth() {
+            if (state.month > state.maxMonths) return;
+            
+            if (state.month === 1) {
+                // Lock the slider
+                lockedPct = parseInt(document.getElementById('contractPct').value);
+                document.getElementById('contractPct').disabled = true;
+            }
+
+            let cPct = lockedPct / 100;
+            let sPct = 1 - cPct;
+
+            let contractTrucks = Math.round(10 * cPct);
+            let spotTrucks = 10 - contractTrucks;
+
+            let contractPrice = 1200;
+            let spotPrice = spotPrices[state.month - 1]; // Lấy giá theo mảng
+
+            document.getElementById('spotStat').innerText = format(spotPrice);
+
+            // My Cost
+            let myContractSpend = contractTrucks * contractPrice;
+            let mySpotSpend = spotTrucks * spotPrice;
+            let myTotal = myContractSpend + mySpotSpend;
+
+            // Benchmarks
+            let benchContract = 10 * contractPrice;
+            let benchSpot = 10 * spotPrice;
+
+            state.myTotalCost += myTotal;
+            state.fullContractCost += benchContract;
+            state.fullSpotCost += benchSpot;
+
+            let color = myTotal <= benchContract ? 'var(--success)' : 'var(--danger)';
+            addLog(`Giá Spot: $${spotPrice}. Bạn chi <strong style="color:${color}">${format(myTotal)}</strong> (Hợp đồng: ${contractTrucks}x$1.2k, Giao ngay: ${spotTrucks}x$${(spotPrice/1000).toFixed(1)}k).`);
+
+            state.month++;
+            renderUI();
+
+            if (state.month <= state.maxMonths) {
+                document.getElementById('btnLaunch').innerText = `CHẠY MÔ PHỎNG THÁNG ${state.month} ➔`;
+            } else {
+                document.getElementById('btnLaunch').disabled = true;
+                
+                let sumMsg = `🎉 TỔNG KẾT 1 NĂM (120 Xe tải):<br>
+                - Chiến lược 100% Spot: ${format(state.fullSpotCost)}<br>
+                - Chiến lược 100% Contract: ${format(state.fullContractCost)}<br>
+                - <strong>Danh mục Của bạn (${lockedPct}% Contract): <span style="color:var(--success)">${format(state.myTotalCost)}</span></strong>`;
+                
+                addLog(sumMsg);
+                document.getElementById('monthStat').innerText = "END";
+            }
+        }
+
+        function renderUI() {
+            if(state.month <= state.maxMonths) document.getElementById('monthStat').innerText = `${state.month} / 12`;
+            document.getElementById('costStat').innerText = format(state.myTotalCost);
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

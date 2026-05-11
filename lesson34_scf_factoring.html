@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 34: Tài chính Chuỗi cung ứng (Supply Chain Finance)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #6ee7b7, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .control-box { background: rgba(0,0,0,0.4); border: 2px solid var(--warning); border-radius: 16px; padding: 25px; margin-bottom: 20px; text-align: center;}
+        
+        .slider-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;}
+        .slider-label { width: 50%; text-align: left; font-weight: bold; font-size: 1.1rem;}
+        input[type="range"] { flex: 1; margin: 0 15px; accent-color: var(--warning);}
+        .slider-val { width: 15%; font-size: 1.8rem; font-weight: 900; color: var(--warning); text-align: right;}
+
+        .action-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; color: white; cursor: pointer; transition: all 0.3s; flex: 1; text-transform: uppercase;}
+        .btn-bad { background: linear-gradient(135deg, #b45309, #78350f); border: 1px solid var(--warning);}
+        .btn-good { background: linear-gradient(135deg, var(--primary), #065f46); }
+        .action-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 34: Tài chính Chuỗi cung ứng (Reverse Factoring)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cách Apple chiếm dụng vốn 120 ngày nhưng các nhà xưởng gia công vẫn sống khỏe.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--success);">
+            <strong>Kịch bản:</strong> Bạn là Tập đoàn Đa quốc gia mua hàng. Bạn muốn <strong>Trả chậm (Kéo dài số ngày thanh toán - DPO)</strong> để giữ dòng tiền mặt trong tay sinh lãi.<br>
+            Tuy nhiên, Nhà cung cấp của bạn là xưởng nhỏ. Nếu họ bị nợ tiền quá lâu (> 60 ngày), họ không có tiền trả lương công nhân ➔ Phá sản ➔ Chuỗi cung ứng của bạn đứt gãy!<br>
+            <em>Giải pháp: Ngân hàng có thể nhảy vào ứng tiền trước cho xưởng nhỏ (Reverse Factoring), đổi lấy 1 khoản phí nhỏ xíu.</em>
+        </div>
+
+        <div class="control-box">
+            <h2 style="margin-top: 0; color: var(--warning);">KỲ HẠN THANH TOÁN DO BẠN ÉP NHÀ CUNG CẤP</h2>
+            
+            <div class="slider-group">
+                <div class="slider-label">Số ngày Trả Chậm (DPO):<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Càng dài bạn càng có lợi, nhưng Supplier dễ chết ngộp)</span></div>
+                <input type="range" id="dpoSlider" min="30" max="150" step="30" value="30" oninput="updateSlider()">
+                <div class="slider-val" id="valDPO">30 Ngày</div>
+            </div>
+            
+            <div style="font-size: 0.9rem; color: var(--text-muted); text-align: left;">Sức chịu đựng tiền mặt của Nhà cung cấp (Tự thân): Tối đa <strong>60 Ngày</strong>.</div>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">DÒNG TIỀN BẠN GIỮ LẠI</div><div class="stat-value" id="cashStat" style="color: var(--success)">+$0</div></div>
+            <div><div style="color: var(--text-muted);">TÌNH TRẠNG SUPPLIER</div><div class="stat-value" id="supStat" style="color: var(--success)">Khỏe mạnh</div></div>
+            <div><div style="color: var(--text-muted);">HIỆU QUẢ CHUỖI</div><div class="stat-value" id="effStat" style="color: white">Bình thường</div></div>
+        </div>
+
+        <div class="action-group">
+            <button class="action-btn btn-bad" onclick="runSim('normal')">💸 THANH TOÁN TRUYỀN THỐNG (Mặc kệ sống chết)</button>
+            <button class="action-btn btn-good" onclick="runSim('scf')">🏦 KÝ HỢP ĐỒNG SUPPLY CHAIN FINANCE (Có Ngân hàng tài trợ)</button>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #34d399; margin-top: 0;">📚 Cẩm nang SCF (Tài chính Chuỗi cung ứng)</h3>
+            <p>Trong SCM hiện đại, Dòng tiền (Financial Flow) quan trọng ngang ngửa Dòng hàng hóa (Physical Flow).</p>
+            <ul>
+                <li><strong>Gã khổng lồ bắt nạt (Bullies):</strong> Walmart, Apple bắt các nhà máy nhỏ phải cho họ nợ tiền tới 90-120 ngày. Apple lấy số tiền khổng lồ đó đem đi gửi tiết kiệm hoặc tái đầu tư, sinh lời hàng tỷ Đô la. NHƯNG hệ lụy là các nhà máy nhỏ đứt vốn, công nhân đình công, không ai làm hàng cho Apple nữa. Win-Lose ➔ Cả 2 cùng Lose.</li>
+                <li><strong>Reverse Factoring (Bao thanh toán ngược):</strong> Apple bắt tay với Ngân hàng Citibank. Khi xưởng nhỏ giao hàng cho Apple, Citibank sẽ ứng tiền trả ngay lập tức cho xưởng vào Ngày thứ 10 (Citibank chỉ lấy 1% phí, cực kỳ rẻ vì họ tin tưởng vào Uy tín của Apple). Nhờ đó, xưởng nhỏ CÓ TIỀN MẶT NGAY để trả lương công nhân (Thoát phá sản). 
+                <br>Trong khi đó, Apple vẫn nhởn nhơ giữ tiền của mình, và đến đúng Ngày 120, Apple mới thanh toán trả lại cho Citibank. Một mũi tên trúng 3 đích: Apple có dòng tiền, Nhà xưởng có tiền tươi, Ngân hàng ăn được 1% phí. Win-Win-Win!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateSlider() {
+            let dpo = document.getElementById('dpoSlider').value;
+            document.getElementById('valDPO').innerText = dpo + ' Ngày';
+        }
+
+        function runSim(mode) {
+            let dpo = parseInt(document.getElementById('dpoSlider').value);
+            let cashSaved = (dpo * 1000000) / 365; // Giả sử mỗi ngày mua $1M tiền hàng
+            
+            document.getElementById('cashStat').innerText = '+$' + (cashSaved / 1000000).toFixed(1) + ' Triệu Đô';
+
+            let logs = document.getElementById('logContent');
+            let msg = "";
+
+            if (mode === 'normal') {
+                if (dpo <= 60) {
+                    document.getElementById('supStat').innerText = "Vẫn cầm cự";
+                    document.getElementById('supStat').style.color = "var(--warning)";
+                    document.getElementById('effStat').innerText = "Thấp (Bạn ít tiền)";
+                    
+                    msg = `Bạn chọn trả tiền sớm trong ${dpo} ngày. Nhà cung cấp sống sót, nhưng bạn bỏ lỡ cơ hội chiếm dụng vốn. Lãi tiết kiệm thu về rất ít.`;
+                } else {
+                    document.getElementById('supStat').innerText = "PHÁ SẢN!";
+                    document.getElementById('supStat').style.color = "var(--danger)";
+                    document.getElementById('effStat').innerText = "ĐỨT CHUỖI!";
+                    document.getElementById('effStat').style.color = "var(--danger)";
+                    
+                    msg = `🚨 THẢM HỌA! Bạn ép trả chậm ${dpo} ngày. Nhà máy không trụ nổi qua ngày 60, công nhân đình công. Toàn bộ Chuỗi cung ứng sụp đổ. Số tiền chiếm dụng được biến thành Cát bụi!`;
+                }
+            } else {
+                // SCF Mode
+                document.getElementById('supStat').innerText = "Rất Khỏe mạnh";
+                document.getElementById('supStat').style.color = "var(--success)";
+                
+                if (dpo < 90) {
+                    document.getElementById('effStat').innerText = "Lãng phí SCF";
+                    msg = `Bạn dùng SCF nhưng lại để DPO quá ngắn (${dpo} ngày). Bạn chưa tận dụng hết sức mạnh "Chiếm dụng vốn" của công cụ này!`;
+                } else {
+                    document.getElementById('effStat').innerText = "ĐỈNH CAO!";
+                    document.getElementById('effStat').style.color = "var(--success)";
+                    msg = `🏆 HOÀN HẢO! Bạn ép DPO lên ${dpo} ngày để thu về $${(cashSaved / 1000000).toFixed(1)} Triệu Đô tiền rảnh rỗi. NHƯNG Ngân hàng đã ứng trước thanh toán cho Nhà cung cấp. Cả hệ sinh thái phát triển rực rỡ!`;
+                }
+            }
+
+            let logHtml = `<div class="log-entry">
+                <strong style="color:var(--primary)">Chế độ: ${mode === 'normal' ? 'Truyền Thống' : 'Supply Chain Finance'} (DPO ${dpo})</strong><br>
+                ${msg}
+            </div>`;
+            logs.innerHTML = logHtml + logs.innerHTML;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = updateSlider;
+    </script>
+</body>
+</html>

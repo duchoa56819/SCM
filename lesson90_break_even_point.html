@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 90: Phân Tích Điểm Hòa Vốn</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .control-panel { background: var(--panel-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); text-align: center;}
+        input[type=range] { width: 100%; max-width: 500px; margin: 15px 0;}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .card { padding: 20px; border-radius: 12px; text-align: center; border: 2px solid;}
+        .val-txt { font-size: 2rem; font-weight: bold; margin-top: 10px;}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 90: Điểm Hòa Vốn (Break-Even)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Khi nào nên tự Xây Kho, khi nào nên Đi Thuê (3PL)?</p>
+        </header>
+
+        <div class="control-panel">
+            <h3 style="margin-top:0; color:white;">Sản lượng hàng hóa đi qua kho: <span id="volVal" style="color:var(--warning)">50,000</span> Pallet / Năm</h3>
+            <input type="range" id="volSlider" min="10000" max="200000" step="10000" value="50000" oninput="calcCost()">
+        </div>
+
+        <div class="grid-2">
+            <div class="card" id="cardRent" style="border-color: var(--primary); background: rgba(59, 130, 246, 0.1);">
+                <h2 style="margin-top:0; color:var(--primary);">Thuê Kho Ngoài (3PL)</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">Không chi phí cố định. Trả $10 phí lưu trữ cho 1 Pallet.</div>
+                <div class="val-txt" id="costRent" style="color:white;">$500,000</div>
+                <div id="badgeRent" style="color:var(--success); font-weight:bold; margin-top:10px;">🏆 RẺ HƠN</div>
+            </div>
+            <div class="card" id="cardOwn" style="border-color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                <h2 style="margin-top:0; color:var(--danger);">Tự Xây Kho (Private)</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">Phí cố định Xây kho: $1,000,000. Phí lưu trữ: $2 / Pallet.</div>
+                <div class="val-txt" id="costOwn" style="color:white;">$1,100,000</div>
+                <div id="badgeOwn" style="color:var(--danger); font-weight:bold; margin-top:10px; display:none;">🏆 RẺ HƠN</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Make or Buy</h3>
+            <p>Bài toán đánh đổi kinh điển: Chi phí Cố định (Fixed) vs Chi phí Biến đổi (Variable).</p>
+            <ul>
+                <li><strong>Điểm Hòa Vốn (Break-even):</strong> Hãy kéo thanh trượt lên mức <strong>130,000 Pallet</strong>. Bạn sẽ thấy 2 bên bằng tiền nhau ($1,300,000 vs $1,260,000 - khoảng này). Mốc chính xác là 125,000 Pallet.</li>
+                <li><strong>Quyết định:</strong> Nếu quy mô công ty bạn NHỎ HƠN 125,000 Pallet, tuyệt đối đừng tự xây kho. Hãy đi thuê. Việc gánh 1 triệu Đô tiền cố định sẽ đè bẹp dòng tiền của bạn. Nhờ 3PL, chi phí của bạn hoàn toàn là biến phí (Có hàng mới tốn tiền).</li>
+                <li><strong>Khi quy mô đủ lớn:</strong> Nếu bạn như Amazon (Sản lượng Siêu Lớn), việc đi thuê với giá cắt cổ $10/Pallet là ngu ngốc. Bạn đủ sức bỏ ra $1 Triệu tiền xây nhà kho, sau đó mỗi Pallet bạn chỉ tốn $2 (Điện nước). Tính Kinh Tế Theo Quy Mô (Scale) sẽ phát huy tác dụng rực rỡ!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function calcCost() {
+            let vol = parseInt(document.getElementById('volSlider').value);
+            document.getElementById('volVal').innerText = vol.toLocaleString();
+            
+            let rent = vol * 10;
+            let own = 1000000 + (vol * 2);
+            
+            document.getElementById('costRent').innerText = "$" + rent.toLocaleString();
+            document.getElementById('costOwn').innerText = "$" + own.toLocaleString();
+            
+            if(rent < own) {
+                document.getElementById('badgeRent').style.display = 'block';
+                document.getElementById('badgeOwn').style.display = 'none';
+                document.getElementById('cardRent').style.borderColor = 'var(--success)';
+                document.getElementById('cardOwn').style.borderColor = 'var(--danger)';
+            } else {
+                document.getElementById('badgeRent').style.display = 'none';
+                document.getElementById('badgeOwn').style.display = 'block';
+                document.getElementById('badgeOwn').style.color = 'var(--success)';
+                document.getElementById('cardRent').style.borderColor = 'var(--danger)';
+                document.getElementById('cardOwn').style.borderColor = 'var(--success)';
+            }
+        }
+    </script>
+</body>
+</html>

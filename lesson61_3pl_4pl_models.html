@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 61: Mô hình 3PL vs 4PL (Logistics Outsourcing)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;}
+        
+        .card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;}
+        .card.active { border-color: var(--success); background: rgba(16, 185, 129, 0.1); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);}
+        
+        .card h2 { margin-top: 0; font-size: 1.2rem; color: white;}
+        .icon-huge { font-size: 3rem; margin: 10px 0;}
+        .desc-sm { font-size: 0.85rem; color: var(--text-muted); min-height: 60px;}
+        
+        .control-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--warning); border-radius: 12px; padding: 20px;}
+        .slider-group { margin-bottom: 20px;}
+        .slider-label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; color: var(--text-main);}
+        input[type="range"] { width: 100%; accent-color: var(--warning);}
+        
+        .result-box { text-align: center; font-size: 1.2rem; font-weight: bold; margin-top: 15px; color: var(--success);}
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 61: Mô hình Thuê Ngoài (1PL ➔ 3PL ➔ 4PL)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự tiến hóa từ Tự Mua Xe Tải đến Thuê Kiến Trúc Sư Chuỗi Cung Ứng.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn là CEO của một công ty Bán lẻ. Công ty đang phát triển và bạn cần quyết định chiến lược quản lý Vận tải & Kho bãi.<br>
+            Bạn có 3 mô hình để lựa chọn: Tự làm (1PL/2PL), Thuê công ty giao hàng (3PL), hoặc Thuê một "Tháp điều khiển" (4PL).<br>
+            <em>Kéo thanh trượt <strong>Quy mô Công ty</strong> và <strong>Độ phức tạp Quốc tế</strong> để xem AI khuyến nghị Mô hình nào là tối ưu nhất cho dòng tiền của bạn!</em>
+        </div>
+
+        <div class="grid-3">
+            <div class="card" id="card1pl">
+                <h2>1PL / 2PL (In-house)</h2>
+                <div class="icon-huge">🚚</div>
+                <div class="desc-sm">Tự mua xe tải, tự thuê kho. Đầu tư tài sản cố định (CAPEX) cực lớn.</div>
+            </div>
+            <div class="card" id="card3pl">
+                <h2>3PL (Outsourcing)</h2>
+                <div class="icon-huge">📦</div>
+                <div class="desc-sm">Thuê hãng ngoài (như FedEx, DHL). Trả tiền theo lượng hàng (OPEX). Bạn vẫn phải tự ra quyết định.</div>
+            </div>
+            <div class="card" id="card4pl">
+                <h2>4PL (Control Tower)</h2>
+                <div class="icon-huge">🧠</div>
+                <div class="desc-sm">Thuê đơn vị Công nghệ & Tư vấn. Họ không có xe tải, họ quản lý nhiều 3PL giúp bạn bằng AI.</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="slider-group">
+                <div class="slider-label"><span>Quy mô Doanh thu & Lượng hàng</span> <span id="vSize">Nhỏ lẻ (Local)</span></div>
+                <input type="range" id="slSize" min="1" max="10" value="2" oninput="evalModel()">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Độ phức tạp Xuyên biên giới</span> <span id="vComp">Thấp (Chỉ bán trong nước)</span></div>
+                <input type="range" id="slComp" min="1" max="10" value="1" oninput="evalModel()">
+            </div>
+            
+            <div class="result-box" id="resMsg">
+                Khuyến nghị: Tự mua xe (1PL) để tiết kiệm chi phí ban đầu.
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #60a5fa;">📚 Cẩm nang Thuê Ngoài (Logistics Outsourcing)</h3>
+            <p>Trọng tâm của kinh doanh hiện đại là <strong>Năng lực Lõi (Core Competency)</strong>. Đừng làm thứ gì mà người khác làm giỏi hơn và rẻ hơn bạn.</p>
+            <ul>
+                <li><strong>Cạm bẫy "Cái gì cũng tự làm" (1PL):</strong> Bạn bán bánh ngọt, bạn lại đi vay ngân hàng mua 10 chiếc xe đông lạnh. Bạn biến từ công ty thực phẩm thành công ty Vận tải. Chi phí cố định (Khấu hao xe) đè chết bạn khi thị trường ế ẩm.</li>
+                <li><strong>Sức mạnh của 3PL:</strong> Biến Chi phí Cố định (Fixed) thành Chi phí Biến đổi (Variable). Tháng này bán 100 đơn, bạn trả phí ship 100 đơn. Tháng sau nghỉ dịch, bán 0 đơn, bạn trả 0 Đồng. Không phải nuôi tài xế, không phải bảo dưỡng xe.</li>
+                <li><strong>Sự thống trị của 4PL (Lead Logistics Provider):</strong> Khi công ty bạn bùng nổ toàn cầu. Mua linh kiện ở TQ, gia công ở VN, bán ở Mỹ. Bạn có 20 đối tác 3PL khác nhau. Sự rối rắm vượt tầm kiểm soát. Bạn thuê 1 công ty 4PL (Chỉ rành về Software và Tối ưu hóa mạng lưới). Họ đóng vai trò <strong>Kiến trúc sư trưởng</strong>. Họ đàm phán ép giá các 3PL, chọn đường đi ngắn nhất, quản lý rủi ro cho bạn. (VD: Amazon tự thiết lập 4PL nội bộ, hoặc thuê Accenture / Kuehne+Nagel).</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function evalModel() {
+            let size = parseInt(document.getElementById('slSize').value);
+            let comp = parseInt(document.getElementById('slComp').value);
+
+            // Update Labels
+            let szText = size < 4 ? "Nhỏ lẻ (Local)" : (size < 8 ? "Tập đoàn Nội địa" : "Đa Quốc Gia (Tỷ Đô)");
+            let cpText = comp < 4 ? "Thấp (Trong nước)" : (comp < 8 ? "Vừa (Nhập khẩu vật tư)" : "Cực Cao (Chuỗi toàn cầu)");
+            
+            document.getElementById('vSize').innerText = szText;
+            document.getElementById('vComp').innerText = cpText;
+
+            // Logic
+            document.getElementById('card1pl').classList.remove('active');
+            document.getElementById('card3pl').classList.remove('active');
+            document.getElementById('card4pl').classList.remove('active');
+
+            let msg = document.getElementById('resMsg');
+
+            if (size <= 3 && comp <= 3) {
+                document.getElementById('card1pl').classList.add('active');
+                msg.innerText = "Khuyến nghị: 1PL. Doanh nghiệp siêu nhỏ, giao hàng nội thị, nên tự làm để dễ kiểm soát chất lượng & thân thiện khách hàng.";
+            } else if (comp >= 8 && size >= 7) {
+                document.getElementById('card4pl').classList.add('active');
+                msg.innerText = "Khuyến nghị: 4PL. Bạn là Gã Khổng Lồ. Cần Thuê ngay một 'Tháp Điều Khiển' AI để làm Tổng Chỉ Huy, đồng bộ hóa 20 hãng 3PL trên toàn cầu.";
+            } else {
+                document.getElementById('card3pl').classList.add('active');
+                msg.innerText = "Khuyến nghị: 3PL. Hãy tập trung làm Năng lực Cốt lõi (Bán hàng/Sản xuất). Việc kho bãi và giao hàng hãy giao cho chuyên gia như FedEx, kho Shopee.";
+            }
+        }
+
+        window.onload = evalModel;
+    </script>
+</body>
+</html>

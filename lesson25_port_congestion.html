@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 25: Phí Lưu bãi & Lưu container (Demurrage & Detention)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .port-view { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 16px; padding: 20px; margin-bottom: 20px;}
+        .cont-box { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--primary);}
+        .cont-status { font-weight: bold; font-size: 1.1rem; }
+        .cont-days { font-size: 1.2rem; font-weight: bold; color: var(--warning); }
+        .cont-penalty { font-size: 1.2rem; font-weight: bold; color: var(--danger); }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn-truck { padding: 10px 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn-std { background: #475569; color: white; }
+        .btn-vip { background: var(--warning); color: black; }
+        .btn-truck:hover { filter: brightness(1.2); }
+        .btn-truck:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+        
+        .top-action { display: flex; gap: 15px; margin-bottom: 15px; }
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #1e40af); color: white; cursor: pointer; transition: all 0.3s; flex: 1; text-transform: uppercase;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 25: Phí Lưu Bãi (Demurrage)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Cơn ác mộng của Logistics cảng biển - Phạt hàng trăm Đô la mỗi ngày do xe tải kẹt.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--warning);">
+            <strong>Kịch bản:</strong> Cảng cho bạn <strong>5 Ngày Miễn Phí (Free Time)</strong> để điều xe tải vào rút Container ra.<br>
+            Từ ngày thứ 6 trở đi, bạn bị phạt Demurrage <strong>$150/ngày</strong>.<br>
+            <strong>Tình trạng xe tải:</strong> Xe tải Thường (Giá $100) phải xếp hàng chờ ngẫu nhiên từ 1 đến 5 ngày mới có xe. Xe tải VIP (Giá $400) sẽ có ngay lập tức.
+            <em>Mục tiêu: Rút 5 Container với Tổng chi phí (Tiền xe + Tiền phạt) THẤP NHẤT.</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">NGÀY HIỆN TẠI</div><div class="stat-value" id="dayStat">Ngày 1</div></div>
+            <div><div style="color: var(--text-muted);">TIỀN PHẠT (DEMURRAGE)</div><div class="stat-value" id="penaltyStat" style="color: var(--danger)">$0</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG CHI PHÍ</div><div class="stat-value" id="costStat" style="color: var(--success)">$0</div></div>
+        </div>
+
+        <div class="top-action">
+            <button class="action-btn" onclick="nextDay()" id="btnNextDay">⏳ TIẾN LÊN 1 NGÀY</button>
+            <button class="action-btn" onclick="autoPlay()" style="background: var(--success);" id="btnAI">🤖 AI TỰ ĐỘNG CHƠI</button>
+        </div>
+
+        <div class="port-view" id="portList">
+            <!-- Container list will be injected here -->
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Demurrage & Detention (Lưu bãi & Lưu cont)</h3>
+            <p>Trong vận tải đường biển, hãng tàu và cảng biển kiếm lợi nhuận khổng lồ từ tiền phạt của bạn.</p>
+            <ul>
+                <li><strong>Demurrage (Lưu bãi):</strong> Phạt khi container đã dỡ xuống cảng nhưng bạn chưa điều xe kéo về.</li>
+                <li><strong>Detention (Lưu cont):</strong> Phạt khi bạn đã kéo container về kho của bạn, dỡ hàng xong nhưng không chịu trả cái vỏ container rỗng lại cho hãng tàu.</li>
+                <li><strong>Chiến thuật:</strong> Tiếc tiền thuê xe tải VIP ($400) là sai lầm chết người nhất của dân nhập khẩu tay mơ. Đặt xe Thường ($100), xe đến trễ 5 ngày. Tiền phạt cảng 5 ngày x $150 = $750! Tổng phí thành $850. Trong khi nếu chịu chi thuê xe VIP ngay từ đầu chỉ tốn $400. <strong>Bài học: Logistics là một cuộc đua với thời gian, chậm trễ luôn đắt hơn phí làm khẩn cấp!</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            day: 1, totalPenalty: 0, totalTruckCost: 0, logs: [],
+            containers: [
+                { id: 1, daysAtPort: 1, status: 'waiting', truckBookedIn: null },
+                { id: 2, daysAtPort: 1, status: 'waiting', truckBookedIn: null },
+                { id: 3, daysAtPort: 1, status: 'waiting', truckBookedIn: null },
+                { id: 4, daysAtPort: 1, status: 'waiting', truckBookedIn: null },
+                { id: 5, daysAtPort: 1, status: 'waiting', truckBookedIn: null }
+            ]
+        };
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Ngày ${state.day}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function renderPort() {
+            let html = '';
+            let allDone = true;
+
+            state.containers.forEach(c => {
+                if (c.status !== 'done') allDone = false;
+                
+                let dayText = `<span class="cont-days">Nằm bãi: ${c.daysAtPort} Ngày</span>`;
+                let warning = c.daysAtPort > 5 ? `<span class="cont-penalty"> (PHẠT)</span>` : `<span style="color:var(--success)"> (Free)</span>`;
+                
+                let btnHtml = '';
+                if (c.status === 'waiting') {
+                    btnHtml = `
+                        <button class="btn-truck btn-std" onclick="bookTruck(${c.id}, 'std')">🚚 Xe Thường ($100)</button>
+                        <button class="btn-truck btn-vip" onclick="bookTruck(${c.id}, 'vip')">🏎️ Xe VIP ($400)</button>
+                    `;
+                } else if (c.status === 'booked') {
+                    btnHtml = `<span style="color:var(--warning); font-weight:bold;">Đang chờ xe đến (Còn ${c.truckBookedIn} ngày)</span>`;
+                    dayText = ''; warning = '';
+                } else if (c.status === 'done') {
+                    btnHtml = `<span style="color:var(--success); font-weight:bold;">✅ Đã kéo về kho</span>`;
+                    dayText = `Lưu bãi ${c.daysAtPort} ngày`; warning = '';
+                }
+
+                html += `
+                    <div class="cont-box">
+                        <div class="cont-status">📦 Container ${c.id}</div>
+                        <div>${dayText}${warning}</div>
+                        <div class="btn-group">${btnHtml}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('portList').innerHTML = html;
+            
+            if(allDone && document.getElementById('btnNextDay').disabled === false) {
+                document.getElementById('btnNextDay').disabled = true;
+                addLog(`<span style="color:var(--success); font-size:1.1rem; font-weight:bold;">🎉 ĐÃ RÚT XONG 5 CONT! TỔNG CHI PHÍ TÀN CUỘC: ${format(state.totalTruckCost + state.totalPenalty)}</span>`);
+            }
+        }
+
+        function bookTruck(id, type) {
+            let c = state.containers.find(x => x.id === id);
+            c.status = 'booked';
+            
+            if (type === 'std') {
+                state.totalTruckCost += 100;
+                c.truckBookedIn = Math.floor(Math.random() * 4) + 1; // 1 to 4 days delay
+                addLog(`Cont ${id}: Đặt Xe Thường ($100). Xe báo sẽ có mặt sau ${c.truckBookedIn} ngày.`);
+            } else {
+                state.totalTruckCost += 400;
+                c.truckBookedIn = 0; // Immediate
+                addLog(`Cont ${id}: Đặt Xe VIP ($400). Xe có mặt lấy hàng ngay lập tức!`);
+            }
+            renderPort();
+            updateStats();
+        }
+
+        function nextDay() {
+            state.day++;
+            let dailyPenalty = 0;
+
+            state.containers.forEach(c => {
+                if (c.status !== 'done') {
+                    c.daysAtPort++;
+                    
+                    // Xử lý truck tới
+                    if (c.status === 'booked') {
+                        c.truckBookedIn--;
+                        if (c.truckBookedIn <= 0) {
+                            c.status = 'done';
+                            addLog(`Cont ${id}: Xe đã tới rút hàng thành công!`);
+                        }
+                    }
+
+                    // Xử lý phạt (chỉ phạt nếu cont vẫn còn trong bãi vào cuối ngày)
+                    if (c.status !== 'done' && c.daysAtPort > 5) {
+                        dailyPenalty += 150;
+                    }
+                }
+            });
+
+            if (dailyPenalty > 0) {
+                state.totalPenalty += dailyPenalty;
+                addLog(`🚨 BỊ PHẠT DEMURRAGE HÔM NAY: <strong style="color:var(--danger)">${format(dailyPenalty)}</strong>!`);
+            }
+
+            renderPort();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('dayStat').innerText = `Ngày ${state.day}`;
+            document.getElementById('penaltyStat').innerText = format(state.totalPenalty);
+            document.getElementById('costStat').innerText = format(state.totalTruckCost + state.totalPenalty);
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying) return;
+            isPlaying = true;
+            document.getElementById('btnAI').disabled = true;
+
+            // AI Strategy: 
+            // Nếu ngày 1 -> book xe thường. Nếu xui xe báo delay quá ngày 5 -> kệ, vì lỡ book rồi.
+            // Để thông minh hơn: Chơi mạo hiểm book xe VIP vào ngày 4 nếu chưa rút.
+            for(let c of state.containers) {
+                // Đặt xe thường cho tất cả ở ngày 1 để thử vận may
+                if(c.status === 'waiting') bookTruck(c.id, 'std');
+            }
+
+            // Loop days until all done
+            let aiLoop = setInterval(() => {
+                let allDone = true;
+                state.containers.forEach(c => { if(c.status !== 'done') allDone = false; });
+                
+                if(allDone || state.day > 20) {
+                    clearInterval(aiLoop);
+                    isPlaying = false;
+                    return;
+                }
+                nextDay();
+            }, 800);
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { renderPort(); updateStats(); };
+    </script>
+</body>
+</html>

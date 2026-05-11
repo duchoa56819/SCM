@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 8: Đấu thầu & Lựa chọn Nhà Cung Cấp (Supplier Selection)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            --primary: #f43f5e; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --blue: #3b82f6;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #4c0519, #0f172a); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 1000px; width: 100%; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        .weight-row { display: flex; align-items: center; margin-bottom: 20px; }
+        .weight-label { flex: 1; font-weight: 600; font-size: 1.1rem; }
+        .weight-input { width: 80px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--primary); color: white; border-radius: 8px; font-size: 1.1rem; text-align: center; font-weight: bold; }
+        .weight-symbol { margin-left: 10px; font-size: 1.2rem; color: var(--text-muted); }
+
+        .supplier-col { text-align: center; padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); position: relative; transition: all 0.3s;}
+        .supplier-col.winner { background: rgba(16, 185, 129, 0.1); border-color: var(--success); transform: scale(1.05); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); z-index: 10; }
+        
+        .score-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-top: 20px; text-align: center;}
+        .score-header { font-size: 0.9rem; color: var(--text-muted); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .score-cell { padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 1.1rem; font-weight: 600; }
+        .total-cell { padding: 20px 0; font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .winner .total-cell { color: var(--success); }
+
+        .action-btn { width: 100%; padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, #475569, #1e293b); color: white; cursor: pointer; transition: all 0.3s; margin-top: 10px; border: 1px solid var(--border); }
+        .action-btn:hover { background: linear-gradient(135deg, var(--primary), #e11d48); }
+
+        .winner-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: none; }
+        .winner .winner-badge { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 8: Đấu thầu & Trọng số Điểm (Weighted Scoring)</h1>
+            <p style="color: var(--text-muted);">Không có Nhà cung cấp nào là tốt nhất, chỉ có Nhà cung cấp phù hợp nhất với Chiến lược Công ty.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary); border-left: 5px solid var(--primary);">
+            <strong>Kịch bản:</strong> Bạn là Trưởng phòng Mua hàng (Procurement Manager). Có 3 đối tác nộp hồ sơ dự thầu. Hội đồng chuyên gia đã chấm điểm năng lực (Thang điểm 10) cho họ theo 4 tiêu chí.<br>
+            Bạn hãy thiết lập <strong>Trọng số (Weights)</strong> sao cho <strong>Tổng = 100%</strong> dựa trên Chiến lược kinh doanh của bạn để tìm ra người thắng thầu.
+        </div>
+
+        <div class="grid-2">
+            <!-- BẢNG TRỌNG SỐ -->
+            <div class="panel">
+                <h2 style="margin-top: 0; color: white; border-bottom: 1px solid var(--border); padding-bottom: 15px;">⚖️ Đặt Trọng Số</h2>
+                
+                <div class="weight-row">
+                    <div class="weight-label" style="color: var(--success);">💰 Giá cả (Price)</div>
+                    <input type="number" id="wPrice" value="25" min="0" max="100" oninput="calculate()">
+                    <span class="weight-symbol">%</span>
+                </div>
+                <div class="weight-row">
+                    <div class="weight-label" style="color: var(--blue);">⭐ Chất lượng (Quality)</div>
+                    <input type="number" id="wQual" value="25" min="0" max="100" oninput="calculate()">
+                    <span class="weight-symbol">%</span>
+                </div>
+                <div class="weight-row">
+                    <div class="weight-label" style="color: var(--warning);">⚡ Tốc độ giao (Speed)</div>
+                    <input type="number" id="wSpeed" value="25" min="0" max="100" oninput="calculate()">
+                    <span class="weight-symbol">%</span>
+                </div>
+                <div class="weight-row">
+                    <div class="weight-label" style="color: var(--primary);">🌱 Bền vững (ESG)</div>
+                    <input type="number" id="wESG" value="25" min="0" max="100" oninput="calculate()">
+                    <span class="weight-symbol">%</span>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 15px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-weight: bold; color: var(--text-muted);">TỔNG TRỌNG SỐ:</div>
+                    <div id="totalWeight" style="font-size: 1.5rem; font-weight: 800; color: var(--success);">100%</div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">Ví dụ Chiến lược thực tế (Auto-fill):</div>
+                    <button class="action-btn" onclick="setStrategy(70, 10, 10, 10)">Chiến lược Cạnh Tranh Giá (Shopee)</button>
+                    <button class="action-btn" onclick="setStrategy(10, 60, 20, 10)">Chiến lược Hàng Cao Cấp (Apple)</button>
+                    <button class="action-btn" onclick="setStrategy(20, 30, 10, 40)">Chiến lược Xanh & Đạo đức (Patagonia)</button>
+                </div>
+            </div>
+
+            <!-- BẢNG CHẤM ĐIỂM -->
+            <div class="panel">
+                <h2 style="margin-top: 0; color: white; border-bottom: 1px solid var(--border); padding-bottom: 15px;">🏆 Kết Quả Đấu Thầu</h2>
+                
+                <div class="score-grid">
+                    <div class="score-header" style="text-align: left;">Tiêu chí (Thang 10)</div>
+                    <div class="score-header">NCC A (Giá Rẻ)</div>
+                    <div class="score-header">NCC B (Cân Bằng)</div>
+                    <div class="score-header">NCC C (Cao Cấp)</div>
+
+                    <!-- RAW SCORES -->
+                    <div class="score-cell" style="text-align: left; color: var(--success);">💰 Điểm Giá cả</div>
+                    <div class="score-cell">10</div><div class="score-cell">7</div><div class="score-cell">3</div>
+
+                    <div class="score-cell" style="text-align: left; color: var(--blue);">⭐ Điểm Chất lượng</div>
+                    <div class="score-cell">5</div><div class="score-cell">7</div><div class="score-cell">10</div>
+
+                    <div class="score-cell" style="text-align: left; color: var(--warning);">⚡ Điểm Tốc độ</div>
+                    <div class="score-cell">6</div><div class="score-cell">8</div><div class="score-cell">9</div>
+
+                    <div class="score-cell" style="text-align: left; color: var(--primary);">🌱 Điểm Môi trường</div>
+                    <div class="score-cell">2</div><div class="score-cell">6</div><div class="score-cell">10</div>
+
+                    <!-- FINAL SCORE -->
+                    <div class="score-cell" style="text-align: left; padding-top: 25px; font-weight: 800;">ĐIỂM TỔNG KẾT:</div>
+                    <div class="supplier-col" id="colA">
+                        <div class="winner-badge">WINNER</div>
+                        <div class="total-cell" id="scoreA">0.0</div>
+                    </div>
+                    <div class="supplier-col" id="colB">
+                        <div class="winner-badge">WINNER</div>
+                        <div class="total-cell" id="scoreB">0.0</div>
+                    </div>
+                    <div class="supplier-col" id="colC">
+                        <div class="winner-badge">WINNER</div>
+                        <div class="total-cell" id="scoreC">0.0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #f43f5e; margin-top: 0;">📚 Cẩm nang Lựa chọn Nhà cung cấp</h3>
+            <p><strong>Weighted Scoring Model (Mô hình chấm điểm có trọng số)</strong> là công cụ mạnh mẽ nhất trong B2B Procurement. Nó chuyển hóa các quyết định cảm tính thành những con số toán học.</p>
+            <ul>
+                <li><strong>Thay đổi Trọng số = Thay đổi Kết quả:</strong> Nếu bạn chỉ quan tâm đến Giá (70%), tự động NCC A sẽ thắng thầu bất chấp chất lượng kém. Đây là cách các nhãn hàng thời trang nhanh (Fast Fashion) hoạt động.</li>
+                <li><strong>Chiến lược Khác biệt hóa (Differentiation):</strong> Nếu công ty bạn định vị là Hàng Cao Cấp, bạn sẽ đặt trọng số Chất lượng lên 60-70%. Khi đó NCC C sẽ thắng, dù giá của họ đắt đỏ.</li>
+                <li><strong>Xu hướng Tương lai (ESG - Môi trường & Xã hội):</strong> Ngày nay, các tập đoàn lớn bị áp lực bởi Cổ đông và Luật pháp, họ bắt buộc phải tăng trọng số ESG lên. Lúc này, NCC A (xả thải bừa bãi) sẽ bị loại bỏ ngay lập tức, nhường chỗ cho NCC B hoặc C.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Raw scores matrix: [Price, Quality, Speed, ESG]
+        const NCC_A = [10, 5, 6, 2];
+        const NCC_B = [7, 7, 8, 6];
+        const NCC_C = [3, 10, 9, 10];
+
+        function setStrategy(p, q, s, e) {
+            document.getElementById('wPrice').value = p;
+            document.getElementById('wQual').value = q;
+            document.getElementById('wSpeed').value = s;
+            document.getElementById('wESG').value = e;
+            calculate();
+        }
+
+        function calculate() {
+            let wp = parseFloat(document.getElementById('wPrice').value) || 0;
+            let wq = parseFloat(document.getElementById('wQual').value) || 0;
+            let ws = parseFloat(document.getElementById('wSpeed').value) || 0;
+            let we = parseFloat(document.getElementById('wESG').value) || 0;
+
+            let totalW = wp + wq + ws + we;
+            let twEl = document.getElementById('totalWeight');
+            twEl.innerText = totalW + '%';
+            twEl.style.color = totalW === 100 ? 'var(--success)' : 'var(--danger)';
+
+            if(totalW !== 100) {
+                document.getElementById('scoreA').innerText = "ERR";
+                document.getElementById('scoreB').innerText = "ERR";
+                document.getElementById('scoreC').innerText = "ERR";
+                document.getElementById('colA').classList.remove('winner');
+                document.getElementById('colB').classList.remove('winner');
+                document.getElementById('colC').classList.remove('winner');
+                return;
+            }
+
+            // Tính điểm: (Raw * Weight / 100)
+            let scoreA = (NCC_A[0]*wp + NCC_A[1]*wq + NCC_A[2]*ws + NCC_A[3]*we) / 100;
+            let scoreB = (NCC_B[0]*wp + NCC_B[1]*wq + NCC_B[2]*ws + NCC_B[3]*we) / 100;
+            let scoreC = (NCC_C[0]*wp + NCC_C[1]*wq + NCC_C[2]*ws + NCC_C[3]*we) / 100;
+
+            document.getElementById('scoreA').innerText = scoreA.toFixed(2);
+            document.getElementById('scoreB').innerText = scoreB.toFixed(2);
+            document.getElementById('scoreC').innerText = scoreC.toFixed(2);
+
+            document.getElementById('colA').classList.remove('winner');
+            document.getElementById('colB').classList.remove('winner');
+            document.getElementById('colC').classList.remove('winner');
+
+            let maxScore = Math.max(scoreA, scoreB, scoreC);
+            if(scoreA === maxScore) document.getElementById('colA').classList.add('winner');
+            if(scoreB === maxScore) document.getElementById('colB').classList.add('winner');
+            if(scoreC === maxScore) document.getElementById('colC').classList.add('winner');
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = calculate;
+    </script>
+</body>
+</html>

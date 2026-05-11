@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 10: Gom Hàng & Xếp Xe (Load Consolidation & EOQ)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e3a8a, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; margin-top: 5px; }
+        
+        .truck-area { display: flex; align-items: center; justify-content: center; margin: 30px 0; gap: 30px; }
+        .warehouse { width: 200px; height: 250px; border: 3px dashed var(--warning); border-radius: 12px; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; background: rgba(245, 158, 11, 0.05);}
+        .box { width: 100%; height: 2px; background: var(--warning); margin-top: 2px; }
+        
+        .btn-group { display: flex; gap: 15px; margin-bottom: 20px; }
+        .action-btn { flex: 1; padding: 20px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; color: white; cursor: pointer; transition: all 0.3s; text-transform: uppercase; }
+        .btn-wait { background: rgba(255,255,255,0.1); border: 2px solid var(--text-muted); }
+        .btn-wait:hover { background: rgba(255,255,255,0.2); }
+        .btn-ship { background: linear-gradient(135deg, var(--primary), #1d4ed8); }
+        .btn-ship:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 10: Xếp Xe (Load Consolidation)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Giao ngay thì tốn tiền xe, Chờ đầy xe thì tốn tiền kho.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            Mỗi ngày Nhà máy sản xuất <strong>10 thùng hàng</strong>. Chi phí lưu kho: <strong>$1/thùng/ngày</strong>.<br>
+            Bạn có thể thuê xe tải FTL (Chở tối đa 100 thùng). Tiền thuê xe cố định: <strong>$300/chuyến</strong> bất kể xe vơi hay đầy.<br>
+            <em>Mục tiêu: Hoạt động trong 30 ngày với Tổng chi phí (Tiền xe + Tiền kho) THẤP NHẤT có thể.</em>
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">NGÀY</div><div class="stat-value" id="dayStat">1 / 30</div></div>
+            <div><div style="color: var(--text-muted);">TIỀN KHO</div><div class="stat-value" id="holdStat" style="color: var(--warning)">$0</div></div>
+            <div><div style="color: var(--text-muted);">TIỀN XE</div><div class="stat-value" id="shipStat" style="color: var(--primary)">$0</div></div>
+            <div><div style="color: var(--text-muted);">TỔNG CHI PHÍ</div><div class="stat-value" id="totalStat" style="color: var(--danger)">$0</div></div>
+        </div>
+
+        <div class="truck-area">
+            <div class="warehouse">
+                <div style="position: absolute; top: -30px; left: 0; width: 100%; text-align: center; font-weight: bold; color: var(--warning);">KHO: <span id="invCount">10</span>/100</div>
+                <div id="boxContainer" style="display: flex; flex-direction: column-reverse; height: 100%;">
+                    <!-- Boxes will be generated here -->
+                </div>
+            </div>
+            <div style="font-size: 3rem;">➔</div>
+            <div style="font-size: 5rem;" id="truckEmoji">🚛</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-wait" onclick="nextDay(false)">⏳ CHỜ THÊM HÀNG (Qua Ngày)</button>
+            <button class="action-btn btn-ship" onclick="nextDay(true)">🚀 ĐIỀU XE TẢI (Giao ngay)</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                <option value="daily">Chiến thuật 1: Giao hàng ngày (JIT cực đoan)</option>
+                <option value="full">Chiến thuật 2: Đợi đầy 100% xe mới giao</option>
+                <option value="eoq">Chiến thuật 3: EOQ (Điểm cân bằng Toán học)</option>
+            </select>
+            <button class="action-btn" onclick="autoPlay()" style="flex: 1; margin-bottom: 0; padding: 10px; font-size: 1rem; background: var(--success);">🤖 AI TỰ CHƠI</button>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Gom hàng (Consolidation) & EOQ</h3>
+            <p>Bài toán này chính là công thức <strong>EOQ (Economic Order Quantity)</strong> nổi tiếng áp dụng cho Vận tải.</p>
+            <ul>
+                <li><strong>Giao hàng ngày:</strong> Kho bằng 0. Tiền kho = $0. Nhưng mỗi ngày tốn $300 tiền xe chở 10 thùng rỗng tuếch. Tổng phí = $9,000! Khủng khiếp!</li>
+                <li><strong>Đợi đầy xe (100 thùng):</strong> 10 ngày mới tốn $300 tiền xe (rất tiết kiệm phí ship). NHƯNG trong 10 ngày đó, hàng đọng trong kho nhân lên theo cấp số cộng. Tính ra tiền kho mất gần $500 cho chu kỳ đó. Tổng phí khoảng $2,400.</li>
+                <li><strong>Toán học EOQ (Tối ưu):</strong> Đạo hàm hàm tổng chi phí chỉ ra điểm cân bằng nằm ở <strong>Ngày thứ 8 (80 thùng)</strong>. Khi đó Chi phí lưu kho vừa đuổi kịp Chi phí vận tải. Giao hàng ở mốc 80 thùng sẽ mang lại Tổng chi phí thấp nhất (~$2,300)!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = { day: 1, maxDays: 30, inv: 10, holdCost: 0, shipCost: 0, logs: [] };
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>Ngày ${state.day}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function renderBoxes() {
+            let html = '';
+            for(let i=0; i<state.inv; i+=5) html += `<div class="box"></div>`; // 1 line = 5 boxes visually
+            document.getElementById('boxContainer').innerHTML = html;
+        }
+
+        function nextDay(dispatch) {
+            if (state.day > state.maxDays) return;
+
+            if (dispatch) {
+                state.shipCost += 300;
+                addLog(`Điều xe chở ${state.inv} thùng hàng đi! (Phí xe: $300)`, 'var(--primary)');
+                state.inv = 0;
+            } else {
+                let dailyHold = state.inv * 1;
+                state.holdCost += dailyHold;
+                addLog(`Chờ thêm. Tồn ${state.inv} thùng. (Phí kho: $${dailyHold})`, 'var(--warning)');
+            }
+
+            state.day++;
+            if (state.day <= state.maxDays) {
+                state.inv += 10;
+                if(state.inv > 100) {
+                    alert("Kho đã đầy 100 thùng! Bắt buộc phải điều xe!");
+                    state.day--; state.inv -= 10; nextDay(true); return;
+                }
+            } else {
+                addLog(`🎉 KẾT THÚC THÁNG! TỔNG CHI PHÍ: ${format(state.holdCost + state.shipCost)}`, 'var(--danger)');
+            }
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('dayStat').innerText = state.day <= state.maxDays ? `${state.day} / 30` : "END";
+            document.getElementById('holdStat').innerText = format(state.holdCost);
+            document.getElementById('shipStat').innerText = format(state.shipCost);
+            document.getElementById('totalStat').innerText = format(state.holdCost + state.shipCost);
+            document.getElementById('invCount').innerText = state.inv;
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+            renderBoxes();
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.day > state.maxDays) return;
+            isPlaying = true;
+            let strat = document.getElementById('aiStrategy').value;
+
+            while(state.day <= state.maxDays) {
+                let dispatch = false;
+                if (strat === 'daily') dispatch = true;
+                else if (strat === 'full' && state.inv >= 100) dispatch = true;
+                else if (strat === 'eoq' && state.inv >= 80) dispatch = true; // Optimal T=8
+
+                nextDay(dispatch);
+                await new Promise(r => setTimeout(r, 400));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+        window.onload = renderUI;
+    </script>
+</body>
+</html>

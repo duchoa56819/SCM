@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 6: Hiệu ứng Cái Roi Da (Bullwhip Effect)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            --primary: #c026d3; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --dist: #3b82f6;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #312e81, #0f172a); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #d946ef, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        
+        .stats-bar { display: flex; justify-content: space-between; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: var(--success); margin-top: 5px; }
+        
+        .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px;}
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1rem; align-items: center;}
+        input[type="number"] { width: 100%; padding: 15px; background: rgba(0,0,0,0.3); border: 2px solid var(--primary); color: white; border-radius: 8px; font-size: 1.3rem; margin-top: 10px; box-sizing: border-box; text-align: center; font-weight: bold;}
+        
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #7c3aed); color: white; cursor: pointer; transition: all 0.3s; text-transform: uppercase; width: 100%;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(192, 38, 211, 0.4); }
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 250px; overflow-y: auto; border: 1px solid var(--border); }
+        .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; line-height: 1.5; }
+        
+        .chain-box { padding: 15px; border-radius: 8px; text-align: center; flex: 1; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 6: Hiệu ứng Cái Roi Da (Bullwhip Effect)</h1>
+            <p style="color: var(--text-muted);">Bạn là Giám đốc Nhà Máy. Hãy cẩn thận với những đơn đặt hàng "ảo" từ Đại lý.</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item"><div style="color: var(--text-muted);">TUẦN</div><div class="stat-value" id="weekStat" style="color: white">1 / 12</div></div>
+            <div class="stat-item"><div style="color: var(--text-muted);">TỒN KHO NHÀ MÁY</div><div class="stat-value" id="invStat" style="color: var(--warning)">0</div></div>
+            <div class="stat-item"><div style="color: var(--text-muted);">LỢI NHUẬN RÒNG</div><div class="stat-value" id="cashStat">$0</div></div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary); border-left: 5px solid var(--primary);">
+            <strong>Cấu trúc chi phí:</strong> Lãi gộp mỗi máy là <strong>$30</strong>. Phí lưu kho: <strong>$5/máy/tuần</strong>.<br>
+            <strong>Phí thay đổi công suất:</strong> Tuyển thêm/Sa thải công nhân tốn <strong>$10</strong> cho MỖI MÁY chênh lệch so với tuần trước. (Bạn đang sản xuất 20 máy ở T0). Hãy giữ nhịp sản xuất ổn định!
+        </div>
+
+        <!-- MÔ HÌNH CHUỖI CUNG ỨNG -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div class="chain-box" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success);">
+                <div style="color: var(--text-muted); font-size: 0.85rem;">KHÁCH HÀNG THỰC TẾ</div>
+                <div id="trueDemand" style="font-size: 1.8rem; font-weight: 800; color: var(--success);">???</div>
+                <div style="font-size: 0.8rem; margin-top: 5px; color: #64748b;">(Bạn không nhìn thấy)</div>
+            </div>
+            <div style="display: flex; align-items: center; color: var(--text-muted);">◀</div>
+            <div class="chain-box" style="background: rgba(59, 130, 246, 0.1); border-color: var(--dist);">
+                <div style="color: var(--text-muted); font-size: 0.85rem;">ĐẠI LÝ YÊU CẦU BẠN</div>
+                <div id="distOrder" style="font-size: 2.2rem; font-weight: 800; color: var(--dist);">20</div>
+                <div style="font-size: 0.8rem; margin-top: 5px; color: var(--dist);">Đơn đặt hàng tuần này</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="margin-top: 0; color: white; text-align: center;">🏭 LỆNH SẢN XUẤT CỦA BẠN</h2>
+            <input type="number" id="prodQty" placeholder="Nhập số lượng máy muốn sản xuất tuần này..." min="0">
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="action-btn" onclick="endWeek()" style="flex: 1.5;">CHỐT SẢN XUẤT ➔</button>
+            <div style="flex: 2.5; display: flex; gap: 10px;">
+                <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                    <option value="chase">Chiến thuật 1: Đuổi hình bắt bóng (Tin tưởng Đại lý)</option>
+                    <option value="level">Chiến thuật 2: Sản xuất Phẳng (Level Strategy)</option>
+                    <option value="vmi">Chiến thuật 3: VMI - Nhìn xuyên thấu Khách hàng</option>
+                </select>
+                <button id="aiBtn" class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success);">🤖 GỌI AI</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #c026d3; margin-top: 0;">📚 Cẩm nang Hiệu ứng Cái Roi Da (Bullwhip Effect)</h3>
+            <p><strong>Hiệu ứng Bullwhip</strong> xảy ra khi thông tin về Nhu cầu khách hàng bị bóp méo khi truyền ngược lên chuỗi cung ứng. Khách hàng chỉ tăng mua một chút, Đại lý hoảng sợ đặt gấp đôi để phòng hờ, Nhà phân phối đặt gấp 3, và Nhà máy nhận lãnh hậu quả (sản xuất khổng lồ rồi ế ẩm).</p>
+            <ul>
+                <li><strong>Chiến thuật 1 (Đuổi hình bắt bóng):</strong> Bạn thấy Đại lý đặt 70 máy, bạn lập tức tăng ca sản xuất 70. Tuần sau Đại lý phát hiện ế, không đặt nữa (đặt 0). Bạn lại sa thải công nhân. Chi phí tuyển dụng/sa thải sẽ hủy diệt lợi nhuận của bạn.</li>
+                <li><strong>Chiến thuật 2 (Sản xuất phẳng):</strong> Mặc kệ Đại lý nhảy múa, bạn giữ nhịp sản xuất đều đặn 25 máy/tuần. Giảm tối đa chi phí thay đổi công suất, nhưng sẽ có lúc thiếu hàng, lúc thừa hàng. Đây là cách các nhà máy thép hoạt động.</li>
+                <li><strong>Chiến thuật 3 (Chia sẻ thông tin - VMI):</strong> Bạn bắt ép Đại lý mở cổng API chia sẻ dữ liệu bán lẻ (Customer Demand). Mặc kệ Đại lý order bao nhiêu, bạn thấy Khách hàng thực tế chỉ mua 22 máy, bạn sản xuất đúng 22. <strong>Đây là phương pháp triệt tiêu hoàn toàn Bullwhip Effect mà Walmart và P&G đã áp dụng thành công.</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Kịch bản Cứng (Hardcoded scenario) để minh họa rõ Bullwhip
+        const SCENARIO = [
+            { week: 1, trueD: 20, distOrd: 20 },
+            { week: 2, trueD: 20, distOrd: 20 },
+            { week: 3, trueD: 22, distOrd: 30 }, // Nhu cầu nhích nhẹ, Đại lý bắt đầu hoảng
+            { week: 4, trueD: 25, distOrd: 50 }, // Đại lý hoảng sợ mạnh
+            { week: 5, trueD: 25, distOrd: 70 }, // Đỉnh điểm roi da
+            { week: 6, trueD: 22, distOrd: 10 }, // Đại lý nhận ra tồn kho ngập mặt, dừng đặt
+            { week: 7, trueD: 20, distOrd: 0 },
+            { week: 8, trueD: 20, distOrd: 0 },
+            { week: 9, trueD: 20, distOrd: 10 }, // Đại lý bắt đầu mua lại
+            { week: 10, trueD: 20, distOrd: 20 },
+            { week: 11, trueD: 20, distOrd: 20 },
+            { week: 12, trueD: 20, distOrd: 20 }
+        ];
+
+        let state = { week: 1, maxWeeks: 12, cash: 0, inventory: 0, lastProd: 20, logs: [] };
+
+        function addLog(msg, color='white') { state.logs.unshift(`<div class="log-entry" style="color:${color}"><strong>T${state.week}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function renderUI() {
+            if(state.week <= 12) {
+                document.getElementById('weekStat').innerText = `${state.week} / 12`;
+                document.getElementById('distOrder').innerText = SCENARIO[state.week-1].distOrd;
+                document.getElementById('trueDemand').innerText = document.getElementById('aiStrategy').value === 'vmi' ? SCENARIO[state.week-1].trueD : "???";
+            } else {
+                document.getElementById('weekStat').innerText = "END";
+            }
+            document.getElementById('cashStat').innerText = format(state.cash);
+            document.getElementById('cashStat').style.color = state.cash < 0 ? 'var(--danger)' : 'var(--success)';
+            document.getElementById('invStat').innerText = state.inventory;
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        // Auto update UI when selecting VMI strategy
+        document.getElementById('aiStrategy').addEventListener('change', renderUI);
+
+        function endWeek() {
+            if (state.week > state.maxWeeks) return;
+            
+            let prod = parseInt(document.getElementById('prodQty').value);
+            if (isNaN(prod) || prod < 0) { alert("Nhập số lượng sản xuất hợp lệ!"); return; }
+
+            let currentScenario = SCENARIO[state.week-1];
+            
+            // Tính toán chi phí
+            let capChange = Math.abs(prod - state.lastProd);
+            let capCost = capChange * 10;
+            
+            state.inventory += prod;
+            let sold = Math.min(currentScenario.distOrd, state.inventory);
+            state.inventory -= sold;
+            let missed = currentScenario.distOrd - sold;
+            
+            let grossProfit = sold * 30;
+            let holdCost = state.inventory * 5;
+            
+            let netWeek = grossProfit - capCost - holdCost;
+            state.cash += netWeek;
+
+            let logColor = netWeek > 0 ? 'var(--success)' : 'var(--danger)';
+            addLog(`Sản xuất ${prod} (đổi ${capChange} công suất tốn $${capCost}). Bán ${sold}/${currentScenario.distOrd}. Tồn: ${state.inventory} (tốn $${holdCost}). Lãi: <strong style="color:${logColor}">${format(netWeek)}</strong>`);
+
+            state.lastProd = prod;
+            state.week++;
+            
+            if(state.week > state.maxWeeks) addLog(`🎉 KẾT THÚC! TỔNG LỢI NHUẬN: ${format(state.cash)}`, 'var(--primary)');
+            
+            document.getElementById('prodQty').value = ''; 
+            renderUI();
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.week > state.maxWeeks) return;
+            isPlaying = true;
+            let strat = document.getElementById('aiStrategy').value;
+
+            // Bật chia sẻ thông tin nếu dùng VMI
+            if(strat === 'vmi') renderUI();
+
+            while(state.week <= state.maxWeeks) {
+                let currentScenario = SCENARIO[state.week-1];
+                let prod = 0;
+
+                if(strat === 'chase') {
+                    prod = currentScenario.distOrd; // Tin tưởng đại lý mù quáng
+                } else if(strat === 'level') {
+                    prod = 25; // Sản xuất phẳng không đổi
+                } else if(strat === 'vmi') {
+                    prod = currentScenario.trueD; // Nhìn thấu Customer Demand
+                }
+
+                document.getElementById('prodQty').value = prod;
+                await new Promise(r => setTimeout(r, 600));
+                endWeek();
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            isPlaying = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+        window.onload = renderUI;
+    </script>
+</body>
+</html>

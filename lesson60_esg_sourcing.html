@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 60: Tiêu Chuẩn ESG (Môi trường, Xã hội, Quản trị)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #10b981; --success: #34d399; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #064e3b, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #34d399, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .sup-card { background: var(--panel-bg); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;}
+        .sup-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.3);}
+        .sup-card.selected { border-color: var(--primary); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1);}
+        
+        .esg-score { font-size: 3rem; font-weight: 900; margin: 10px 0;}
+        .score-bad { color: var(--danger); text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);}
+        .score-good { color: var(--success); text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);}
+
+        .metric { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px;}
+        
+        .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 15px; color: white;}
+        .btn-bad { background: linear-gradient(135deg, var(--danger), #991b1b); }
+        .btn-good { background: linear-gradient(135deg, var(--success), #059669); }
+
+        .time-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--warning), #b45309); color: white; cursor: pointer; width: 100%; text-transform: uppercase; margin-bottom: 20px; display: none; animation: pulse 2s infinite;}
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        .result-panel { display: none; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; animation: fadeIn 0.5s;}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 60: Quản Trị Rủi Ro ESG (Sourcing Đạo Đức)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sức ép từ Truyền thông và Các Quỹ Đầu Tư lên Giám đốc Chuỗi cung ứng.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Tập đoàn của bạn cần mua 10,000 Tấn Hạt Ca-cao để sản xuất Sô-cô-la.<br>
+            Bạn có 2 bản chào giá. Điểm đánh giá nhà cung cấp không chỉ dựa trên Giá, mà còn dựa trên <strong>Chỉ số ESG (Environmental - Môi trường, Social - Xã hội, Governance - Quản trị minh bạch)</strong>.<br>
+            <em>Hành động: Bạn là người ký duyệt cuối cùng. Bạn sẽ chọn Ký với Đối tác nào?</em>
+        </div>
+
+        <div class="grid-2">
+            <!-- Supplier A -->
+            <div class="sup-card" id="cardA">
+                <h2 style="margin-top:0;">ĐỐI TÁC A (CHÂU PHI)</h2>
+                <div class="metric"><span>Giá Mua:</span> <strong style="color:var(--success); font-size: 1.2rem;">$1,000 / Tấn</strong></div>
+                <div class="metric"><span>Xả thải Môi trường:</span> <strong style="color:var(--danger)">Cực cao (Phá rừng)</strong></div>
+                <div class="metric"><span>Lao động:</span> <strong style="color:var(--danger)">Lao động Trẻ em</strong></div>
+                <div style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">ĐIỂM CHỨNG NHẬN ESG</div>
+                <div class="esg-score score-bad">20/100</div>
+                <button class="action-btn btn-bad" id="btnA" onclick="selectSup('A')">KÝ HỢP ĐỒNG MUA RẺ (A)</button>
+            </div>
+
+            <!-- Supplier B -->
+            <div class="sup-card" id="cardB">
+                <h2 style="margin-top:0;">ĐỐI TÁC B (NAM MỸ)</h2>
+                <div class="metric"><span>Giá Mua:</span> <strong style="color:var(--danger); font-size: 1.2rem;">$1,500 / Tấn</strong></div>
+                <div class="metric"><span>Xả thải Môi trường:</span> <strong style="color:var(--success)">Sử dụng Điện Mặt trời</strong></div>
+                <div class="metric"><span>Lao động:</span> <strong style="color:var(--success)">Fairtrade (Trả lương công bằng)</strong></div>
+                <div style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">ĐIỂM CHỨNG NHẬN ESG</div>
+                <div class="esg-score score-good">95/100</div>
+                <button class="action-btn btn-good" id="btnB" onclick="selectSup('B')">KÝ HỢP ĐỒNG ĐẠO ĐỨC (B)</button>
+            </div>
+        </div>
+
+        <button class="time-btn" id="btnTime" onclick="fastForward()">⏩ TUA NHANH ĐẾN NĂM SAU (XEM KẾT QUẢ BÁO CÁO TÀI CHÍNH)</button>
+
+        <div class="result-panel" id="resPanel">
+            <h2 id="resTitle" style="margin-top:0;"></h2>
+            <div id="resDesc" style="font-size: 1.1rem; line-height: 1.6; text-align: left; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 8px;"></div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: var(--success);">📚 Cẩm nang ESG (Environmental, Social, Governance)</h3>
+            <p>Trước năm 2010, Giám đốc SCM chỉ quan tâm 3 thứ: Giá (Cost), Chất lượng (Quality) và Thời gian giao hàng (Delivery). Từ 2020 trở đi, ESG là tiêu chuẩn số 1 sống còn.</p>
+            <ul>
+                <li><strong>Góc nhìn Lợi nhuận (P&L):</strong> Nếu bạn mua Ca-cao giá rẻ $1,000, sổ sách tháng này báo bạn tiết kiệm được 5 Triệu Đô. Bạn được vinh danh và nhận thưởng. Đây là Tư duy Thiển cận.</li>
+                <li><strong>Cái giá của Danh tiếng (Reputational Risk):</strong> Chỉ một bài báo phanh phui chuỗi cung ứng của bạn bóc lột trẻ em, giá Cổ phiếu công ty sẽ bốc hơi 20%. Hàng hóa bị tẩy chay trên mạng xã hội. Các quỹ đầu tư Phố Wall (BlackRock, Vanguard) ngay lập tức bán tháo cổ phiếu công ty vì họ bị cấm đầu tư vào các công ty Vi phạm ESG.</li>
+                <li><strong>Chi phí Ẩn:</strong> Khoản tiết kiệm 5 Triệu Đô ban đầu biến thành khoản Tôn thất 500 Triệu Đô Vốn hóa thị trường. Mua hàng Đạo đức (Ethical Sourcing) giá cao hơn không phải là từ thiện, đó là một chiêu thức Quản trị Rủi ro Tối Thượng để bảo vệ mạng sống của Tập đoàn trên thương trường khốc liệt.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let chosen = '';
+
+        function selectSup(sup) {
+            chosen = sup;
+            document.getElementById('cardA').classList.remove('selected');
+            document.getElementById('cardB').classList.remove('selected');
+            
+            document.getElementById('btnA').style.opacity = 0.5;
+            document.getElementById('btnB').style.opacity = 0.5;
+
+            document.getElementById('card' + sup).classList.add('selected');
+            document.getElementById('btn' + sup).style.opacity = 1;
+            document.getElementById('btn' + sup).innerText = "ĐÃ KÝ HỢP ĐỒNG";
+
+            document.getElementById('btnTime').style.display = 'block';
+            document.getElementById('resPanel').style.display = 'none';
+        }
+
+        function fastForward() {
+            document.getElementById('btnTime').style.display = 'none';
+            let panel = document.getElementById('resPanel');
+            let title = document.getElementById('resTitle');
+            let desc = document.getElementById('resDesc');
+            
+            panel.style.display = 'block';
+
+            if (chosen === 'A') {
+                panel.style.border = "2px solid var(--danger)";
+                title.innerText = "🚨 KHỦNG HOẢNG TRUYỀN THÔNG (BOYCOTT)!!!";
+                title.style.color = "var(--danger)";
+                desc.innerHTML = `
+                    <b style="color:var(--danger)">📰 TIN TỨC: Một bộ phim tài liệu vừa phanh phui việc Nhà cung cấp A bắt trẻ em làm việc 14 tiếng/ngày.</b><br><br>
+                    1. Người tiêu dùng tẩy chay sản phẩm của bạn. Doanh thu sụt giảm 40%.<br>
+                    2. Các Quỹ Đầu Tư Lớn (BlackRock) rút lui vì công ty vi phạm quy định ESG nghiêm trọng. Cổ phiếu rớt giá 20%.<br>
+                    3. Công ty bị phạt 10 Triệu Đô la từ cơ quan nhân quyền.<br><br>
+                    <b style="color:var(--danger)">KẾT LUẬN: Bạn tiết kiệm được $5 Triệu Đô tiền hàng, nhưng làm công ty bốc hơi Tỷ Đô vốn hóa thị trường. BẠN BỊ SA THẢI NGAY LẬP TỨC.</b>
+                `;
+            } else {
+                panel.style.border = "2px solid var(--success)";
+                title.innerText = "🏆 CHIẾN DỊCH PR BÙNG NỔ (CỔ PHIẾU TĂNG VỌT)";
+                title.style.color = "var(--success)";
+                desc.innerHTML = `
+                    <b style="color:var(--success)">🌟 TIN TỨC: Báo chí khen ngợi công ty bạn là Người dẫn đầu về Phát triển Bền vững (Sustainability).</b><br><br>
+                    1. Người tiêu dùng Thế Hệ Z (Gen Z) sẵn sàng trả giá cao hơn 15% để mua Sô-cô-la của bạn vì chữ "Fairtrade".<br>
+                    2. Các Quỹ Hưu Trí (Pension Funds) rót hàng tỷ Đô la vào cổ phiếu công ty vì Điểm ESG của bạn đứng Top 1 ngành.<br>
+                    3. Đối thủ cạnh tranh bị tẩy chay vì dùng nguồn hàng bẩn, họ nhường lại thị phần cho bạn.<br><br>
+                    <b style="color:var(--success)">KẾT LUẬN: Bạn chi thêm $5 Triệu Đô tiền hàng, nhưng mang lại Lợi thế Cạnh tranh Cốt lõi và Sự ủng hộ của Wall Street. BẠN ĐƯỢC THĂNG CHỨC CEO!</b>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

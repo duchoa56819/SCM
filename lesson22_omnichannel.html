@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 22: Thẩm thấu Đa kênh (Omnichannel Fulfillment)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #ec4899; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #4c1d95, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #f472b6, #db2777); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
+
+        .network-map { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .node { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 12px; border: 2px solid var(--border); position: relative;}
+        .node.dc { border-color: var(--primary); background: rgba(236, 72, 153, 0.1); }
+        .node.store { border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        
+        .node-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; }
+        .stock-display { font-size: 2.5rem; font-weight: 900; }
+        
+        .order-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;}
+        
+        .action-btn { padding: 15px; font-size: 1rem; font-weight: 800; border: none; border-radius: 12px; color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 10px;}
+        .btn-dc { background: linear-gradient(135deg, var(--primary), #be185d); }
+        .btn-store { background: linear-gradient(135deg, var(--warning), #b45309); }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; transform: none; filter: none;}
+        
+        .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
+        .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+        
+        .alert-pulse { animation: pulse 1s infinite; color: var(--danger); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 22: Thẩm thấu Đa kênh (Omnichannel)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Ship từ Kho Tổng hay Ship từ Cửa hàng? Bài toán hóc búa của Zara và Thế Giới Di Động.</p>
+        </header>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);">
+            <strong>Kịch bản:</strong> Một Khách hàng mua Online 1 đôi giày. Khách đang ở ngay sát <strong>Cửa hàng Offline (Store)</strong> của bạn.<br>
+            Bạn có 2 lựa chọn xuất hàng (Fulfillment):<br>
+            1. <strong>Ship từ Kho Tổng (DC):</strong> Phí ship đắt <strong>$10</strong>, tốn 3 ngày. Bù lại Cửa hàng không bị mất tồn kho.<br>
+            2. <strong>Ship từ Cửa hàng (Ship-from-Store):</strong> Phí ship rẻ bèo <strong>$3</strong>, giao ngay trong ngày! Rủi ro: Cửa hàng bị rút ruột. Nếu có Khách Offline (Walk-in) bước vào mua mà Cửa hàng hết giày, bạn mất trắng <strong>$50 Lợi nhuận</strong>!
+        </div>
+
+        <div class="stats-bar">
+            <div><div style="color: var(--text-muted);">SỰ KIỆN KHÁCH HÀNG</div><div class="stat-value" id="eventStat">1 / 15</div></div>
+            <div><div style="color: var(--text-muted);">LỢI NHUẬN / TIẾT KIỆM</div><div class="stat-value" id="profitStat" style="color: var(--success)">$0</div></div>
+            <div><div style="color: var(--text-muted);">MẤT KHÁCH OFFLINE</div><div class="stat-value" id="lostStat" style="color: var(--danger)">0</div></div>
+        </div>
+
+        <div class="network-map">
+            <!-- Central DC -->
+            <div class="node dc">
+                <div class="node-title" style="color: var(--primary);">🏭 Kho Tổng (Central DC)</div>
+                <div style="color: var(--text-muted);">Tồn kho an toàn, xa khách hàng.</div>
+                <div class="stock-display" id="stockDC">100</div>
+                <div style="margin-top: 15px;">
+                    <button class="action-btn btn-dc" id="btnDC" onclick="fulfill('DC')">📦 LẤY TỪ KHO TỔNG (Phí $10)</button>
+                </div>
+            </div>
+
+            <!-- Local Store -->
+            <div class="node store">
+                <div class="node-title" style="color: var(--warning);">🏪 Cửa hàng Offline (Store)</div>
+                <div style="color: var(--text-muted);">Gần khách hàng, nhưng tồn kho thấp.</div>
+                <div class="stock-display" id="stockStore" style="color: var(--warning);">6</div>
+                <div style="margin-top: 15px;">
+                    <button class="action-btn btn-store" id="btnStore" onclick="fulfill('Store')">🛵 SHIP TỪ CỬA HÀNG (Phí $3)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-box" id="currentOrderBox">
+            <div style="font-size: 1.2rem; font-weight: bold; color: var(--success);" id="orderMsg">🛒 ĐƠN HÀNG ONLINE MỚI! Khách đang chờ xử lý...</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <select id="aiStrategy" style="flex: 2; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--primary); border-radius: 8px; padding: 10px;">
+                <option value="store_only">Mẫu 1: Ưu tiên ship nhanh (100% lấy ở Cửa hàng)</option>
+                <option value="dc_only">Mẫu 2: Bảo vệ cửa hàng (100% lấy ở Kho Tổng)</option>
+                <option value="threshold">Mẫu 3: Tối ưu AI (Chỉ lấy ở Cửa hàng nếu Tồn kho > 3)</option>
+            </select>
+            <button class="action-btn" onclick="autoPlay()" style="flex: 1; background: var(--success); margin: 0;">🤖 AI TỰ XỬ LÝ</button>
+        </div>
+
+        <div class="log-container" id="logContent"></div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
+            <h3 style="color: #ec4899; margin-top: 0;">📚 Cẩm nang Omnichannel (Đa Kênh)</h3>
+            <p><strong>Omnichannel</strong> không chỉ là bán trên nhiều kênh (Web, App, Facebook), mà là khả năng dùng chung Tồn kho của mọi kênh (Kho tổng, Cửa hàng) để giao cho khách nhanh nhất và rẻ nhất.</p>
+            <ul>
+                <li><strong>Ưu tiên Cửa hàng (Ship-from-store):</strong> Nghe có vẻ hoàn hảo vì phí ship rẻ ($3 vs $10) và khách nhận hàng ngay. NHƯNG nếu bạn rút cạn kho của cửa hàng, khi một Khách Offline mở cửa bước vào hỏi mua mà nhân viên báo hết hàng, bạn mất luôn doanh thu $50. Tiết kiệm $7 tiền ship nhưng mất trắng $50 doanh thu!</li>
+                <li><strong>Thuật toán Order Routing:</strong> Các hệ thống SCM hiện đại như Manhattan hay Blue Yonder sẽ dùng <em>Tồn kho An toàn (Safety Stock Threshold)</em>. Ví dụ: Cửa hàng có 6 đôi. Safety Stock = 3. 
+                <br>➔ 3 đơn Online đầu tiên sẽ được lấy từ Cửa hàng (Tiết kiệm tiền ship). 
+                <br>➔ Khi cửa hàng chỉ còn 3 đôi, hệ thống tự động BẬT KHÓA. Mọi đơn Online tiếp theo sẽ bị ép lấy từ Kho Tổng (Chấp nhận phí ship đắt $10) để giữ lại 3 đôi cuối cùng bán cho Khách Offline. Đây chính là thuật toán giúp Thế Giới Di Động vận hành hàng ngàn cửa hàng trơn tru!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            step: 1, maxSteps: 15, // 15 events total
+            dcInv: 100, storeInv: 6,
+            profit: 0, lostSales: 0,
+            logs: [],
+            currentEvent: 'online' // 'online' or 'offline'
+        };
+
+        // Kịch bản định sẵn: 10 đơn Online, 5 khách Offline xen kẽ
+        let eventsSequence = [
+            'online', 'online', 'online', 'offline', 'online',
+            'offline', 'online', 'online', 'offline', 'online',
+            'online', 'offline', 'online', 'offline', 'online'
+        ];
+
+        function addLog(msg) { state.logs.unshift(`<div class="log-entry"><strong>Sự kiện ${state.step}:</strong> ${msg}</div>`); }
+        function format(v) { return '$' + v.toLocaleString(); }
+
+        function triggerEvent() {
+            if (state.step > state.maxSteps) return;
+            state.currentEvent = eventsSequence[state.step - 1];
+
+            if (state.currentEvent === 'offline') {
+                // Khách Walk-in. Phải có hàng ở Store để bán
+                document.getElementById('orderMsg').innerText = "🚶 KHÁCH OFFLINE BƯỚC VÀO CỬA HÀNG!";
+                document.getElementById('orderMsg').style.color = "var(--warning)";
+                document.getElementById('btnDC').disabled = true;
+                document.getElementById('btnStore').disabled = true;
+                
+                setTimeout(() => {
+                    if (state.storeInv > 0) {
+                        state.storeInv--;
+                        state.profit += 50; // Lợi nhuận bán lẻ
+                        addLog(`🚶 Khách Offline mua thành công. Lãi: <strong style="color:var(--success)">+$50</strong>.`);
+                    } else {
+                        state.lostSales++;
+                        addLog(`🚨 <span class="alert-pulse">Khách Offline vào nhưng CỬA HÀNG HẾT HÀNG!</span> Khách tức giận bỏ đi. Mất cơ hội bán $50!`);
+                    }
+                    state.step++;
+                    if (state.step <= state.maxSteps) {
+                        renderUI();
+                        setTimeout(triggerEvent, 1000);
+                    } else finishGame();
+                }, 1000);
+            } else {
+                // Khách Online. Đợi người chơi chọn nút
+                document.getElementById('orderMsg').innerText = "🛒 ĐƠN HÀNG ONLINE MỚI! Bạn muốn lấy từ đâu?";
+                document.getElementById('orderMsg').style.color = "var(--success)";
+                document.getElementById('btnDC').disabled = false;
+                
+                if (state.storeInv > 0) document.getElementById('btnStore').disabled = false;
+                else document.getElementById('btnStore').disabled = true;
+            }
+            renderUI();
+        }
+
+        function fulfill(source) {
+            document.getElementById('btnDC').disabled = true;
+            document.getElementById('btnStore').disabled = true;
+
+            if (source === 'DC') {
+                state.dcInv--;
+                state.profit += (50 - 10); // Lãi 50, ship 10 = 40
+                addLog(`📦 Đơn Online lấy từ Kho Tổng. Phí ship $10. Lãi: <strong style="color:var(--primary)">+$40</strong>.`);
+            } else {
+                state.storeInv--;
+                state.profit += (50 - 3); // Lãi 50, ship 3 = 47
+                addLog(`🛵 Đơn Online lấy từ Cửa hàng. Phí ship rẻ $3. Lãi: <strong style="color:var(--warning)">+$47</strong>. Tồn kho Store giảm!`);
+            }
+
+            state.step++;
+            if (state.step <= state.maxSteps) {
+                renderUI();
+                setTimeout(triggerEvent, 500);
+            } else finishGame();
+        }
+
+        function finishGame() {
+            renderUI();
+            addLog(`<span style="color:var(--success); font-size:1.1rem; font-weight:bold;">🎉 TỔNG KẾT: Lợi nhuận kiếm được: ${format(state.profit)}. Bỏ lỡ ${state.lostSales} khách Offline.</span>`);
+            document.getElementById('eventStat').innerText = "END";
+            document.getElementById('orderMsg').innerText = "KẾT THÚC MÔ PHỎNG";
+            document.getElementById('orderMsg').style.color = "white";
+        }
+
+        function renderUI() {
+            if(state.step <= state.maxSteps) document.getElementById('eventStat').innerText = `${state.step} / 15`;
+            document.getElementById('profitStat').innerText = format(state.profit);
+            document.getElementById('lostStat').innerText = state.lostSales;
+            document.getElementById('stockDC').innerText = state.dcInv;
+            document.getElementById('stockStore').innerText = state.storeInv;
+            
+            if (state.storeInv <= 2) document.getElementById('stockStore').style.color = "var(--danger)";
+            else document.getElementById('stockStore').style.color = "var(--warning)";
+
+            document.getElementById('logContent').innerHTML = state.logs.join('');
+        }
+
+        let isPlaying = false;
+        async function autoPlay() {
+            if(isPlaying || state.step > state.maxSteps) return;
+            isPlaying = true;
+            let strat = document.getElementById('aiStrategy').value;
+
+            // Xử lý tự động
+            let aiLoop = setInterval(() => {
+                if(state.step > state.maxSteps) {
+                    clearInterval(aiLoop);
+                    isPlaying = false;
+                    return;
+                }
+                
+                if (state.currentEvent === 'online') {
+                    let source = 'DC';
+                    if (strat === 'store_only' && state.storeInv > 0) source = 'Store';
+                    else if (strat === 'threshold' && state.storeInv > 3) source = 'Store'; // Threshold = 3
+                    
+                    fulfill(source);
+                }
+            }, 1200); // Chờ offline event trigger xong
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        window.onload = () => { renderUI(); triggerEvent(); };
+    </script>
+</body>
+</html>

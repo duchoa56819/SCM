@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 78: Định Tuyến Xe (Vehicle Routing Problem - VRP)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #8b5cf6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top, #2e1065, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #c084fc, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .map-col { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 15px; text-align: center;}
+        .map-col h3 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; color: white;}
+        
+        .canvas { position: relative; width: 100%; height: 300px; background: #1e293b; border-radius: 8px; overflow: hidden; margin-bottom: 15px;}
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;}
+        
+        /* Truck 1: Blue, Truck 2: Yellow */
+        .path-t1 { stroke: #3b82f6; stroke-width: 3; fill: none; stroke-dasharray: 5,5;}
+        .path-t2 { stroke: #f59e0b; stroke-width: 3; fill: none; stroke-dasharray: 5,5;}
+        
+        .path-t1-opt { stroke: #3b82f6; stroke-width: 3; fill: none; }
+        .path-t2-opt { stroke: #f59e0b; stroke-width: 3; fill: none; }
+
+        .node { position: absolute; width: 12px; height: 12px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10;}
+        .node-depot { width: 20px; height: 20px; background: #ef4444; border-radius: 4px; border: 2px solid white; z-index: 11;}
+
+        .stat-val { font-size: 1.8rem; font-weight: 900;}
+
+        .btn-group { display: flex; justify-content: center; margin-bottom: 20px;}
+        .action-btn { padding: 15px 30px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #5b21b6); color: white; cursor: pointer; transition: all 0.3s; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);}
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 78: Bài toán Định Tuyến Xe (VRP)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự sụp đổ của tư duy "Giao theo thứ tự đặt hàng".</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Bạn có 1 Kho hàng (Vuông đỏ) và 10 Khách hàng (Tròn trắng). Bạn có 2 Xe Tải, mỗi xe chở được tối đa 5 đơn hàng.<br>
+            - <strong>Định tuyến Cảm tính (Bên Trái):</strong> Ai đặt hàng trước giao trước. Xe 1 giao khách 1, 2, 3, 4, 5. Xe 2 giao khách 6, 7, 8, 9, 10. <br>
+            - <strong>Thuật toán VRP (Bên Phải):</strong> Gom nhóm khách hàng theo Vị trí Địa lý (Clustering).<br>
+            <em>Bấm CHẠY THUẬT TOÁN để xem AI vẽ lại đường đi theo hình "Cánh hoa" hoàn mỹ như thế nào!</em>
+        </div>
+
+        <button class="action-btn" onclick="startSim()" id="btnStart">▶ CHẠY THUẬT TOÁN ĐỊNH TUYẾN (VRP)</button>
+
+        <div class="map-grid">
+            <!-- Naive -->
+            <div class="map-col" id="colNaive">
+                <h3>Thứ tự Đặt hàng (Spaghetti)</h3>
+                <div class="canvas" id="can1">
+                    <svg>
+                        <polyline class="path-t1" id="p1-t1" points="" />
+                        <polyline class="path-t2" id="p1-t2" points="" />
+                    </svg>
+                </div>
+                <div style="color:var(--text-muted); font-size:0.8rem;">TỔNG QUÃNG ĐƯỜNG</div>
+                <div class="stat-val" style="color:var(--danger)">250 km</div>
+                <div style="font-size:0.9rem; margin-top:5px; color:var(--text-muted);">Đường đi rối như tơ vò, 2 xe chạy ngang qua nhau lãng phí xăng.</div>
+            </div>
+
+            <!-- Optimized -->
+            <div class="map-col" id="colOpt" style="opacity: 0.3;">
+                <h3>Thuật toán Cánh Hoa (Petal Routing)</h3>
+                <div class="canvas" id="can2">
+                    <svg>
+                        <polyline class="path-t1-opt" id="p2-t1" points="" />
+                        <polyline class="path-t2-opt" id="p2-t2" points="" />
+                    </svg>
+                </div>
+                <div style="color:var(--text-muted); font-size:0.8rem;">TỔNG QUÃNG ĐƯỜNG</div>
+                <div class="stat-val" style="color:var(--success)">140 km</div>
+                <div style="font-size:0.9rem; margin-top:5px; color:var(--success);">Gom cụm không gian (Clustering). Xe 1 bao trọn hướng Tây. Xe 2 bao trọn hướng Đông. Không đụng hàng!</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Vehicle Routing Problem (VRP)</h3>
+            <p>Bài toán VRP là phiên bản mở rộng đắt giá của TSP. Không chỉ tìm đường đi ngắn nhất cho 1 xe, mà phải phân bổ khách hàng cho <strong>Nhiều Xe (Multi-vehicle)</strong> đồng thời thỏa mãn Giới hạn Sức chứa (Capacity constraints).</p>
+            <ul>
+                <li><strong>Hội chứng Spaghetti (Mì Ý):</strong> Rất nhiều công ty giao hàng nội thành lên lịch trình theo "Thứ tự đặt hàng trong file Excel". Khách A ở Quận 1 đặt trước, Khách B ở Quận 9 đặt sau. Kết quả: Xe số 1 chạy từ Q1 sang Q9, rồi lại vòng về Q3. Xe số 2 thì chạy từ Q2 sang Q7. Đường đi của các xe đan chéo vào nhau như một đĩa Mì Ý.</li>
+                <li><strong>Thuật toán Gom cụm Quét (Sweep Algorithm):</strong> AI của Amazon không nhìn vào thứ tự đặt hàng. Nó đặt một cây thước vô hình ở Kho, sau đó quét 1 vòng 360 độ (như kim đồng hồ). Quét được 5 khách hàng thì bốc bỏ vào Xe 1. Quét tiếp 5 khách hàng thì bốc bỏ vào Xe 2.</li>
+                <li><strong>Kết quả (Mô hình Cánh hoa):</strong> Mỗi xe tải tạo ra một vòng lặp kín không bao giờ giẫm chân lên vùng của xe khác (Nhìn như những cánh hoa xếp quanh nhụy là Kho trung tâm). Thuật toán này giúp giảm 30-40% lượng xăng tiêu thụ và số lượng xe cần mua!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const nodes = [
+            {id:0, x:150, y:150, isDepot: true}, // Center
+            // West cluster
+            {id:1, x:40, y:60}, {id:2, x:30, y:130}, {id:3, x:60, y:200}, {id:4, x:90, y:240}, {id:5, x:120, y:60},
+            // East cluster
+            {id:6, x:200, y:50}, {id:7, x:260, y:100}, {id:8, x:270, y:180}, {id:9, x:220, y:230}, {id:10, x:180, y:250}
+        ];
+
+        // Draw nodes on both canvases
+        function drawNodes(canId) {
+            let area = document.getElementById(canId);
+            nodes.forEach(n => {
+                let d = document.createElement('div');
+                d.className = n.isDepot ? 'node node-depot' : 'node';
+                d.style.left = n.x + 'px';
+                d.style.top = n.y + 'px';
+                area.appendChild(d);
+            });
+        }
+
+        window.onload = () => {
+            drawNodes('can1');
+            drawNodes('can2');
+            
+            // Draw Naive (Spaghetti) - Mix East and West based on "random order"
+            let t1Naive = [0, 1, 6, 2, 8, 3, 0]; // Mix of left and right
+            let t2Naive = [0, 7, 4, 9, 5, 10, 0];
+            
+            let p1 = t1Naive.map(i => `${nodes[i].x},${nodes[i].y}`).join(' ');
+            document.getElementById('p1-t1').setAttribute('points', p1);
+            
+            let p2 = t2Naive.map(i => `${nodes[i].x},${nodes[i].y}`).join(' ');
+            document.getElementById('p1-t2').setAttribute('points', p2);
+        };
+
+        function startSim() {
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStart').innerText = "✅ ĐÃ TỐI ƯU HÓA THÀNH CÔNG";
+            
+            let colOpt = document.getElementById('colOpt');
+            colOpt.style.opacity = 1;
+            colOpt.style.borderColor = "var(--success)";
+            colOpt.style.boxShadow = "0 0 20px rgba(16, 185, 129, 0.2)";
+
+            // Draw Opt (Petal) - Pure West and Pure East
+            let t1Opt = [0, 1, 2, 3, 4, 5, 0]; // West loop
+            let t2Opt = [0, 6, 7, 8, 9, 10, 0]; // East loop
+            
+            let p1 = t1Opt.map(i => `${nodes[i].x},${nodes[i].y}`).join(' ');
+            document.getElementById('p2-t1').setAttribute('points', p1);
+            
+            let p2 = t2Opt.map(i => `${nodes[i].x},${nodes[i].y}`).join(' ');
+            document.getElementById('p2-t2').setAttribute('points', p2);
+        }
+    </script>
+</body>
+</html>

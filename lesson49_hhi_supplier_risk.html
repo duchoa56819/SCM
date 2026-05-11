@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 49: Chỉ số Tập trung Nhà Cung cấp (HHI Risk)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        :root { --bg-color: #0f172a; --panel-bg: rgba(30, 41, 59, 0.7); --border: rgba(255, 255, 255, 0.1); --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #f43f5e; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #4c0519, #0f172a); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { font-weight: 800; font-size: 2.2rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; text-align: center; }
+        
+        .scenario-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; border: 1px solid var(--primary);}
+        
+        .dashboard { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .supplier-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 12px; padding: 20px;}
+        .supplier-row { display: flex; align-items: center; margin-bottom: 15px; }
+        .sup-name { width: 150px; font-weight: bold; }
+        .sup-slider { flex: 1; margin: 0 15px; accent-color: var(--primary);}
+        .sup-val { width: 60px; text-align: right; font-weight: bold; font-size: 1.2rem; color: var(--warning);}
+
+        .hhi-panel { background: rgba(0,0,0,0.4); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center;}
+        .hhi-score { font-size: 4rem; font-weight: 900; color: white; margin: 10px 0; text-shadow: 0 0 20px rgba(244,63,94,0.5);}
+        .hhi-status { font-size: 1.2rem; font-weight: bold; }
+
+        .chart-bar { height: 30px; border-radius: 8px; margin-bottom: 20px; display: flex; overflow: hidden; border: 1px solid var(--border);}
+        .segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: black; transition: width 0.3s;}
+        
+        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bài 49: Chỉ số Rủi ro HHI (Supplier Concentration)</h1>
+            <p style="text-align: center; color: var(--text-muted);">Sự mong manh của Chuỗi cung ứng Độc quyền.</p>
+        </header>
+
+        <div class="scenario-box">
+            <strong>Kịch bản:</strong> Quỹ mua sắm của bạn là <strong>100%</strong> (1 Triệu Đô). Bạn có 4 Nhà cung cấp (A, B, C, D) có khả năng cung ứng loại Chip điện tử này.<br>
+            Bạn kéo thanh trượt để chia phần trăm (%) ngân sách mua hàng cho từng người.<br>
+            <em>Hệ thống sẽ tự động tính Toán <strong>Chỉ số HHI (Herfindahl-Hirschman Index)</strong> để chấm điểm Mức độ rủi ro đứt gãy của bạn!</em>
+        </div>
+
+        <div class="chart-bar" id="allocBar">
+            <div class="segment" id="segA" style="width: 100%; background: #3b82f6;">A: 100%</div>
+            <div class="segment" id="segB" style="width: 0%; background: #10b981;"></div>
+            <div class="segment" id="segC" style="width: 0%; background: #f59e0b;"></div>
+            <div class="segment" id="segD" style="width: 0%; background: #8b5cf6;"></div>
+        </div>
+
+        <div class="dashboard">
+            <div class="supplier-panel">
+                <h3 style="margin-top: 0; color: var(--text-muted);">PHÂN BỔ NGÂN SÁCH</h3>
+                <div class="supplier-row">
+                    <div class="sup-name" style="color: #3b82f6;">🏢 Công ty A (Chính)</div>
+                    <input type="range" class="sup-slider" id="slA" min="0" max="100" value="100" oninput="balanceSliders('A')">
+                    <div class="sup-val" id="valA">100%</div>
+                </div>
+                <div class="supplier-row">
+                    <div class="sup-name" style="color: #10b981;">🏭 Công ty B (Phụ)</div>
+                    <input type="range" class="sup-slider" id="slB" min="0" max="100" value="0" oninput="balanceSliders('B')">
+                    <div class="sup-val" id="valB">0%</div>
+                </div>
+                <div class="supplier-row">
+                    <div class="sup-name" style="color: #f59e0b;">🏭 Công ty C (Phụ)</div>
+                    <input type="range" class="sup-slider" id="slC" min="0" max="100" value="0" oninput="balanceSliders('C')">
+                    <div class="sup-val" id="valC">0%</div>
+                </div>
+                <div class="supplier-row">
+                    <div class="sup-name" style="color: #8b5cf6;">🏚️ Công ty D (Nhỏ)</div>
+                    <input type="range" class="sup-slider" id="slD" min="0" max="100" value="0" oninput="balanceSliders('D')">
+                    <div class="sup-val" id="valD">0%</div>
+                </div>
+            </div>
+
+            <div class="hhi-panel">
+                <div>ĐIỂM SỐ HHI</div>
+                <div class="hhi-score" id="hhiScore">10,000</div>
+                <div class="hhi-status" id="hhiStatus" style="color: var(--danger);">Cực Kỳ Độc Quyền</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">(HHI = Tổng các Bình phương % Thị phần)</div>
+            </div>
+        </div>
+
+        <div class="detail-box">
+            <h3 style="margin-top: 0; color: #fb7185;">📚 Cẩm nang Chỉ số Herfindahl-Hirschman (HHI)</h3>
+            <p>HHI vốn được Bộ Tư pháp Mỹ dùng để phát hiện Độc quyền kinh tế. Trong SCM, nó được dùng để đo <strong>Mức độ Tập trung Rủi ro</strong> của nguồn cung.</p>
+            <ul>
+                <li><strong>HHI = 10,000 (Single Sourcing):</strong> Đưa 100% đơn hàng cho Công ty A. HHI = 100² = 10,000. Bạn được giá rẻ nhất vì mua sỉ. NHƯNG nếu nhà máy A cháy, công ty bạn phá sản ngay lập tức.</li>
+                <li><strong>HHI = 2,500 (Phân mảnh hoàn hảo):</strong> Đưa 25% cho cả 4 công ty. HHI = 25² + 25² + 25² + 25² = 2,500. Rủi ro đứt gãy bằng 0. Nhưng bạn tốn quá nhiều tiền để vận hành 4 bản hợp đồng, không ai cho bạn chiết khấu giá sỉ.</li>
+                <li><strong>Điểm Ngọt ngào (Sweet Spot - HHI 4000 - 6000):</strong> Quy tắc vàng là <strong>Quy tắc 70-30 hoặc 60-30-10</strong>. Đưa 60% cho Đối tác chiến lược A (Để lấy giá tốt), 30% cho Đối tác B (Để giữ chân họ làm Backup), và 10% cho Công ty C (Để họ test công nghệ mới). HHI sẽ dao động quanh mức 4,600. Đây là sự cân bằng hoàn hảo giữa Sức mạnh Đàm phán và Quản trị Rủi ro Tận thế!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let vals = { A: 100, B: 0, C: 0, D: 0 };
+
+        function balanceSliders(changed) {
+            let newVal = parseInt(document.getElementById('sl' + changed).value);
+            let diff = newVal - vals[changed];
+            vals[changed] = newVal;
+
+            // Simple redistribution to keep sum = 100
+            let others = ['A', 'B', 'C', 'D'].filter(k => k !== changed);
+            
+            while (diff !== 0) {
+                let adjust = diff > 0 ? -1 : 1;
+                // Find someone to adjust
+                let candidates = others.filter(k => diff > 0 ? vals[k] > 0 : vals[k] < 100);
+                if (candidates.length === 0) {
+                    // Cannot adjust further, revert part of the change
+                    vals[changed] += diff; // undo
+                    document.getElementById('sl' + changed).value = vals[changed];
+                    break;
+                }
+                // Pick random candidate to adjust
+                let pick = candidates[Math.floor(Math.random() * candidates.length)];
+                vals[pick] += adjust;
+                diff += adjust;
+            }
+
+            // Update UI
+            for (let k of ['A', 'B', 'C', 'D']) {
+                document.getElementById('sl' + k).value = vals[k];
+                document.getElementById('val' + k).innerText = vals[k] + "%";
+                
+                let seg = document.getElementById('seg' + k);
+                seg.style.width = vals[k] + "%";
+                seg.innerText = vals[k] > 5 ? `${k}: ${vals[k]}%` : '';
+            }
+
+            calculateHHI();
+        }
+
+        function calculateHHI() {
+            let hhi = (vals.A ** 2) + (vals.B ** 2) + (vals.C ** 2) + (vals.D ** 2);
+            document.getElementById('hhiScore').innerText = hhi.toLocaleString();
+
+            let status = document.getElementById('hhiStatus');
+            let scoreUI = document.getElementById('hhiScore');
+
+            if (hhi > 8000) {
+                status.innerText = "RỦI RO TẬN THẾ (Độc quyền)";
+                status.style.color = "var(--danger)";
+                scoreUI.style.color = "var(--danger)";
+            } else if (hhi >= 4000 && hhi <= 6000) {
+                status.innerText = "TUYỆT HẢO (Golden Balance)";
+                status.style.color = "var(--success)";
+                scoreUI.style.color = "var(--success)";
+            } else if (hhi < 4000) {
+                status.innerText = "QUÁ PHÂN MẢNH (Mất chiết khấu)";
+                status.style.color = "var(--warning)";
+                scoreUI.style.color = "var(--warning)";
+            } else {
+                status.innerText = "Chấp nhận được";
+                status.style.color = "white";
+                scoreUI.style.color = "white";
+            }
+        }
+
+        window.onload = calculateHHI;
+    </script>
+</body>
+</html>
