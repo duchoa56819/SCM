@@ -1,4 +1,5 @@
 # 🌍 SCM Masterclass Simulation Suite
+https://scm-masterclass.vercel.app/
 
 Chào mừng đến với **SCM Masterclass** - Nền tảng Đào tạo Quản trị Chuỗi Cung Ứng (Supply Chain Management) tương tác quy mô lớn nhất.
 Bộ thư viện này chứa **100 Bài Mô Phỏng Tương Tác** trải dài từ các khái niệm cơ bản về Kho bãi, Mua sắm, Vận tải, cho đến các chiến lược vĩ mô phức tạp như Operations Research, Sáp nhập, Tối ưu hóa đa biến, và Trí tuệ Nhân tạo.
