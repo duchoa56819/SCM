@@ -29,6 +29,21 @@
 
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -70,16 +85,62 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #34d399; margin-top: 0;">📚 Cẩm nang SCF (Tài chính Chuỗi cung ứng)</h3>
-            <p>Trong SCM hiện đại, Dòng tiền (Financial Flow) quan trọng ngang ngửa Dòng hàng hóa (Physical Flow).</p>
-            <ul>
-                <li><strong>Gã khổng lồ bắt nạt (Bullies):</strong> Walmart, Apple bắt các nhà máy nhỏ phải cho họ nợ tiền tới 90-120 ngày. Apple lấy số tiền khổng lồ đó đem đi gửi tiết kiệm hoặc tái đầu tư, sinh lời hàng tỷ Đô la. NHƯNG hệ lụy là các nhà máy nhỏ đứt vốn, công nhân đình công, không ai làm hàng cho Apple nữa. Win-Lose ➔ Cả 2 cùng Lose.</li>
-                <li><strong>Reverse Factoring (Bao thanh toán ngược):</strong> Apple bắt tay với Ngân hàng Citibank. Khi xưởng nhỏ giao hàng cho Apple, Citibank sẽ ứng tiền trả ngay lập tức cho xưởng vào Ngày thứ 10 (Citibank chỉ lấy 1% phí, cực kỳ rẻ vì họ tin tưởng vào Uy tín của Apple). Nhờ đó, xưởng nhỏ CÓ TIỀN MẶT NGAY để trả lương công nhân (Thoát phá sản). 
-                <br>Trong khi đó, Apple vẫn nhởn nhơ giữ tiền của mình, và đến đúng Ngày 120, Apple mới thanh toán trả lại cho Citibank. Một mũi tên trúng 3 đích: Apple có dòng tiền, Nhà xưởng có tiền tươi, Ngân hàng ăn được 1% phí. Win-Win-Win!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #34d399;">🏦 Dòng Tiền Trong SCM & Bản Chất Của Reverse Factoring (Bao Thanh Toán Ngược)</div>
+                    <p>Trong quản trị chuỗi cung ứng hiện đại, **Dòng tài chính (Financial Flow)** đóng vai trò quan trọng ngang ngửa dòng hàng hóa và dòng thông tin. Một chuỗi cung ứng chỉ vận hành trơn tru khi toàn bộ các mắt xích đều khỏe mạnh về dòng tiền mặt.</p>
+                    <p><strong>Cạm bẫy của việc "Chiếm dụng vốn" (Working Capital Bullies)</strong>: Các tập đoàn mua hàng khổng lồ thường có thế lực đàm phán rất mạnh, họ ép các nhà cung cấp vừa và nhỏ phải chấp nhận thời hạn trả chậm cực dài (DPO từ 90 đến 120 ngày). Mục đích để họ giữ tiền mặt gửi tiết kiệm hoặc tái đầu tư kiếm lời. Tuy nhiên, điều này làm cạn kiệt dòng tiền của nhà cung ứng thô, khiến họ không có tiền trả lương công nhân hoặc mua nguyên liệu ➔ Phá sản đột ngột ➔ Gây đứt gãy nguồn cung của chính tập đoàn mua hàng!</p>
+                    <p><strong>Giải pháp Tài chính Chuỗi cung ứng (Supply Chain Finance - SCF / Reverse Factoring)</strong>:</p>
+                    <p>Là mô hình tài trợ ba bên (Người mua lớn, Nhà cung cấp nhỏ, Ngân hàng tài trợ). Ngân hàng sẽ ứng trước **ngay lập tức** 99% giá trị hóa đơn cho nhà cung cấp nhỏ vào Ngày thứ 10 dựa trên uy tín tín dụng cực tốt của tập đoàn mua hàng (lãi suất ứng trước siêu thấp). Trong khi đó, tập đoàn mua hàng vẫn được giữ tiền mặt của mình và đến đúng Ngày 120 mới phải trả tiền cho Ngân hàng. Cả 3 bên cùng thắng (Win-Win-Win)!</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">🏢 Chương Trình SCF Của Apple Với Citibank & Giải Pháp Hỗ Trợ Nhà Vườn Của Walmart</div>
+                    <p><strong>Case Study 1: Apple Tối Ưu Hóa Chu kỳ Tiền Mặt (Negative CCC) Nhờ SCF:</strong> Tập đoàn Apple là bậc thầy trong việc chiếm dụng vốn lưu động. Apple bắt các nhà máy gia công linh kiện (như Foxconn, Pegatron) tại Trung Quốc và Việt Nam phải chấp nhận thời hạn trả chậm lên tới **120 ngày**. Để các nhà máy này không bị sập dòng tiền mặt, Apple liên kết với Ngân hàng Citibank thiết lập chương trình **Reverse Factoring**. Ngay khi Apple phê duyệt hóa đơn giao hàng, Foxconn có thể đem hóa đơn này lên hệ thống của Citibank rút tiền mặt ngay lập tức sau 5 ngày với lãi suất chiết khấu cực kỳ rẻ (chỉ tương đương lãi suất vay của chính Apple). Apple vẫn ung dung giữ tiền mặt của mình đến ngày 120 mới trả Citibank. Chiến lược này giúp Apple duy trì chu kỳ chuyển đổi tiền mặt ở mức **âm (-) 70 ngày** (Apple nhận tiền bán iPhone từ khách hàng trước khi phải trả tiền linh kiện cho nhà cung cấp tới 70 ngày), tạo ra hàng tỷ USD tiền mặt nhàn rỗi hàng quan trọng.</p>
+                    <p><strong>Case Study 2: Chương Trình Tài Trợ Nhà Cung Cấp Nhỏ Của Walmart:</strong> Walmart hợp tác với HSBC triển khai chương trình Supply Chain Finance đặc biệt hỗ trợ các nhà cung cấp nông sản vừa và nhỏ. Điểm đặc biệt: Walmart tích hợp các chỉ số phát triển bền vững (ESG) vào lãi suất chiết khấu. Nếu nhà cung cấp đạt chứng chỉ nông nghiệp xanh, bảo vệ môi trường, Walmart và HSBC sẽ giảm lãi suất ứng trước SCF xuống mức tối thiểu. Điều này không chỉ giúp các hợp tác xã nông nghiệp nhỏ có vốn tươi xoay vòng vụ mùa mà còn thúc đẩy toàn bộ hệ sinh thái nhà cung cấp của Walmart chuyển đổi sang nông nghiệp bền vững.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Chu Kỳ Chuyển Đổi Tiền Mặt (Cash Conversion Cycle - CCC)</div>
+                        <div class="kpi-desc">Số ngày trung bình từ lúc doanh nghiệp chi tiền mua nguyên liệu cho đến khi thu về tiền mặt từ khách hàng. Mục tiêu là rút ngắn tối đa hoặc đẩy về số âm.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💵 Số Ngày Trả Chậm Nhà Cung Cấp (Days Payable Outstanding - DPO)</div>
+                        <div class="kpi-desc">Thời gian trung bình doanh nghiệp trì hoãn thanh toán cho nhà cung cấp. SCF giúp sếp tăng mạnh DPO mà không làm hại đến Supplier.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Nghệ Thuật Quản Trị Vốn Lưu Động & Trách Nhiệm Với Hệ Sinh Thế</div>
+                    <ul>
+                      <li><strong>Chuyển Tư Duy Từ "Ép Giá" Sang "Tài Trợ Dòng Tiền":</strong> Nhiều sếp thu mua tự hào vì đàm phán ép nhà cung cấp nhỏ giảm được 2-3% đơn giá, nhưng lại để thời hạn thanh toán quá ngắn hoặc cố tình trễ hạn thanh toán của họ. Điều này đẩy rủi ro tài chính về phía Supplier, khiến họ buộc phải dùng nguyên liệu rẻ tiền/cắt giảm chất lượng để sống sót. Hãy áp dụng SCF để vừa giữ được đơn giá tốt, vừa cho đối tác dòng tiền tươi khỏe mạnh.</li>
+                      <li><strong>Tận Dụng Uy Tín Tín Dụng Của Doanh Nghiệp Lớn (Anchor Buyer Credibility):</strong> Doanh nghiệp của sếp càng lớn, xếp hạng tín dụng càng cao, ngân hàng càng sẵn sàng cho nhà cung cấp của bạn vay/ứng tiền với lãi suất cực kỳ ưu đãi. Hãy dùng sức mạnh thương hiệu này làm "bảo lãnh tín dụng gián tiếp" (SCF platform) để nâng đỡ toàn bộ mạng lưới nhà cung ứng của mình.</li>
+                      <li><strong>Minh Bạch Hóa Quy Trình Xét Duyệt Hóa Đơn (Three-Way Match):</strong> Điểm nghẽn lớn nhất khiến ngân hàng chậm ứng tiền SCF cho Supplier là thời gian đối chiếu phê duyệt hóa đơn của bộ phận kế toán người mua quá lâu. Hãy tự động hóa quy trình đối chiếu 3 bên (Đơn đặt hàng PO - Phiếu nhập kho GRN - Hóa đơn Invoice) bằng phần mềm ERP để hóa đơn được phê duyệt tự động trong vòng 24 giờ.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -137,7 +198,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = updateSlider;

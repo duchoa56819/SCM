@@ -29,10 +29,23 @@
         svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;}
         polyline { fill: none; stroke: var(--primary); stroke-width: 4; stroke-dasharray: 8,8; opacity: 0;}
         polyline.active { opacity: 1; animation: draw 2s linear forwards; }
-
         @keyframes draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
-
         .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -101,6 +114,65 @@
         <div class="detail-box" id="detailBox">
             <strong style="color:var(--danger)">Return (Quay đầu):</strong> Công nhân đi vào lấy đồ rồi quay ngược lại ra cửa chính. Hành trình bị trùng lặp rất nhiều. Phù hợp nếu đồ cần lấy nằm ở đầu dãy kệ, nhưng nếu đồ nằm ở cuối kệ thì việc đi vào đi ra rất tốn sức.
         </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #6ee7b7;">🏃‍♂️ Khoa Học Lấy Hàng Trong Kho & So Sánh Thuật Toán Return vs. S-Shape</div>
+                    <p>Trong vận hành trung tâm phân phối, hoạt động lấy hàng (Order Picking) chiếm tới **55% tổng chi phí vận hành kho bãi**, và quãng đường đi bộ (Travel Time) của nhân công chiếm 60% tổng thời gian lấy hàng. Do đó, định tuyến lấy hàng (Picker Routing) là bài toán tối ưu hóa quyết định năng suất kho.</p>
+                    <p>Hai thuật toán định tuyến cơ bản được tích hợp trong phần mềm WMS:</p>
+                    <p>- <strong>Thuật toán Return (Quay đầu)</strong>: Công nhân đi vào một dãy kệ, nhặt tất cả các sản phẩm cần thiết, rồi quay đầu đi ngược lại trở ra lối đi chính ở dưới cùng. Ưu điểm: Đơn giản, dễ nhặt. Nhược điểm: Quãng đường di chuyển bị gấp đôi do phải đi lùi lại con đường vừa đi, vô cùng lãng phí sức lực nếu dãy kệ dài.</p>
+                    <p>- <strong>Thuật toán S-Shape (Chữ S / Dầm dích dắc)</strong>: Công nhân đi xuyên qua hoàn toàn một dãy kệ để sang lối đi chính phía bên kia, sau đó đi dọc xuống ở dãy kệ tiếp theo, tạo thành hình chữ S liên tục dích dắc. Họ không bao giờ phải quay đầu đi lùi. Tiết kiệm tới 30-40% quãng đường đi bộ tổng thể.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #059669;">🏢 Thuật Toán Định Tuyến AR Của Amazon & Quy Trình Lấy Hàng Tại Kho Tiki</div>
+                    <p><strong>Case Study 1: Hệ Thống Random Stow & Định Tuyến Picker Của Amazon:</strong> Tại các kho hàng truyền thống của Amazon (trước kỷ nguyên robot Kiva), họ áp dụng chiến thuật lưu kho hỗn độn (Random Stow - cùng một loại sách có thể nằm ở 10 vị trí khác nhau trong kho). Khi một khách hàng đặt đơn gồm 5 cuốn sách khác nhau, hệ thống thuật toán trung tâm của Amazon tự động tính toán vị trí nhặt hàng tối ưu, sau đó định tuyến cho công nhân theo thuật toán S-Shape lai (Heuristic Routing) hiển thị trên thiết bị cầm tay RF Scanner. Công nhân đi bộ một vòng tròn khép kín mượt mà không bao giờ phải đi lùi hay rẽ trái vô ích, giúp Amazon giải quyết hàng triệu đơn hàng mỗi ngày với quãng đường di chuyển của nhân viên là ngắn nhất.</p>
+                    <p><strong>Case Study 2: Tối Ưu Hóa Nhặt Hàng Tại Trung Tâm Fulfillment Của Tiki (TikiNOW Smart Logistics):</strong> Tại tổng kho lạnh và kho thường của Tiki ở TP.HCM, Tiki áp dụng quy trình Picking theo lô (Batch Picking). Thay vì mỗi nhân viên đi nhặt hàng cho 1 đơn lẻ, WMS gom 20 đơn hàng có các sản phẩm nằm gần nhau vào 1 Batch. Hệ thống định tuyến cho nhân viên đẩy xe nhặt hàng đi dích dắc theo hình chữ S xuyên qua các dãy kệ dài. Khi đi hết một vòng chữ S mượt mà, chiếc xe đã chứa đầy ắp hàng hóa của 20 đơn khác nhau, được đẩy thẳng về khu vực phân loại và đóng gói (Put-wall station). Quy trình này giúp Tiki nâng cao năng suất lấy hàng gấp 4 lần.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🚶 Quãng Đường Di Chuyển Của Picker (Travel Distance per Order)</div>
+                        <div class="kpi-desc">Tổng quãng đường trung bình (mét) một công nhân phải đi bộ để nhặt xong một đơn hàng. Chỉ số này phản ánh trực tiếp chất lượng thuật toán định tuyến.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">📦 Năng Suất Nhặt Hàng (Picking Productivity - Lines/Hour)</div>
+                        <div class="kpi-desc">Số lượng dòng hàng (SKUs) nhặt được thành công mỗi giờ của một nhân công. Mục tiêu là tối đa hóa chỉ số này để giảm chi phí nhân sự.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Nghệ Thuật Thiết Kế Layout Kho & Tối Ưu Hóa Hoạt Động Lấy Hàng</div>
+                    <ul>
+                      <li><strong>Thiết Lập Lối Băng Ngang (Cross Aisles):</strong> Đối với các kho hàng khổng lồ có chiều dài dãy kệ dài trên 30 mét, việc chạy S-Shape thuần túy vẫn gây lãng phí nếu sản phẩm chỉ nằm ở đầu kệ. Sếp nên yêu cầu thiết kế lối băng ngang ở giữa kho (Cross aisles). Lối đi ngang này chia nhỏ dãy kệ dài thành nhiều block, cho phép công nhân chuyển làn linh hoạt (thuật toán Heuristic Routing) rút ngắn thêm 25% quãng đường.</li>
+                      <li><strong>Áp Dụng Chiến Thuật Nhặt Hàng Phân Vùng (Zone Picking):</strong> Khi quy mô kho tăng lên, đừng để một công nhân đi bộ hết từ đầu kho đến cuối kho dài hàng trăm mét. Hãy chia kho thành các phân vùng chuyên biệt (Zones) và gán công nhân phụ trách cứng từng vùng. Đơn hàng sẽ được chuyển tiếp qua các thùng chứa (tote-routing) từ vùng này sang vùng khác (như chạy tiếp sức - Zone-to-Zone picking), triệt tiêu hoàn toàn lãng phí thời gian đi bộ đường dài.</li>
+                      <li><strong>Đầu Tư Công Nghệ Hỗ Trợ Nhặt Hàng (Pick-to-Light / Voice Picking):</strong> Loại bỏ phương pháp nhặt hàng bằng giấy in (Paper picklist) gây mất thời gian đọc hiểu và dễ nhầm lẫn. Hãy trang bị hệ thống dải đèn LED chỉ báo vị trí (Pick-to-Light) hoặc tai nghe nhận lệnh bằng giọng nói AI (Voice Picking). Nhân viên chỉ việc di chuyển theo hướng dẫn và nhặt hàng theo số lượng đèn hiển thị, giúp độ chính xác đạt tiệm cận 99.99%.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -139,6 +211,26 @@
                     <strong style="color:var(--success)">S-Shape (Chữ S):</strong> Thuật toán kinh điển nhất trong Hệ thống WMS (Warehouse Management System). Công nhân cứ đi thẳng xuyên qua dãy kệ đầu tiên, rẽ sang dãy thứ hai và đi dọc xuống. Tạo thành hình chữ S liên tục. Họ không bao giờ phải quay đầu lặp lại quãng đường. Tiết kiệm 30% sức lực và thời gian bốc xếp!
                 `;
             }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { runSim('return'); };

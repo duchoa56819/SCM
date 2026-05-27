@@ -36,6 +36,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -86,15 +101,61 @@
         </div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #3b82f6; margin-top: 0;">📚 Cẩm nang Network Design (Hub-and-Spoke)</h3>
-            <p>Cha đẻ của FedEx, Fred Smith, đã thay đổi thế giới Logistics bằng bài tiểu luận ở Đại học Yale về mô hình Hub-and-Spoke (dù giáo sư của ông cho điểm C vì cho rằng nó bất khả thi).</p>
-            <ul>
-                <li><strong>Point-to-Point (Chạy thẳng):</strong> Mỗi thành phố muốn gửi hàng cho nhau phải tự thuê 1 chiếc xe. Nếu có 100 thành phố, số chuyến xe cần mở là N*(N-1)/2 = 4,950 chuyến xe! Chi phí cố định (Tiền mua xe, thuê tài xế) là một con số khổng lồ, trong khi đa số xe chạy trống không (Vì lượng hàng từ xã A sang xã B rất ít). Bù lại hàng đi rất nhanh.</li>
-                <li><strong>Hub-and-Spoke (Quy tụ về Hub):</strong> Mở 1 Siêu Trạm (Hub) ở giữa. 100 thành phố chỉ cần đúng 100 chuyến xe chạy về Hub. Tại Hub, hàng hóa được phân loại (Sort) rồi chất lên các xe đi tỏa ra lại. Tiết kiệm được 4,850 chuyến xe! Lợi thế kinh tế nhờ quy mô (Economies of Scale) được phát huy tối đa. Hàng từ A lên xe tải đi chung với hàng đi C, D... chất đầy ắp xe tải, kéo chi phí trung bình trên mỗi kiện hàng xuống mức cực rẻ. Đổi lại, hàng đi chậm hơn vì phải vòng qua Hub.</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #60a5fa;">🗺️ Mạng Lưới Trục - Nan Hoa & Sức Mạng Gom Tải Quy Mô</div>
+                    <p>Trong thiết kế mạng lưới phân phối logistics (Logistics Network Design), việc lựa chọn cấu trúc kết nối giữa các điểm nút quyết định 80% chi phí vận hành cố định của chuỗi. Hai mô hình mạng lưới nền tảng:</p>
+                    <p>- <strong>Point-to-Point (Kết nối trực tiếp)</strong>: Mở các tuyến vận tải trực tiếp giữa mọi cặp địa điểm. Ưu điểm: Tốc độ giao hàng nhanh nhất (không trạm dừng), không tốn chi phí xây dựng và vận hành trạm phân loại. Nhược điểm: Bùng nổ số lượng tuyến đường khổng lồ $N \times (N - 1) / 2$ khi số tỉnh thành tăng lên, khiến xe chạy rỗng tải (Under-utilization) và chi phí cố định vận hành xe quá cao.</p>
+                    <p>- <strong>Hub-and-Spoke (Trục và Nan hoa)</strong>: Quy tụ toàn bộ luồng hàng từ các tỉnh (Spokes) về một Siêu trạm trung chuyển trung tâm (Hub) để phân loại, đóng gói và trung chuyển tỏa ra lại. Ưu điểm: Giảm số lượng tuyến xe cần mở xuống đúng bằng số địa điểm $(N)$, tối ưu hóa tải trọng xe bự (FTL) nhờ gom hàng chung. Nhược điểm: Hàng đi chậm hơn do phải dỡ hàng phân loại và tăng chi phí CAPEX xây Hub.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🏢 Fred Smith Khai Sinh FedEx Bằng Trạm Hub & Mạng Lưới Phân Phối Của GHTK</div>
+                    <p><strong>Case Study 1: Ý Tưởng Điểm C Của Fred Smith Khai Sinh FedEx:</strong> Năm 1965, Fred Smith viết một bài luận tại Đại học Yale đề xuất mô hình thu gom thư tín và bưu kiện từ mọi thành phố của Mỹ về một trạm phân loại trung tâm tại Memphis trong đêm, phân loại tự động và chuyển phát đi ngay trước sáng. Giáo sư của ông cho điểm C vì cho rằng mô hình bay vòng này cực kỳ tốn xăng và phi thực tế. Không nản chí, Fred Smith thành lập **FedEx** áp dụng triệt để mô hình Hub-and-Spoke này. Memphis trở thành siêu Hub toàn cầu lớn nhất. FedEx đã chứng minh thế giới sai khi gom hàng giúp họ lấp đầy 100% tải trọng máy bay, kéo chi phí mỗi thư tín xuống rẻ mạt, mở ra kỷ nguyên chuyển phát nhanh hàng không hiện đại.</p>
+                    <p><strong>Case Study 2: Hệ Thống Phân Loại Tự Động Của Giao Hàng Tiết Kiệm (GHTK):</strong> Tại Việt Nam, để xử lý hơn 1 triệu đơn hàng TMĐT mỗi ngày, GHTK đã chuyển dịch mạng lưới từ point-to-point sang cấu trúc Hub-and-Spoke chặt chẽ. Họ thiết lập các Trung tâm phân loại lớn (Hub) tại các cửa ngõ Hà Nội và TP.HCM được trang bị hệ thống băng tải chia chọn tự động tốc độ cao (Cross-belt sorters). Toàn bộ đơn hàng lẻ từ các bưu cục địa phương (Spokes) được gom lên xe tải lớn chạy thẳng về Hub trung tâm trong đêm, hệ thống robot phân loại chính xác theo quận huyện chỉ trong 2 giờ trước khi xe tải chặng cuối kéo hàng đi giao. Cấu trúc Hub giúp GHTK duy trì cước phí giao hàng rẻ nhất thị trường.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📈 Hệ Số Lấp Đầy Xe Tải (Truck Fill Rate - TFR %)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm thể tích/tải trọng thực tế của xe tải được sử dụng. Mô hình Hub giúp kéo TFR từ dưới 40% lên trên 85% nhờ gom tải.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⚙️ Năng Suất Chia Chọn Tại Hub (Sortation Throughput)</div>
+                        <div class="kpi-desc">Số lượng bưu kiện được quét mã và chia chọn chính xác về các ngả ra mỗi giờ tại Hub. Đo lường hiệu năng cốt lõi của siêu trạm.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Thiết Kế Mạng Lưới & Điểm Hòa Vốn Của Sếp</div>
+                    <ul>
+                      <li><strong>Xác Định Điểm Hòa Vốn Quy Mô (Scale Break-Even Point):</strong> Hub-and-Spoke chỉ có hiệu quả kinh tế khi sản lượng hàng hóa (Volume) đủ lớn để bù đắp chi phí vận hành cố định rất cao của Hub và chi phí bốc dỡ 2 lần. Khi sản lượng còn thấp ở thị trường mới mở, hãy chạy mô hình Point-to-Point để giữ tính linh hoạt và giảm CAPEX đầu tư bãi.</li>
+                      <li><strong>Tối Ưu Hóa Vị Trí Đặt Hub (Center of Gravity Method):</strong> Đặt Hub ở đâu là quyết định chiến lược trị giá triệu đô. Phải dùng thuật toán tìm điểm trọng lực (Center of Gravity) dựa trên tọa độ địa lý và trọng số sản lượng của các Spokes để giảm thiểu tổng quãng đường Ton-Mile của toàn đội xe, tránh đặt Hub cảm tính gần nhà sếp hay vùng đất rẻ mà xa luồng hàng.</li>
+                      <li><strong>Thiết Lập SLA Phân Loại Nghiêm Ngặt (Cut-off Time):</strong> Điểm yếu chí mạng của Hub-and-Spoke là rủi ro nghẽn cổ chai tại Hub. Chỉ cần một xe gom từ tỉnh về muộn quá giờ quy định (Cut-off time), toàn bộ dây chuyền phân loại bị trễ nhịp, gây chậm giao hàng loạt cho hàng vạn đơn hàng khác. Cần có SLA kỷ luật giờ giấc cực cao với các lái xe inbound.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -161,7 +222,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { switchMode('p2p'); };

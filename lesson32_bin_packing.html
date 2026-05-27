@@ -32,8 +32,21 @@
         .btn-bad { background: linear-gradient(135deg, #64748b, #334155); }
         .btn-good { background: linear-gradient(135deg, var(--primary), #9a3412); }
         .action-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
-
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--warning); font-size: 1rem; line-height: 1.6;}
+        
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -64,13 +77,64 @@
             <div class="truck" id="t1"></div>
         </div>
 
-        <div class="detail-box" id="detailContent">
-            <h3 style="margin-top: 0; color: var(--warning);">📚 Cẩm nang Load Consolidation (3D Bin Packing)</h3>
-            <p>Xếp hàng hóa lên xe tải hoặc container trên biển không đơn giản là vứt đồ vào thùng. Nó là một bài toán khoa học máy tính kinh điển gọi là <strong>Bài toán Đóng gói (Bin Packing Problem)</strong>, thuộc nhóm NP-Hard (Rất khó giải chính xác bằng máy tính nếu số lượng quá lớn).</p>
-            <ul>
-                <li><strong>Cách làm Truyền thống (FIFO - First In First Out):</strong> Công nhân thấy thùng nào bê thùng nấy lên trước. Họ vô tình để các thùng nhỏ ở dưới, hoặc xếp so le làm sinh ra các "Khoảng trống chết" (Dead Space). Hệ quả: Về lý thuyết hàng hóa chỉ chiếm 70% thể tích xe, nhưng xe ĐÃ ĐẦY vì không nhét được thêm do kẹt hình dáng. Bạn buộc phải gọi 1 chiếc xe tải thứ 2 (Tốn thêm $500) chỉ để chở vài thùng hàng lẻ tẻ còn sót lại. Lãng phí CỰC LỚN!</li>
-                <li><strong>Hệ thống AI (Thuật toán Heuristic / Largest-Area-Fit-First):</strong> Phần mềm sẽ mô phỏng 3D trước khi công nhân bốc hàng. Nó luôn ưu tiên đưa các khối TO NHẤT, DÀI NHẤT (Tivi, Tủ lạnh) vào góc xe trước. Sau đó, nó dùng các hộp NHỎ (Lò vi sóng) để chèn vào các khe hở còn sót lại. Hiệu suất (Fill Rate) đạt 100%. Bạn đóng vừa khít mọi thứ vào 1 chiếc xe duy nhất. Tiết kiệm 50% chi phí vận tải!</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #f97316;">📦 Bài Toán Bin Packing 3D & Khoa Học Tối Ưu Hóa Không Gian Xếp Hàng</div>
+                    <p>Trong vận tải đường bộ và đường biển, việc xếp hàng lên xe tải/container không đơn thuần là bốc vác vật lý; đó là một bài toán khoa học máy tính kinh điển mang tên **Bài toán Đóng gói container (3D Bin Packing Problem)** thuộc nhóm NP-Hard (cực kỳ khó giải tối ưu khi số lượng hộp lớn).</p>
+                    <p>Đặc tính của phương pháp xếp hàng thủ công hoặc FIFO (First-In-First-Out): Công nhân bốc hàng theo thứ tự xuất hiện của kiện hàng trên băng chuyền. Hệ quả:</p>
+                    <p>- **Khoảng trống chết (Dead Space)**: Xếp các hộp nhỏ, nhẹ xuống dưới hoặc đặt so le tạo ra các khoảng trống không thể chèn thêm hàng, làm giảm nghiêm trọng hiệu suất thể tích xe (Volume Utilization).</p>
+                    <p>- **Phình to chi phí vận tải**: Dù tổng thể tích hàng hóa chỉ bằng 70% tải trọng xe tải, bạn vẫn phải thuê thêm chiếc xe thứ 2 ($500) chỉ vì không biết cách sắp xếp khít khao các hình khối trên chiếc xe thứ 1.</p>
+                    <p><strong>Thuật toán Sắp xếp Ưu tiên Khối lớn (Largest-Area-Fit-First Heuristics):</strong> Hệ thống mô phỏng 3D luôn đặt các kiện hàng to nhất, nặng nhất (Anchor loads) xuống sàn và vào góc trong cùng trước, sau đó dùng các hộp nhỏ (Filler loads) chèn chặt vào các khe hở còn lại để triệt tiêu 100% Dead Space.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #ea580c;">🏢 Thuật Toán Xếp Container Của DHL & Phần Mềm MagicLogic Của IKEA</div>
+                    <p><strong>Case Study 1: Thuật Toán "Pack-it-Light" Của DHL Express:</strong> DHL xử lý hàng triệu gói bưu phẩm đa hình dạng mỗi ngày từ các khách hàng cá nhân. Để tối ưu hóa tải trọng máy bay và xe tải, DHL triển khai thuật toán **Pack-it-Light** tích hợp trên máy quét cầm tay của công nhân bốc xếp. Khi quét mã vạch kiện hàng, màn hình AR hiển thị trực quan 3D vị trí chính xác cần đặt hộp hàng vào container (ví dụ: góc A1, tầng 2). Thuật toán Heuristic này giúp DHL tăng tỷ lệ lấp đầy container (Fill Rate) từ 68% lên mức ấn tượng **87%**, tiết kiệm hàng chục triệu USD tiền thuê thêm máy bay vận tải hàng năm.</p>
+                    <p><strong>Case Study 2: Chiến Lược Đóng Gói Phẳng (Flat-Pack) Huyền Thoại Của IKEA:</strong> IKEA (Thụy Điển) nổi tiếng thế giới nhờ triết lý thiết kế sản phẩm phục vụ tối ưu đóng gói. Mọi bàn, ghế, tủ của IKEA đều được thiết kế tháo rời thành các tấm phẳng mỏng để nhét vừa khít vào các hộp carton vuông vức. IKEA sử dụng phần mềm tối ưu hóa **MagicLogic** để tính toán cách xếp các pallet carton này lên xe tải chặng cuối. Bằng cách loại bỏ hoàn toàn khoảng trống rỗng (không khí) trong thùng hàng, IKEA có thể vận chuyển nhiều hơn gấp 3 lần số lượng sản phẩm trên cùng một chuyến xe tải so với các hãng nội thất truyền thống, giúp giảm giá bán sản phẩm cực sâu.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Tỷ Lệ Lấp Đầy Thể Tích (Volume Utilization Rate - VUR %)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm thể tích container thực tế được lấp đầy bởi hàng hóa. Nâng cao VUR trực tiếp làm giảm số chuyến xe cần thuê.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⚖️ Tỷ Lệ Đạt Tải Trọng Cho Phép (Axle Weight Utilization %)</div>
+                        <div class="kpi-desc">Kiểm soát trọng lượng phân bổ đều lên các trục bánh xe để tránh lật xe hoặc bị phạt quá tải tại các trạm cân dọc đường.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Tối Ưu Hóa Tải Trọng & Quản Trị Cước Phí Vận Tải</div>
+                    <ul>
+                      <li><strong>Đồng Bộ Hóa Đơn Vị Đóng Gói (Standardized Packaging):</strong> Sếp muốn tối ưu hóa 3D Bin Packing? Hãy bắt đầu từ việc chuẩn hóa kích thước bao bì carton sản phẩm (Secondary packaging). Việc sử dụng quá nhiều loại kích cỡ hộp carton khác nhau từ các nhà cung cấp sẽ phá hủy mọi thuật toán xếp hàng. Hãy quy chuẩn về 3-5 kích thước hộp tiêu chuẩn chia hết cho kích thước Pallet (ISO Pallet size).</li>
+                      <li><strong>Áp Dụng Tư Duy Thiết Kế Vì Logistics (Design for Logistics):</strong> Hãy yêu cầu bộ phận R&D phối hợp với bộ phận Logistics ngay từ khâu thiết kế sản phẩm mới. Một sự thay đổi nhỏ như bo góc sản phẩm hoặc thu nhỏ tay vịn ghế giúp hộp đóng gói gọn hơn 10% có thể giúp doanh nghiệp tiết kiệm hàng trăm ngàn USD chi phí vận chuyển quốc tế khi sản xuất hàng loạt.</li>
+                      <li><strong>Triển Khai Phần Mềm Load Planning Tự Động:</strong> Hãy loại bỏ phương pháp bốc hàng theo cảm tính của công nhân. Việc trang bị các phần mềm tính toán tải trọng (như CubeMaster hoặc Cape Pack) giúp bộ phận lập kế hoạch xuất kho tự động vẽ bản đồ xếp hàng 3D gửi xuống nhà kho. Công nhân chỉ việc xếp theo sơ đồ vẽ sẵn, triệt tiêu hoàn toàn sai sót và tăng tốc độ đóng hàng lên 40%.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -173,7 +237,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

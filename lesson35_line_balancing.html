@@ -37,7 +37,20 @@
         .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #9d174d); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
         .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4); }
         
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6; margin-top: 20px;}
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -102,14 +115,71 @@
 
         <button class="action-btn" onclick="checkBalance()">KIỂM TRA CÂN BẰNG</button>
 
-        <div class="detail-box" id="detailBox">
-            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Lean (Cân bằng Chuyền)</h3>
-            <p>Trong một dây chuyền sản xuất nối tiếp, <strong>Tốc độ của cả dây chuyền bị quyết định bởi Trạm chậm nhất (Nút thắt - Bottleneck)</strong>.</p>
-            <ul>
-                <li><strong>Sự lãng phí tàn khốc:</strong> Ở trạng thái ban đầu, cứ mỗi 25 giây thì hệ thống mới đẻ ra được 1 sản phẩm. Người ở Trạm 1 làm xong trong 10 giây, và ngồi chơi bấm điện thoại 15 giây để đợi người Trạm 2 làm xong. Sự lãng phí (Idle time) cộng dồn lên tới 35 giây trên mỗi sản phẩm! Bạn đang trả lương cho công nhân chỉ để họ "ngồi đợi".</li>
-                <li><strong>Giải pháp Cân bằng:</strong> Đừng vội vã đập tiền mua thêm máy móc hay mắng chửi công nhân Trạm 2. Hãy <em>Chia lại Công việc (Task Re-allocation)</em>. Ví dụ: Chuyển công đoạn "Bắt 2 con ốc" từ Trạm 2 sang cho Trạm 1 hoặc Trạm 3 làm hộ.</li>
-                <li><strong>Trạng thái Tối ưu:</strong> Tổng khối lượng công việc là 40 giây. Có 3 người. Mức cân bằng tối ưu tuyệt đối lý thuyết là 40 / 3 = <strong>13.3 giây/người</strong>. Hãy cố gắng kéo Nhịp chuyền (Cycle Time) về sát mức 14 giây nhất có thể! Khi đó sản lượng của bạn sẽ tăng vọt mà không tốn thêm 1 xu chi phí!</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #ec4899;">⚡ Lý Thuyết Cân Bằng Chuyền (Line Balancing) & Thuyết Điểm Nghẽn (TOC)</div>
+                    <p>Trong một dây chuyền sản xuất nối tiếp, **tốc độ của cả dây chuyền bị quyết định bởi Trạm chậm nhất (Nút thắt - Bottleneck)**. Nếu trạm nghẽn mất 25 giây để làm việc, thì bất kể các trạm khác nhanh thế nào, cứ mỗi 25 giây hệ thống mới đẻ ra được 1 sản phẩm.</p>
+                    <p><strong>Cạm bẫy của sự mất cân bằng chuyền (Line Imbalance)</strong>: Ở trạng thái ban đầu, Trạm 1 mất 10s, Trạm 2 mất 25s, Trạm 3 mất 5s. Người ở Trạm 1 làm xong trong 10 giây và ngồi chơi (Idle time) 15 giây đợi Trạm 2. Người ở Trạm 3 chỉ mất 5 giây làm việc và ngồi rảnh rỗi tới 20 giây để chờ hàng từ Trạm 2 chuyển đến. Sự lãng phí thời gian nhàn rỗi (Idle time) cộng dồn lên tới **35 giây trên mỗi sản phẩm**! Bạn đang chi trả 100% lương cho nhân công nhưng chỉ nhận lại một phần năng suất thực tế.</p>
+                    <p><strong>Khái niệm Nhịp chuyền (Cycle Time) & Nhịp lý thuyết tối ưu</strong>:</p>
+                    <ul>
+                        <li><strong>Nhịp chuyền (Cycle Time - $T_c$)</strong>: Khoảng thời gian giữa 2 sản phẩm liên tiếp được hoàn thành ra khỏi dây chuyền. $T_c$ được quyết định bởi trạm có thời gian xử lý lớn nhất.</li>
+                        <li><strong>Nhịp lý thuyết tối ưu</strong>: Nếu chia đều hoàn hảo tổng công việc (40 giây) cho 3 người, thời gian xử lý tối ưu tại mỗi trạm sẽ là $40 / 3 \approx 13.3$ giây/người.</li>
+                        <li><strong>Cân bằng chuyền (Line Balancing)</strong>: Là nghệ thuật chia nhỏ và tái phân bổ các bước công việc (Task Re-allocation) giữa các trạm để phân đều tải trọng công việc, giảm thiểu tối đa sự nhàn rỗi và hạ thấp $T_c$ xuống gần mức lý thuyết nhất có thể.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #ec4899;">🚗 Cách Henry Ford Cách Mạng Hóa Sản Xuất Với Ford Model T & Dây Chuyền iPhone Của Foxconn</div>
+                    <p><strong>Case Study 1: Henry Ford Và Dây Chuyền Lắp Ráp Dòng Chảy (Flow Assembly Line) 1913:</strong> Trước năm 1913, việc sản xuất một chiếc ô tô Ford Model T cực kỳ thủ công. Một nhóm thợ tay nghề cao cùng lắp ráp từ đầu đến cuối một chiếc xe tại một chỗ. Thời gian dựng một chiếc xe mất tới **12.5 giờ**. Henry Ford đã tạo bước ngoặt vĩ đại bằng cách đưa khung xe chuyển động trên băng chuyền qua 84 trạm làm việc khác nhau. Tại mỗi trạm, người thợ chỉ thực hiện một nhiệm vụ cực kỳ đơn giản và nhanh chóng (như bắt 2 con ốc). Ford liên tục tính toán đo đạc thời gian của từng khâu để cân bằng công việc giữa các trạm sao cho không có trạm nào bị nghẽn. Kết quả: Thời gian lắp ráp 1 chiếc xe giảm từ 12.5 giờ xuống còn vỏn vẹn **93 phút**, giá bán xe giảm từ $850 xuống $300, mở ra kỷ nguyên sản xuất đại chúng toàn cầu.</p>
+                    <p><strong>Case Study 2: Tối Ưu Hóa Cân Bằng Chuyền Lắp Ráp iPhone Của Foxconn:</strong> Một dây chuyền lắp ráp iPhone của Foxconn gồm hàng trăm trạm làm việc nối tiếp từ lắp pin, gắn màn hình, vặn ốc, dán tem đến đóng gói. Foxconn sử dụng các phần mềm mô phỏng tiên tiến để cân bằng chuyền. Khi một dòng iPhone mới ra mắt, các kỹ sư IE (Industrial Engineering) đo đạc chính xác thời gian thao tác (Standard Time) của từng trạm bằng camera hồng ngoại. Họ liên tục dịch chuyển các mô-đun công việc nhỏ giữa các trạm, điều chỉnh số lượng công nhân tại mỗi khâu hoặc áp dụng đồ gá chống lỗi (Poka-Yoke) tại các khâu nghẽn để đảm bảo nhịp chuyền đồng đều hoàn hảo, đạt công suất xuất xưởng hàng chục ngàn máy mỗi ngày.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📊 Hiệu Suất Cân Bằng Chuyền (Line Efficiency - %LE)</div>
+                        <div class="kpi-desc">Chỉ số đo lường mức độ cân bằng của dây chuyền: $\%LE = \frac{\sum t_i}{N \times T_c} \times 100\%$ (trong đó $\sum t_i$ là tổng thời gian công việc, $N$ là số trạm, $T_c$ là Cycle Time). Mục tiêu của doanh nghiệp đẳng cấp thế giới là đạt $> 85\%$.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏳ Độ Lệch Cân Bằng (Balance Delay - %BD)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm thời gian nhàn rỗi lãng phí của toàn chuyền: $\%BD = 100\% - \%LE$. Chỉ số này phản ánh năng lực thiết kế quy trình sản xuất của kỹ sư vận hành.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🚀 Năng Suất Đầu Ra (Throughput Rate / Capacity)</div>
+                        <div class="kpi-desc">Số lượng sản phẩm tối đa dây chuyền có thể sản xuất được trong một đơn vị thời gian: $Throughput = \frac{Time}{T_c}$. Giảm Cycle Time là con đường trực tiếp để tăng năng suất mà không cần mở rộng quy mô.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #ec4899;">💡 Executive Insights: Tư Duy Loại Bỏ Lãng Phí Và Tránh Bẫy Đầu Tư Mù Quáng</div>
+                    <ul>
+                      <li><strong>Đừng Vội Vàng Mua Thêm Máy Hay Tuyển Thêm Người:</strong> Khi thấy nhà máy bị trễ đơn hàng, bản năng của nhiều sếp là chi thêm tiền mua thiết bị đắt tiền hoặc tuyển thêm công nhân tăng ca. Thực tế, 80% trường hợp nghẽn là do phân bổ công việc bất hợp lý. Chỉ cần áp dụng phương pháp IE (Industrial Engineering) để cân bằng lại chuyền, sếp có thể nâng công suất lên 50-70% mà chi phí tăng thêm bằng KHÔNG.</li>
+                      <li><strong>Tập Trung Cải Tiến Tại Điểm Nghẽn (Manage the Constraint):</strong> Một phút tiết kiệm được tại trạm KHÔNG NGHẼN chỉ là ảo tưởng vì hàng hóa vẫn sẽ bị ùn ứ tại trạm nghẽn. Chỉ có một phút cải tiến được tại trạm BOTTLEMAN (Trạm nghẽn) mới thực sự làm tăng năng lực sản xuất của toàn bộ hệ thống. Hãy thiết kế các đồ gá (Jigs/Fixtures) chuyên dụng hoặc cử người có tay nghề cao nhất đứng ở khâu nghẽn.</li>
+                      <li><strong>Triết Lý Thiết Kế Trạm Đa Năng (Cross-Training):</strong> Để dây chuyền cân bằng linh hoạt, hãy đào tạo công nhân đa năng (Multi-skilled workers). Khi xảy ra sự cố đột ngột hoặc biến động nhu cầu, công nhân ở trạm rảnh rỗi có thể lập tức hỗ trợ trạm nghẽn mà không làm gián đoạn dòng sản xuất.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -183,8 +253,18 @@
         }
 
         function toggleGuide() {
-            let g = document.getElementById('detailBox');
+            let g = document.getElementById('strategyGuide');
             g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function switchTab(btn, tabId) {
+            let tabs = btn.parentElement.querySelectorAll('.theory-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            let contents = btn.parentElement.parentElement.querySelectorAll('.theory-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
     </script>
 </body>
