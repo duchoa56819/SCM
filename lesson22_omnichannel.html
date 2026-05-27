@@ -33,6 +33,21 @@
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
         
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .alert-pulse { animation: pulse 1s infinite; color: var(--danger); }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
@@ -95,17 +110,63 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #ec4899; margin-top: 0;">📚 Cẩm nang Omnichannel (Đa Kênh)</h3>
-            <p><strong>Omnichannel</strong> không chỉ là bán trên nhiều kênh (Web, App, Facebook), mà là khả năng dùng chung Tồn kho của mọi kênh (Kho tổng, Cửa hàng) để giao cho khách nhanh nhất và rẻ nhất.</p>
-            <ul>
-                <li><strong>Ưu tiên Cửa hàng (Ship-from-store):</strong> Nghe có vẻ hoàn hảo vì phí ship rẻ ($3 vs $10) và khách nhận hàng ngay. NHƯNG nếu bạn rút cạn kho của cửa hàng, khi một Khách Offline mở cửa bước vào hỏi mua mà nhân viên báo hết hàng, bạn mất luôn doanh thu $50. Tiết kiệm $7 tiền ship nhưng mất trắng $50 doanh thu!</li>
-                <li><strong>Thuật toán Order Routing:</strong> Các hệ thống SCM hiện đại như Manhattan hay Blue Yonder sẽ dùng <em>Tồn kho An toàn (Safety Stock Threshold)</em>. Ví dụ: Cửa hàng có 6 đôi. Safety Stock = 3. 
-                <br>➔ 3 đơn Online đầu tiên sẽ được lấy từ Cửa hàng (Tiết kiệm tiền ship). 
-                <br>➔ Khi cửa hàng chỉ còn 3 đôi, hệ thống tự động BẬT KHÓA. Mọi đơn Online tiếp theo sẽ bị ép lấy từ Kho Tổng (Chấp nhận phí ship đắt $10) để giữ lại 3 đôi cuối cùng bán cho Khách Offline. Đây chính là thuật toán giúp Thế Giới Di Động vận hành hàng ngàn cửa hàng trơn tru!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #ec4899;">🔄 Hợp Nhất Tồn Kho & Thuật Toán Định Tuyến Đơn (Order Routing)</div>
+                    <p>Trong kỷ nguyên <strong>Omnichannel (Đa Kênh Hợp Nhất)</strong>, ranh giới tồn kho giữa các kênh bán hàng bị xóa nhòa. Doanh nghiệp sử dụng chung một bể tồn kho duy nhất (Single Pool of Inventory) cho cả khách hàng Online mua trên web/app lẫn khách Offline mua tại cửa hàng vật lý.</p>
+                    <p>Thách thức lớn nhất là bài toán **Định tuyến đơn hàng (Order Routing)**: Khi có đơn hàng Online, hệ thống phải quyết định lấy hàng từ đâu để giao cho khách:
+                    <br>- <strong>Ship từ Kho tổng (DC)</strong>: Phí ship đắt, giao chậm, nhưng bảo vệ được tồn kho cửa hàng.
+                    <br>- <strong>Ship từ Cửa hàng (Ship-from-Store)</strong>: Phí ship rẻ, giao siêu nhanh, nhưng có nguy cơ làm "rút ruột" cửa hàng bán trực tiếp, gây cháy hàng cục bộ (Stockout) và mất doanh số.</p>
+                    <p>Hệ thống OMS hiện đại giải quyết bằng cách áp dụng thuật toán **Safety Stock Threshold (Ngưỡng tồn kho an toàn cửa hàng)**: Chỉ định tuyến đơn Online lấy từ cửa hàng khi số lượng tồn kho tại đó lớn hơn ngưỡng an toàn quy định.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">👗 Chuỗi Tự Động Hóa Omnichannel Của Zara & Tốc Độ Của Thế Giới Di Động</div>
+                    <p><strong>Case Study 1: Hệ thống RFID & Ship-from-Store của Zara (Inditex):</strong> Zara là đơn vị tiên phong áp dụng công nghệ chip RFID trên từng nhãn quần áo trên toàn cầu. Hệ thống quản trị tồn kho WMS/OMS của Zara liên thông thời gian thực giữa kho thương mại điện tử trực tuyến và hàng ngàn cửa hàng vật lý. Khi có đơn Online, nếu thuật toán định vị thấy khách hàng ở gần một cửa hàng đang có sẵn hàng trên kệ, hệ thống sẽ gửi lệnh bốc hàng trực tiếp đến máy PDA của nhân viên cửa hàng đó. Nhân viên bốc hàng, đóng gói và shipper đến lấy giao cho khách ngay trong vài giờ (Ship-from-store), giúp Zara giảm thiểu 30% chi phí logistics chặng cuối và đẩy nhanh vòng quay tồn kho ngoạn mục.</p>
+                    <p><strong>Case Study 2: Thế Giới Di Động & Điện Máy Xanh:</strong> Tại Việt Nam, TGDĐ vận hành mạng lưới hơn 3,000 cửa hàng như một mạng lưới vệ tinh chặng cuối. Khách hàng đặt mua điện thoại online có thể lựa chọn nhận hàng tại store gần nhất trong 30 phút hoặc ship siêu tốc từ store về nhà. Nhờ hợp nhất tồn kho đa kênh hoàn hảo trên nền tảng ERP tự phát triển, TGDĐ vừa tối thiểu hóa chi phí lưu bãi trung tâm phân phối, vừa mang lại trải nghiệm tiện lợi vượt bậc cho khách hàng Việt.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🚨 Tỷ Lệ Cháy Hàng Cửa Hàng Offline (Store Out-of-Stock Rate)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm khách hàng trực tiếp bước vào cửa hàng mua nhưng phải đi về tay không do hết hàng. Target tối ưu là duy trì dưới 2% để bảo vệ uy tín thương hiệu trực tiếp.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💰 Chi Phí Xử Lý Đơn Đa Kênh (Fulfillment Cost per Order)</div>
+                        <div class="kpi-desc">Tổng hợp chi phí nhặt hàng, đóng gói, giao hàng chặng cuối cho mỗi đơn hàng. Mục tiêu là định tuyến thông minh sao cho chỉ số này thấp nhất mà vẫn đảm bảo cam kết thời gian giao hàng (SLA).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Tích Hợp Đa Kênh Thực Chiến</div>
+                    <ul>
+                        <li><strong>Không Được Xem Cửa Hàng Chỉ Là Nơi "Bán Lẻ":</strong> Hãy thay đổi tư duy của toàn bộ hệ thống quản lý. Mỗi cửa hàng offline phải đóng vai trò song song là một **Trung tâm xử lý đơn hàng mini (Micro-fulfillment Center)** của chặng cuối. Quy hoạch layout cửa hàng phải có một khu vực nhỏ dành riêng cho khâu đóng gói đơn Online.</li>
+                        <li><strong>Thiết Lập Chính Sách Hoa Hồng Công Bằng:</strong> Tránh bẫy mâu thuẫn nội bộ. Nếu nhân viên cửa hàng bị ép nhặt hàng cho đơn Online mà doanh số đó lại tính về cho phòng Thương mại điện tử (Online Division) chứ không tính về cho cửa hàng, nhân viên sẽ trốn tránh hoặc làm cẩu thả. Hãy thiết kế KPI và chia sẻ doanh thu nội bộ hợp lý để khuyến khích tinh thần hỗ trợ đa kênh.</li>
+                        <li><strong>Đồng Bộ Hóa Dữ Liệu POS & OMS Theo Giây:</strong> Nếu dữ liệu tồn kho cập nhật chậm trễ (ví dụ: cập nhật theo ngày), hệ thống OMS định tuyến đơn Online lấy hàng từ Store nhưng thực tế đôi giày đó đã được khách offline mua trước đó 2 tiếng. Điều này gây ra trải nghiệm cực kỳ tồi tệ cho cả nhân viên lẫn khách hàng. Đầu tư hạ tầng kết nối thời gian thực là điều kiện đủ để làm Omnichannel.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -234,7 +295,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { renderUI(); triggerEvent(); };

@@ -29,6 +29,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -102,17 +117,63 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #a78bfa; margin-top: 0;">📚 Cẩm nang Phân tích ABC (ABC Analysis & Slotting)</h3>
-            <p>Trong vận hành kho bãi (Warehouse Management), <strong>Chi phí đi lại (Travel Time) của công nhân chiếm tới 60% tổng thời gian và chi phí của quá trình lấy hàng (Picking).</strong></p>
-            <ul>
-                <li><strong>Phân tích ABC (Pareto 80/20):</strong> Thông thường, 20% mã hàng (SKU) tạo ra 80% doanh thu và tần suất xuất kho. Đây gọi là Hàng Nhóm A. Các hàng ế ẩm ít xuất gọi là Nhóm C.</li>
-                <li><strong>Slotting Tối ưu:</strong> Những hàng Nhóm A (Bán chạy như tôm tươi) PHẢI được đặt ở "Golden Zone" (Khu vực sát cửa xuất hàng, vừa tầm với, ngang thắt lưng công nhân). Ngược lại, hàng Nhóm C phải bị tống tít vào góc sâu nhất của kho hoặc trên kệ cao ngất ngưởng.</li>
-                <li><strong>Hậu quả của việc Sắp xếp Ngu ngốc (C -> B -> A):</strong> Nếu bạn để Hàng C (ế) chắn ngay cửa kho, và giấu Hàng A (bán chạy) ở tít góc sâu. Cứ mỗi lần có đơn hàng A (80% số lần), công nhân phải lội bộ 150m đi vào và 150m đi ra. Quãng đường đi bộ vọt lên hàng ngàn km mỗi năm. Chi phí trả lương ngoài giờ và hao mòn sức khỏe sẽ làm công ty phá sản!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #a78bfa;">📐 Nguyên Lý Pareto (80/20) & Quy Hoạch Mặt Bằng (Slotting)</div>
+                    <p>Trong vận hành kho bãi (Warehouse Management), <strong>Chi phí đi lại (Travel Time) của công nhân chiếm tới 60% tổng thời gian và chi phí của quá trình lấy hàng (Picking).</strong> Do đó, quy hoạch mặt bằng kho bãi hợp lý là cách tối giản chi phí vận hành hiệu quả nhất.</p>
+                    <p><strong>Phân tích ABC (Pareto 80/20):</strong> 20% mã hàng (SKU) tạo ra 80% doanh thu và tần suất xuất kho (Hàng nhóm A). 30% tiếp theo tạo ra 15% doanh số (Nhóm B), và 50% còn lại là nhóm C (ế ẩm, ít người mua nhưng chiếm nhiều không gian).</p>
+                    <p><strong>Chiến lược Slotting:</strong> Sắp xếp hàng hóa nhóm A ở "Golden Zone" (khu vực gần cửa xuất hàng nhất, vừa tầm với, ngang thắt lưng công nhân) để rút ngắn hành trình di chuyển. Hàng nhóm C ít xuất sẽ được đẩy sâu vào trong góc tối kho hoặc trên các tầng kệ cao nhất.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🤖 Dynamic Slotting Của Amazon & Tiết Kiệm Lực Của DHL</div>
+                    <p><strong>Case Study 1: Amazon Chaos Storage & Dynamic Slotting:</strong> Tại các kho hàng thông minh khổng lồ của Amazon, họ áp dụng một mô hình cực kỳ kỳ lạ gọi là "Lưu trữ hỗn độn" (Chaotic Storage). Robot tự hành Kiva di chuyển các kệ hàng linh hoạt dựa trên dữ liệu mua sắm thời gian thực của khách. Thuật toán AI phân tích xu hướng mua sắm theo giây để tính toán vị trí đỗ (Dynamic Slotting) của các kệ hàng chứa mặt hàng đang hot gần các trạm đóng gói nhất, giúp giảm hàng triệu km đi bộ của nhân sự và nâng cao hiệu suất lấy hàng lên gấp 3 lần.</p>
+                    <p><strong>Case Study 2: DHL Supply Chain:</strong> DHL thiết kế quy trình Slotting tối ưu cho kho bán lẻ thời trang nhanh của đối tác. Bằng việc phân tích tần suất xuất kho và cập nhật vị trí hàng nhóm A định kỳ mỗi tuần theo mùa vụ bán lẻ, DHL đã giúp công nhân lấy hàng giảm quãng đường đi bộ từ <strong>15 km/ngày xuống dưới 6 km/ngày</strong>, gia tăng chỉ số Picks per Hour vượt bậc mà nhân viên không còn bị kiệt sức cuối ca làm việc.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Năng Suất Lấy Hàng (Picking Productivity)</div>
+                        <div class="kpi-desc">Chỉ số Picks per Hour (Số lần lấy hàng thành công trên một giờ làm việc của công nhân). Slotting tối ưu giúp tăng năng suất này lên từ 40% đến 80% nhờ giảm thời gian di chuyển chết.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">📏 Tỷ Lệ Giảm Quãng Đường Di Chuyển (Travel Time Reduction Rate)</div>
+                        <div class="kpi-desc">Phần trăm quãng đường đi bộ thực tế được cắt giảm sau khi quy hoạch lại vị trí slotting. Đây là chỉ số phản ánh trực tiếp hiệu quả của việc phân loại Pareto.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Quy Hoạch Kho Bãi Chuyên Nghiệp</div>
+                    <ul>
+                        <li><strong>Tránh Bẫy "Quy Hoạch Tĩnh" (Static Slotting):</strong> Nhu cầu thị trường luôn biến động theo mùa vụ (Seasonality) và vòng đời sản phẩm. Một mã hàng nhóm C (ế) mùa đông có thể trở thành nhóm A (bán siêu chạy) vào mùa hè. Hãy bắt buộc bộ phận kho vận cập nhật bảng phân tích ABC và slotting lại kho ít nhất mỗi quý/mỗi mùa.</li>
+                        <li><strong>Thiết Kế Ergonomics (Nhân Trắc Học):</strong> Hàng nhóm A không chỉ để gần cửa, mà phải để ở vị trí "Golden Zone" về chiều cao - tức là từ đầu gối đến ngực công nhân. Tránh bắt công nhân phải cúi rạp người xuống gầm kệ hoặc trèo thang cao chỉ để nhặt mặt hàng xuất kho liên tục.</li>
+                        <li><strong>Gắn Kết KPI Giữa Kho Và Thu Mua:</strong> Nhiều trường hợp phòng mua sắm (Procurement) gom hàng số lượng lớn hàng nhóm C để lấy chiết khấu (gây chôn vốn và chật kho), đẩy hàng nhóm A ra xa cửa do hết chỗ. Phải có sự đồng bộ thông tin chặt chẽ giữa tồn kho, mua hàng và quy hoạch kho bãi.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
+
     </div>
 
     <script>
@@ -226,7 +287,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

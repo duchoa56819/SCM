@@ -31,6 +31,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -92,15 +107,64 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #fb7185; margin-top: 0;">📚 Cẩm nang Resilience (Tính đàn hồi)</h3>
-            <p><strong>Thiên nga đen (Black Swan)</strong> là thuật ngữ chỉ những sự kiện cực kỳ hiếm gặp, không thể dự báo, nhưng để lại hậu quả thảm khốc (Covid-19, Cháy nhà máy chip Renesas, Trận động đất Fukushima).</p>
-            <ul>
-                <li><strong>Siêu tối ưu (Centralized):</strong> Trong thế giới bình yên suốt 10 năm, mô hình này là vua. Nó tạo ra $40M lợi nhuận mỗi năm. NHƯNG, nếu một năm xảy ra thiên tai trúng Siêu nhà máy, toàn bộ chuỗi cung ứng đứt gãy. Bạn không có sản phẩm bán, mất $50M doanh thu, cộng thêm $10M phí vận hành -> LỖ NẶNG. Bạn có thể phá sản ngay lập tức nếu dòng tiền mỏng.</li>
-                <li><strong>Đàn hồi (Decentralized):</strong> Vận hành 3 nhà máy rất đắt đỏ ($25M), lợi nhuận mỗi năm teo tóp còn $25M. Bạn thua kém đối thủ trong thời bình. NHƯNG, khi thiên tai ập đến đóng cửa nhà máy Châu Á, 2 nhà máy ở Âu và Mỹ lập tức chạy tăng ca (Ramp up) để bù đắp. Doanh thu của bạn được bảo vệ, bạn vẫn có lãi nhẹ. Đối thủ phá sản, bạn thống trị thị trường! Đây là cách Apple cấu trúc chuỗi cung ứng của họ: Luôn có Nhà cung cấp Dự bị (Backup).</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #fb7185;">🛡️ Sự Đánh Đổi Lớn: Hiệu Năng (Efficiency) vs Đàn Hồi (Resilience)</div>
+                    <p>Trong quản trị chuỗi cung ứng toàn cầu, có một sự đánh đổi kinh điển giữa **Tối ưu hóa chi phí ngắn hạn (Efficiency)** và **Năng lực chống chịu rủi ro (Resilience)**.</p>
+                    <p>- <strong>Mô hình Tập trung (Centralized)</strong>: Quy tụ sản xuất về một Siêu nhà máy khổng lồ duy nhất để đạt lợi thế quy mô tối đa. Chi phí vận hành thời bình rẻ nhất ($10M). NHƯNG đây chính là một **Điểm yếu chí tử đơn nguồn (Single Point of Failure)**. Khi thảm họa ập đến, chuỗi cung ứng lập tức tê liệt 100%, gây đứt gãy doanh thu và dễ dẫn tới phá sản do mất dòng tiền.</p>
+                    <p>- <strong>Mô hình Phân tán (Decentralized)</strong>: Duy trì dự phòng năng lực (Redundancy) bằng cách xây dựng 3 nhà máy ở các lục địa khác nhau. Chi phí vận hành đắt đỏ ($25M), biên lợi nhuận thời bình rất mỏng. NHƯNG khi thiên tai ập xuống một mắt xích, các nhà máy khác lập tức tăng tốc sản lượng gánh đỡ, bảo vệ dòng tiền sống còn của doanh nghiệp.</p>
+                    <p>Khái niệm <strong>Thiên nga đen (Black Swan)</strong> đại diện cho các thảm họa cực kỳ hiếm gặp, không thể dự đoán trước nhưng để lại hậu quả hủy diệt (động đất, dịch bệnh, chiến tranh thương mại).</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🔥 Thảm Họa Ericsson vs Nokia (2000) & Hệ Sinh Thái Phân Tán Của Apple</div>
+                    <p><strong>Case Study 1: Nokia vs Ericsson - Cơn Sóng Gió Thay Đổi Lịch Sử:</strong> Năm 2000, một tia sét đánh trúng nhà máy sản xuất chip bán dẫn độc quyền của tập đoàn Philips tại New Mexico gây ra một vụ cháy nhỏ kéo dài 10 phút. Philips báo cáo với hai khách hàng lớn nhất của họ là Nokia và Ericsson rằng việc giao chip sẽ bị trễ 1 tuần. 
+                    <br>➔ **Phản ứng của Nokia (Đàn hồi)**: Lãnh đạo Nokia lập tức nhận thấy rủi ro tiềm tàng. Họ cử kỹ sư bay sang tận nhà máy Philips kiểm tra thực tế, phát hiện Philips mất 3 tháng mới hồi phục được. Nokia lập tức đàm phán thâu tóm toàn bộ công suất đúc chip trống của Philips tại các nhà máy khác ở Hà Lan và Nhật Bản, đồng thời thiết kế lại bo mạch để dùng chip thay thế từ nhà cung ứng khác.
+                    <br>➔ **Phản ứng của Ericsson (Bảo thủ)**: Ericsson tin vào báo cáo 1 tuần của Philips và không có hành động dự phòng. Khi phát hiện sự thật thì toàn bộ nguồn chip thay thế toàn cầu đã bị Nokia khóa chặt. Ericsson bị đứt gãy sản xuất hoàn toàn, tổn thất khổng lồ **$400 triệu USD** và sau cùng buộc phải rút lui hoàn toàn khỏi thị trường sản xuất điện thoại di động, bán lại mảng này cho Sony. Đây là bài học xương máu kinh điển trong SCM toàn cầu!</p>
+                    <p><strong>Case Study 2: Hệ Sinh Thái Sản Xuất Của Apple:</strong> Apple nổi tiếng với chuỗi cung ứng siêu tối ưu nhưng họ không bao giờ đặt toàn bộ trứng vào một giỏ. Dù Foxconn là nhà lắp ráp iPhone lớn nhất, Apple vẫn liên tục đào tạo và chuyển giao công nghệ cho các đối thủ cạnh tranh như Pegatron và Luxshare, đồng thời dịch chuyển các dây chuyền lắp ráp sang các quốc gia khác ngoài Trung Quốc (như Ấn Độ và Việt Nam) để đảm bảo chuỗi cung ứng luôn có tính đàn hồi cao trước các căng thẳng địa chính trị vĩ mô.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Thời Gian Phục Hồi Chuỗi (TTR - Time to Recovery)</div>
+                        <div class="kpi-desc">Tổng số ngày hoặc tuần cần thiết để chuỗi cung ứng khôi phục lại 100% công suất hoạt động bình thường sau khi xảy ra thảm họa đứt gãy tại một mắt xích.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🛡️ Chỉ Số Doanh Thu Gặp Rủi Ro (Revenue at Risk)</div>
+                        <div class="kpi-desc">Tổng giá trị doanh thu có nguy cơ bị mất trắng hoàn toàn nếu một mắt xích đơn nguồn (nhà máy chính, cảng xuất chính) bị đóng cửa do thiên tai trong thời gian quy định.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy "Quản Trị Sự Sống Còn" Cho Sếp</div>
+                    <ul>
+                        <li><strong>Đàn Hồi Không Phải Là Chi Phí Lãng Phí:</strong> Hãy giải thích cho Ban hội đồng quản trị và bộ phận Tài chính hiểu rằng việc đầu tư dự phòng năng lực (Decentralized/Dual-sourcing) chính là một khoản **Phí Bảo Hiểm**. Trong thời bình, bạn có thể kiếm ít tiền hơn đối thủ bám đuổi tối ưu chi phí, nhưng trong thời chiến (khi có Black Swan), bạn là người duy nhất còn sống sót để thâu tóm toàn bộ thị phần còn lại.</li>
+                        <li><strong>Thường Xuyên "Stress-Test" Chuỗi Cung Ứng:</strong> Đừng chờ thảm họa xảy ra mới đi tìm giải pháp. Hãy chủ động chạy các kịch bản diễn tập giả định (Stress-testing) hàng năm: "Nếu nhà máy tại Thượng Hải bị phong tỏa 1 tháng, chúng ta sẽ làm gì?", "Nhà cung cấp thay thế đã có sẵn khuôn mẫu (tooling) chưa?", "Quy trình chuyển đổi mất bao lâu?".</li>
+                        <li><strong>Bản Đồ Hóa Chuỗi Cung Ứng (Supply Chain Mapping):</strong> Nhiều sếp chỉ biết nhà cung cấp cấp 1 (Tier-1) của mình, nhưng không hề biết nhà cung cấp cấp 2 (Tier-2) cung cấp nguyên liệu thô cho Tier-1 là ai. Vụ cháy nhà máy Philips ở trên ảnh hưởng trực tiếp đến Tier-2 đúc chip, làm tê liệt toàn bộ các nhà lắp ráp Tier-1 của Ericsson. Hãy vẽ bản đồ chi tiết chuỗi cung ứng đến tận Tier-3 để kiểm soát mọi Điểm yếu chí tử (Single Point of Failure).</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -199,7 +263,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

@@ -25,6 +25,21 @@
 
         .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0369a1); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase;}
         .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4); }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -71,15 +86,64 @@
         <button class="action-btn" onclick="drawChart()">CHẠY THUẬT TOÁN DỰ BÁO ➔</button>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #0ea5e9; margin-top: 0;">📚 Cẩm nang AI Forecasting</h3>
-            <p><strong>Làm mịn số mũ (Exponential Smoothing)</strong> là nền tảng của hàng ngàn phần mềm dự báo (SAP, Oracle). Sai số của Dự báo được đo bằng <strong>MAD (Mean Absolute Deviation)</strong>. MAD càng nhỏ càng tốt.</p>
-            <ul>
-                <li><strong>Hàng bình ổn (Bột giặt/Gạo):</strong> Nhu cầu thực tế luôn dao động nhẹ (Nhiễu/Noise). Nếu bạn để Alpha = 1.0 (Bám sát quá), đường dự báo của bạn sẽ nhảy múa điên cuồng theo từng cơn sốc nhỏ, dẫn đến sai số (MAD) rất cao. <strong>Chiến thuật: Kéo Alpha xuống thấp (0.1 - 0.2)</strong> để "lọc nhiễu" và tạo ra đường dự báo phẳng phiu, ổn định.</li>
-                <li><strong>Hàng bùng nổ (Công nghệ/Thời trang):</strong> Tháng 4 bán 10 cái, Tháng 5 tự nhiên bán 100 cái do Trend Tiktok. Nếu bạn để Alpha = 0.2, AI sẽ "phản ứng quá chậm", dự báo tháng 6 vẫn lẹt đẹt ở mức 20 cái, gây cháy hàng nặng. <strong>Chiến thuật: Kéo Alpha lên cao (0.8 - 0.9)</strong> để đường dự báo gập góc mạnh, đuổi kịp Trend ngay lập tức.</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #0ea5e9;">📈 Thuật Toán Làm Mịn Số Mũ (Exponential Smoothing Forecasting)</div>
+                    <p>Dự báo nhu cầu (Demand Forecasting) là trung tâm thần kinh quyết định hiệu năng của toàn chuỗi cung ứng. **Làm mịn số mũ (Exponential Smoothing)** là phương pháp dự báo chuỗi thời gian cực kỳ phổ biến, gán trọng số giảm dần theo số mũ cho các dữ liệu lịch sử cũ hơn.</p>
+                    <p>Công thức cốt lõi:
+                    <br><code style="color:var(--primary); font-size:1.1rem; display:block; padding: 10px; background:rgba(0,0,0,0.3); border-radius:6px; margin: 10px 0;">Dự báo Tháng sau (F_t) = [Alpha * Nhu cầu Thực tế Tháng này (A_t-1)] + [(1 - Alpha) * Dự báo Tháng này (F_t-1)]</code></p>
+                    <p>Hệ số <strong>Alpha ($\alpha$)</strong> chạy từ 0.1 đến 1.0 quyết định mức độ phản ứng của mô hình:
+                    <br>- **Alpha cao ($\alpha$ tiến dần về 1.0)**: Bám cực sát nhu cầu gần nhất. Thích hợp sản phẩm biến động nhanh, bắt trend (iPhone, BST thời trang).
+                    <br>- **Alpha thấp ($\alpha$ tiến dần về 0.1)**: Rất bảo thủ, bám vào xu hướng dài hạn lịch sử. Thích hợp để "lọc nhiễu" cho sản phẩm tiêu dùng ổn định (Bột giặt, gạo, giấy vệ sinh).</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🧼 Chiến Lược Lọc Nhiễu Của P&G & Tốc Độ Đuổi Bắt Trend Của Apple/Zara</div>
+                    <p><strong>Case Study 1: P&G và Sự Bình Ổn Kế Hoạch Sản Xuất:</strong> Đối với các mặt hàng tiêu dùng nhanh (FMCG) như bột giặt Tide hay tã giấy Pampers của Procter & Gamble, nhu cầu tiêu dùng cuối cùng cực kỳ ổn định nhưng dữ liệu đơn đặt hàng từ các đại lý thường xuyên bị "nhiễu loạn" do hành vi gom lô. P&G áp dụng thuật toán dự báo với **Alpha cực thấp (0.1 - 0.2)**. Điều này giúp đường dự báo phẳng phiu, loại bỏ hoàn toàn các cơn sốc giả tạo từ đại lý, giữ cho lịch sản xuất nhà máy hoạt động phẳng (Stable Production Schedule), triệt tiêu hao phí do chuyển đổi ca dây chuyền.</p>
+                    <p><strong>Case Study 2: Chiến lược Đuổi Bắt Của Apple & Zara:</strong> Khi Apple ra mắt một thế hệ iPhone mới hoặc Zara tung ra bộ sưu tập thời trang theo trend TikTok, nhu cầu vọt tăng đột ngột theo cấp số nhân. Nếu hệ thống dự báo áp dụng Alpha thấp, thuật toán sẽ phản ứng quá chậm chạp, đưa ra mức dự báo thấp gây cháy hàng nghiêm trọng và dâng thị phần cho đối thủ. Zara và Apple áp dụng thuật toán dự báo nhạy bén với **Alpha rất cao (0.7 - 0.9)** cho các dòng sản phẩm mới này để ngay lập tức cập nhật kế hoạch sản lượng, ramp-up công suất nhà xưởng kịp thời phủ ngập thị trường.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📊 Sai Số Tuyệt Đối Trung Bình (MAD - Mean Absolute Deviation)</div>
+                        <div class="kpi-desc">Chỉ số đo lường độ lớn trung bình của sai số dự báo (không quan tâm chiều âm hay dương). MAD = Tổng |Thực tế - Dự báo| / N. MAD càng nhỏ nghĩa là mô hình dự báo càng chính xác.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">📉 Sai Số Phần Trăm Tuyệt Đối Trung Bình (MAPE)</div>
+                        <div class="kpi-desc">MAPE biểu diễn sai số dưới dạng tỷ lệ phần trăm (%), giúp sếp dễ dàng so sánh hiệu quả dự báo giữa các ngành hàng hoặc các SKU có quy mô doanh thu khác nhau. target MAPE xuất sắc là dưới 10%.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Nghệ Thuật Đồng Bộ S&OP</div>
+                    <ul>
+                        <li><strong>Dự Báo Luôn Luôn Sai - Hãy Quản Trị Sai Số:</strong> Một nhà điều hành chuỗi xuất sắc hiểu rằng không bao giờ có dự báo chính xác 100%. Mục tiêu là kiểm soát độ lệch sai số (Forecast Error) và cấu hình **Tồn kho an toàn (Safety Stock)** khoa học để hấp thụ (absorb) phần sai số đó, đảm bảo mức phục vụ khách hàng (Service Level) mục tiêu.</li>
+                        <li><strong>Tránh Bẫy "Over-Fitting" (Quá Khớp Dữ Liệu):</strong> Đừng cố gắng điều chỉnh các thuật toán phức tạp chạy theo từng dao động nhỏ của thị trường. Việc quá khớp dữ liệu lịch sử sẽ phá hỏng khả năng dự đoán tương lai. Hãy giữ mô hình đơn giản và tin cậy.</li>
+                        <li><strong>Quy Trình S&OP Là Cầu Nối Định Tính:</strong> Dự báo định lượng (Quantitative) bằng máy chỉ là một nửa câu chuyện. Doanh nghiệp bắt buộc phải vận hành quy trình **Đồng bộ hóa Cung Cầu (S&OP - Sales and Operations Planning)** hàng tháng để bổ sung các thông tin định tính (Qualitative) như: chiến dịch khuyến mãi của Marketing, hành động giảm giá của đối thủ, hay thay đổi chính sách vĩ mô từ phòng kinh doanh.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -195,7 +259,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { drawChart(); };

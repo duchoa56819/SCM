@@ -33,6 +33,21 @@
         .top-action { display: flex; gap: 15px; margin-bottom: 15px; }
         .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #1e40af); color: white; cursor: pointer; transition: all 0.3s; flex: 1; text-transform: uppercase;}
         .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -67,16 +82,62 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Demurrage & Detention (Lưu bãi & Lưu cont)</h3>
-            <p>Trong vận tải đường biển, hãng tàu và cảng biển kiếm lợi nhuận khổng lồ từ tiền phạt của bạn.</p>
-            <ul>
-                <li><strong>Demurrage (Lưu bãi):</strong> Phạt khi container đã dỡ xuống cảng nhưng bạn chưa điều xe kéo về.</li>
-                <li><strong>Detention (Lưu cont):</strong> Phạt khi bạn đã kéo container về kho của bạn, dỡ hàng xong nhưng không chịu trả cái vỏ container rỗng lại cho hãng tàu.</li>
-                <li><strong>Chiến thuật:</strong> Tiếc tiền thuê xe tải VIP ($400) là sai lầm chết người nhất của dân nhập khẩu tay mơ. Đặt xe Thường ($100), xe đến trễ 5 ngày. Tiền phạt cảng 5 ngày x $150 = $750! Tổng phí thành $850. Trong khi nếu chịu chi thuê xe VIP ngay từ đầu chỉ tốn $400. <strong>Bài học: Logistics là một cuộc đua với thời gian, chậm trễ luôn đắt hơn phí làm khẩn cấp!</strong></li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #60a5fa;">🚢 Cơn Ác Mộng Cảng Biển: Phân Biệt Phí Demurrage & Detention</div>
+                    <p>Trong hoạt động xuất nhập khẩu quốc tế, các khoản phí phạt lưu kho bãi luôn là nỗi khiếp sợ làm xói mòn lợi nhuận doanh nghiệp cực kỳ nghiêm trọng. Hai khái niệm cốt lõi cần phân biệt:</p>
+                    <p>- <strong>Demurrage (Phí lưu bãi tại cảng)</strong>: Phí phạt áp dụng khi container hàng hóa đã được dỡ xuống cầu cảng, nhưng doanh nghiệp chậm trễ không điều xe kéo container ra khỏi cảng vượt quá thời hạn miễn phí (Free Time) quy định (ví dụ: thường là 5 ngày).</p>
+                    <p>- <strong>Detention (Phí lưu container tại kho)</strong>: Phí phạt áp dụng khi doanh nghiệp đã kéo container chứa hàng về kho riêng của mình, dỡ hàng xong nhưng chậm trễ không mang trả vỏ container rỗng về các bãi chỉ định (Depot) của hãng tàu vượt quá hạn quy định.</p>
+                    <p><strong>Sự đánh đổi drayage logistics</strong>: Tiếc tiền thuê xe tải kéo gấp (VIP truck - $400) mà đặt xe thường giá rẻ ($100) chịu rủi ro delay 5 ngày là sai lầm kinh điển. Tiền phạt cảng 5 ngày x $150 = $750, đẩy tổng chi phí thực tế lên tới $850 (đắt gấp đôi so với xe VIP ngay từ đầu)!</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">📦 Khủng Hoảng Cảng Biển Hoa Kỳ (2021) & Quy Trình Drayage Siêu Tốc Của Samsung</div>
+                    <p><strong>Case Study 1: Đại Khủng Hoảng Cảng Los Angeles / Long Beach (2021):</strong> Sau đại dịch Covid-19, làn sóng mua sắm bùng nổ tại Mỹ khiến hàng vạn container đổ về cảng biển Los Angeles và Long Beach. Do tắc nghẽn giao thông cảng, thiếu hụt nghiêm trọng khung gầm xe rơ-moóc (chassis) và tài xế xe tải (Drayage drivers), hàng ngàn container nằm phơi nắng hàng tháng trời. Các doanh nghiệp nhập khẩu Mỹ đã phải trả **hàng tỷ USD tiền phạt Demurrage & Detention** cho các hãng tàu. Hóa đơn phạt của nhiều công ty lớn vượt quá $10M/tháng, buộc chính quyền liên bang Mỹ phải can thiệp điều tra các hãng tàu về việc lạm thu phí phạt này.</p>
+                    <p><strong>Case Study 2: Quy Trình Logistics "Zero-Demurrage" Của Samsung:</strong> Là gã khổng lồ điện tử với sản lượng xuất nhập khẩu khổng lồ tại Việt Nam qua cảng Hải Phòng và Cát Lái, Samsung thiết lập một hệ thống drayage logistics vô cùng chặt chẽ. Đội ngũ logistics của Samsung liên kết hệ thống phần mềm trực tiếp với hải quan để thông quan luồng xanh tự động ngay khi tàu cập cảng, đồng thời ký SLA cam kết với các công ty vận tải bộ lớn điều phối đội xe tải 24/7 ứng trực kéo hàng ngay trong đêm. Điều này giúp Samsung duy trì tỷ lệ phát sinh phí Demurrage tiệm cận mức 0% tuyệt đối, bảo vệ dòng chảy linh kiện sản xuất liên tục cho các tổ hợp siêu nhà máy Bắc Ninh và Thái Nguyên.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏳ Thời Gian Container Nằm Cảng (Average Port Stay Time)</div>
+                        <div class="kpi-desc">Thời gian trung bình tính từ lúc container được dỡ xuống từ tàu biển cho đến khi xe tải kéo ra khỏi cổng cảng. Chỉ số này phản ánh tốc độ thông quan hải quan và điều phối xe drayage.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Tỷ Lệ Trả Container Đúng Hạn (On-Time Return Rate)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm vỏ container rỗng được hoàn trả về bãi depot của hãng tàu đúng thời hạn miễn phí. Tối ưu hóa chỉ số này giúp triệt tiêu hoàn toàn hóa đơn phạt Detention.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Nghệ Thuật Kiểm Soát Drayage & Phí Phạt D&D</div>
+                    <ul>
+                        <li><strong>Thiết Lập Đồng Bộ "Hải Quan - Vận Tải" (Customs-Drayage Integration):</strong> Phí Demurrage phát sinh chủ yếu do nghẽn thông tin. Hãy đảm bảo quy trình truyền tờ khai hải quan (EDI/ASN) được thực hiện hoàn tất trước khi tàu cập cảng ít nhất 2 ngày. Ngay khi cont dỡ xuống và hải quan thông quan, lệnh điều động xe tải drayage phải được kích hoạt tức thời.</li>
+                        <li><strong>Đàm Phán Tăng Thời Gian Miễn Phí (Free Time Negotiation):</strong> Khi ký hợp đồng dịch vụ vận chuyển biển (Service Contract - SC) với các hãng tàu cho sản lượng lớn (volume cam kết), sếp phải yêu cầu bộ phận mua sắm đàm phán kéo dài thời gian miễn phí **Free Time** tại cảng và bãi (ví dụ: xin tăng từ 5 ngày lên 9-14 ngày). Đây là vũ khí cực kỳ quan trọng bảo vệ doanh nghiệp trước các rủi ro kẹt cảng hay chậm trễ đột xuất.</li>
+                        <li><strong>Chuẩn Hóa Quy Trình Kho Nhập Hàng (Warehouse Delivery Window):</strong> Nhiều doanh nghiệp kéo cont về kho riêng nhưng kho không đủ công suất dỡ hàng hoặc thiếu nhân công, dẫn đến cont phải nằm chờ trên xe rơ-moóc hàng tuần trời, gây phát sinh phí Detention khổng lồ. Phải cấu hình lịch nhập kho chặt chẽ (delivery slot scheduling) để dỡ hàng nhanh chóng trong vòng vài giờ và trả vỏ cont ngay lập tức.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -166,7 +227,7 @@
                         c.truckBookedIn--;
                         if (c.truckBookedIn <= 0) {
                             c.status = 'done';
-                            addLog(`Cont ${id}: Xe đã tới rút hàng thành công!`);
+                            addLog(`Cont ${c.id}: Xe đã tới rút hàng thành công!`);
                         }
                     }
 
@@ -223,7 +284,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { renderPort(); updateStats(); };
