@@ -36,6 +36,83 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 220px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -89,16 +166,84 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #a855f7; margin-top: 0;">📚 Cẩm nang Định Giá (Revenue Management)</h3>
-            <p>Bài toán này mô phỏng ngành vé máy bay, phòng khách sạn, hoặc thời trang mùa vụ (Perishable Inventory). Hàng hóa có "hạn sử dụng", qua thời điểm đó hàng sẽ mất giá trị.</p>
-            <ul>
-                <li><strong>Giữ giá cao liên tục ($100):</strong> Doanh thu mỗi áo rất tốt, nhưng đến cuối mùa đông bạn chỉ bán được khoảng 200 áo. Còn thừa 300 áo phải thanh lý giá $10 (vô cùng xót xa).</li>
-                <li><strong>Xả hàng sớm ($40):</strong> Chỉ đến Tuần 6 là bạn hết sạch áo. Bỏ lỡ cơ hội bán giá $100 cho những khách hàng nhà giàu sẵn sàng mua trong 6 tuần đầu tiên. (Để lại tiền trên bàn).</li>
-                <li><strong>Định giá động (Dynamic Pricing - Giá vé máy bay):</strong> Những tuần đầu, để giá cao ($100) để hớt váng nhóm khách không quan tâm về giá. Đến giữa mùa, hạ xuống $70 để hút nhóm thu nhập trung bình. Gần cuối mùa, tùy lượng tồn kho còn nhiều hay ít mà quyết định xả hàng $40 để dọn sạch kho trước khi hết hạn. Đây là bí quyết các hãng hàng không dùng để tối đa hóa doanh thu từng chuyến bay!</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Quản Trị Doanh Thu & Định Giá Động (Dynamic Pricing)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #a855f7;">⏳ Lý Thuyết Tồn Kho Giới Hạn Thời Gian (Perishable Inventory)</div>
+                    <p>Bài toán này mô phỏng quản trị doanh thu (Revenue Management) cho các sản phẩm có "hạn sử dụng" cứng (vé máy bay cất cánh, phòng khách sạn qua đêm, quần áo hết mùa). Sau hạn định, giá trị sử dụng của sản phẩm lập tức rơi về 0 hoặc mức thanh lý rất thấp (Salvage Value = $10).</p>
+                    <p>Trong điều kiện này, chiến lược định giá phải bám sát **tốc độ xả hàng (Burn Rate)** thực tế:</p>
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-left: 4px solid var(--primary); border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 1.05rem; color: #f8fafc;">
+                        Tốc độ xả hàng mục tiêu = Tồn kho hiện tại / Số tuần còn lại của mùa vụ
+                    </div>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">📈 Phân Khúc Thị Trường & Các Bước Định Giá</div>
+                    <ul>
+                        <li><strong>Price Skimming (Hớt váng sữa):</strong> Định giá cực cao ($100) ở đầu mùa để nhắm vào nhóm khách hàng thượng lưu (insensitive to price), những người muốn sở hữu sản phẩm mới nhất ngay lập tức.</li>
+                        <li><strong>Market Penetration / Clearance (Xả hàng):</strong> Giảm giá sâu ($40) ở cuối mùa để kích cầu nhóm khách nhạy cảm về giá (price-sensitive), dọn sạch kho bãi nhằm giải phóng dòng tiền và tránh chi phí lưu kho.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">✈️ Case Study: Vietjet Air & Zara - Nghệ Thuật Định Giá Động</div>
+                    <p>Cách các doanh nghiệp hàng đầu áp dụng thuật toán Dynamic Pricing:</p>
+                    <ul>
+                        <li><strong>Các Hãng Hàng Không (Vietjet Air / Vietnam Airlines):</strong> Trên cùng một chuyến bay, chiếc ghế có giá trị sử dụng như nhau nhưng có thể được bán với hàng chục mức giá khác nhau. Hệ thống tự động theo dõi số lượng ghế trống. Nếu chuyến bay còn 2 ngày nữa cất cánh nhưng lượng ghế trống còn quá nhiều (Burn Rate quá thấp), hệ thống tự động bơm ra vé giá rẻ. Nếu nhu cầu đặt mua tăng vọt đột biến, giá vé lập tức được đẩy lên mức kịch trần.</li>
+                        <li><strong>Zara (Inditex):</strong> Nhờ chuỗi cung ứng siêu tốc (Fast Fashion), Zara sản xuất số lượng rất nhỏ cho mỗi mẫu thiết kế để thăm dò thị trường. Nếu mẫu đó bán chạy, họ nâng giá nhẹ. Nếu bán chậm, họ lập tức áp dụng chương trình Markdown (chiết khấu) tự động theo tuần để đẩy sạch tồn kho trong 3-4 tuần, nhường chỗ cho mẫu thiết kế mới.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Các chỉ số mà Giám đốc Thương mại & Chuỗi cung ứng phải tối ưu:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Sell-Through Rate (STR)</div>
+                        <div class="kpi-value">Tỷ Lệ Bán Hết</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ phần trăm hàng hóa bán được so với tổng lượng nhập kho ban đầu. Target lý tưởng là 90-95% khi hết mùa.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Average Yield per Unit (Hiệu Suất Doanh Thu)</div>
+                        <div class="kpi-value">Doanh Thu TB / Sản Phẩm</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tổng doanh thu thực tế chia cho tổng sản phẩm bán ra. Chỉ số này phản ánh khả năng tối ưu hóa giá.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Markdown Percentage (Mức Giảm Giá)</div>
+                        <div class="kpi-value">Tỷ Lệ Chiết Khấu TB</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Đo lường mức độ thiệt hại doanh thu do phải giảm giá xả hàng cuối mùa.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Định Giá Là Một Công Cụ Chuỗi Cung Ứng</div>
+                    <p>Nhiều doanh nghiệp thường tách rời bộ phận Commercial (Bán hàng/Định giá) và Operations (Logistics/Chuỗi cung ứng). Đây là một sai lầm nghiêm trọng trong quản trị doanh nghiệp.</p>
+                    <p>Bài học rút ra cho nhà điều hành cao cấp:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Đồng bộ hóa Cung và Cầu (S&OP):</strong> Định giá không chỉ để kiếm lời, nó là van điều tiết dòng chảy chuỗi cung ứng. Nếu kho đang quá tải, hãy ép phòng Sales giảm giá để kích thích xả hàng. Nếu nhà máy đang kẹt sản xuất, hãy nâng giá bán lên để kìm hãm nhu cầu và hớt váng nhóm khách biên lợi nhuận cao.</li>
+                        <li style="margin-bottom: 10px;"><strong>Tránh bẫy "Xả hàng quá sớm":</strong> Việc giảm giá vô tội vạ ngay từ đầu mùa (như chiến thuật 2 trong mô phỏng) sẽ phá hủy hình ảnh thương hiệu cao cấp và để lại một lượng tiền cực lớn trên bàn thương lượng.</li>
+                        <li><strong>Dữ liệu hóa quyết định (Data-driven Pricing):</strong> Hãy xây dựng hệ thống thu thập thông tin tồn kho thời gian thực (Real-time Inventory) để thuật toán tự động ra đề xuất thay đổi giá, thay vì ngồi chờ báo cáo thủ công cuối tháng.</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -188,8 +333,27 @@
         }
 
         function toggleGuide() {
-            let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let guide = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
+                btn.style.background = 'rgba(255,255,255,0.15)';
+                btn.style.color = 'white';
+            } else {
+                guide.style.display = 'none';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

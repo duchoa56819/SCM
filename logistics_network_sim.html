@@ -165,6 +165,83 @@
             font-size: 0.95rem;
             line-height: 1.5;
         }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -259,37 +336,86 @@
         <!-- Hướng dẫn chiến thuật -->
         <div style="text-align: center; margin-top: 40px;">
             <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #cbd5e1; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                📖 Xem Cẩm nang Chiến thuật & Công thức
+                📖 Xem Chuyên đề Lý thuyết & Thực tiễn
             </button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px);">
-            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px;">📚 Lợi thế Quy mô (Economies of Scale) & Thiết kế Mạng lưới</h2>
-            <div style="line-height: 1.8; color: #cbd5e1;">
-                <p>Chiến thuật tuyệt đối trong thiết kế Logistics Network là phải tính toán điểm hòa vốn của Kho trung chuyển:</p>
-                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-left: 4px solid var(--primary); border-radius: 4px; margin-bottom: 20px; font-size: 1.1rem; color: white;">
-                    Tiết kiệm từ việc mở kho = (Nhu cầu tối đa) × (Chênh lệch phí Ship Hỏa tốc - Phí Ship Sỉ & Lẻ)
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #34d399, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Thiết Kế Mạng Lưới Phân Phối & Điểm Hòa Vốn</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title">🎯 Đánh Đổi Lợi Thế Quy Mô (Economies of Scale) & Phí Lưu Kho</div>
+                    <p>Trong thiết kế logistics mạng lưới, câu hỏi cốt lõi luôn là: **Có nên mở kho trung tâm phân phối (DC) tại địa phương hay giao hàng trực tiếp từ nhà máy trung tâm?**</p>
+                    <p>Để giải quyết bài toán này, ta so sánh điểm hòa vốn:</p>
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-left: 4px solid var(--primary); border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 1.05rem; color: #f8fafc;">
+                        Tiết kiệm biên khi mở kho = Nhu cầu vùng × (Cước Hỏa tốc chặng dài - Cước Ship Sỉ & Lẻ gom chung)
+                    </div>
+                    <p>Nếu <strong>Tiết kiệm biên &gt; Phí thuê kho cố định + Phí lưu kho biến đổi</strong>, việc mở kho vùng là tối ưu chi phí. Ngược lại, nếu nhu cầu quá thấp (như Miền Trung trong mô phỏng), việc vận hành một nhà kho vùng sẽ trở thành gánh nặng tài chính do không đạt quy mô tối thiểu.</p>
                 </div>
-                
-                <h4 style="color: white; margin-bottom: 10px;">Phân tích cho Miền Trung (Bẫy sập):</h4>
-                <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li>Phí Ship Hỏa tốc: $25/đơn. Nếu mở kho, phí Ship sỉ ($5) + Giao nội bộ ($5) = $10/đơn. Tiết kiệm = <strong>$15/đơn</strong>.</li>
-                    <li>Nhu cầu tối đa Miền Trung = 30 đơn. Vậy Tổng tiền tiết kiệm tối đa = 30 × $15 = <strong>$450/tuần</strong>.</li>
-                    <li>Tuy nhiên, phí thuê kho cố định là <strong>$500/tuần</strong>. Do đó $450 < $500, mở kho Miền Trung luôn <strong>BỊ LỖ</strong>! Cứ để hệ thống tự giao Hỏa tốc từ Bắc.</li>
-                </ul>
+                <div class="theory-card">
+                    <div class="theory-title">🌐 Centralized vs. Decentralized Network (Tập Trung vs. Phân Tán)</div>
+                    <ul>
+                        <li><strong>Mạng lưới tập trung (Centralized):</strong> Giữ toàn bộ tồn kho tại một kho duy nhất (ở Bắc). Lợi ích: Tiết kiệm chi phí vận hành kho, quản lý tồn kho cực tốt, hạn chế hàng ế. Nhược điểm: Chi phí giao hàng chặng cuối đến các tỉnh xa rất cao và thời gian giao hàng rất lâu.</li>
+                        <li><strong>Mạng lưới phân tán (Decentralized):</strong> Rải hàng ra các kho vùng cận thị trường (Trung & Nam). Lợi ích: Giao hàng cực nhanh (1-2h), chiếm lĩnh thị phần. Nhược điểm: Phí thuê kho tăng gấp bội, nguy cơ lệch tồn kho giữa các khu vực (nơi thừa, nơi thiếu).</li>
+                    </ul>
+                </div>
+            </div>
 
-                <h4 style="color: white; margin-bottom: 10px;">Phân tích cho Miền Nam (Mỏ vàng):</h4>
-                <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li>Phí Ship Hỏa tốc: $40/đơn. Nếu mở kho, chi phí = $10/đơn. Tiết kiệm = <strong>$30/đơn</strong>.</li>
-                    <li>Nhu cầu tối đa Miền Nam = 100 đơn. Tổng tiết kiệm tối đa = 100 × $30 = <strong>$3,000/tuần</strong>.</li>
-                    <li>Mức tiết kiệm $3,000 vượt xa tiền thuê kho $500. Đây là <strong>Lợi thế kinh tế theo quy mô</strong>. Bắt buộc phải mở Kho Miền Nam!</li>
-                </ul>
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">🏢 Case Study: Thế Giới Di Động & Điện Máy Xanh kết hợp Bách Hóa Xanh</div>
+                    <p>Cách Thế Giới Di Động thống trị mạng lưới bán lẻ Việt Nam thông qua mô hình phân phối phân cấp tinh vi:</p>
+                    <ul>
+                        <li><strong>Kho Tổng (Distribution Centers - DCs):</strong> Đặt tại các vị trí chiến lược (như Bình Dương, Long An, Bắc Ninh) để nhận hàng số lượng lớn (Bulk) trực tiếp từ nhà máy hoặc cảng biển với giá sỉ cực tốt.</li>
+                        <li><strong>Kho Vệ Tinh & Cửa Hàng (Hubs & Stores):</strong> Hàng đêm, các đoàn xe tải "Milk Run" vận chuyển sỉ từ Kho Tổng phân bổ về hàng ngàn cửa hàng địa phương. Mỗi cửa hàng đóng vai trò như một mini-DC phục vụ bán kính 3-5 km.</li>
+                        <li><strong>Chiến lược Giao hàng siêu tốc:</strong> Nhờ tồn kho phân tán cực gần người tiêu dùng, khi khách đặt trực tuyến, nhân viên cửa hàng có thể giao xe máy đến nhà khách chỉ trong 30 phút, đè bẹp các đối thủ thương mại điện tử chỉ có kho tổng duy nhất ở xa.</li>
+                    </ul>
+                </div>
+            </div>
 
-                <h4 style="color: white; margin-bottom: 10px;">Công thức đặt hàng (Base Stock Policy cho Miền Nam):</h4>
-                <ul style="padding-left: 20px; margin-bottom: 0;">
-                    <li>Thời gian xe chở sỉ mất 1 tuần, tuần sau tới, tuần sau nữa xuất bán. Lead Time = 2 tuần.</li>
-                    <li>Mục tiêu dự trữ = Max Demand (100) × Lead Time (2) = <strong>200 máy</strong>.</li>
-                    <li><strong>Lệnh điều xe Miền Nam = 200 - (Tồn kho Nam) - (Hàng đang tới Nam)</strong>.</li>
-                </ul>
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Bộ chỉ số vàng mà Giám đốc Logistics cần kiểm soát hàng tuần:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Total Landed Cost (Tổng Chi Phí Cập Bến)</div>
+                        <div class="kpi-value">Cost-to-Serve</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tổng cộng chi phí sản xuất + đóng gói + thuế + vận tải sỉ + lưu kho + ship lẻ.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Order Fulfillment Cycle Time</div>
+                        <div class="kpi-value">24h - 48h</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tổng thời gian từ khi khách đặt đơn cho đến khi hàng được giao thành công.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Warehouse Space Utilization</div>
+                        <div class="kpi-value">80% - 85%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ diện tích kho thực tế sử dụng được tối ưu để tránh lãng phí tiền thuê.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Đừng Chạy Theo Xu Hướng Vội Vàng</div>
+                    <p>Ngày nay, dưới áp lực cạnh tranh của việc "giao hàng nhanh 2 giờ" từ các sàn TMĐT, rất nhiều doanh nghiệp Việt Nam vội vã thuê kho bãi vùng ở khắp ba miền để phân tán hàng hóa mà **không tính toán điểm hòa vốn quy mô**.</p>
+                    <p>Lời khuyên dành cho nhà quản trị chuỗi cung ứng:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Đo lường mật độ nhu cầu (Demand Density):</strong> Trước khi ký hợp đồng thuê kho $500/tuần, hãy thu thập dữ liệu xem nhu cầu vùng đó có đạt tối thiểu số đơn hòa vốn hay không.</li>
+                        <li style="margin-bottom: 10px;"><strong>Phương án lai (Hybrid Network Design):</strong> Bạn không nhất thiết phải chọn 100% Tập trung hay 100% Phân tán. Hãy làm như mô phỏng này: Phân tán tồn kho đối với miền Nam (nhu cầu cực lớn) và để Tập trung giao hỏa tốc từ Bắc đối với miền Trung (nhu cầu nhỏ).</li>
+                        <li><strong>Khái niệm 3PL/4PL:</strong> Nếu dòng vốn mỏng, hãy sử dụng dịch vụ kho chung của các đơn vị logistics thứ ba (3PL) để biến định phí (Fixed Cost) thuê kho thành biến phí (Variable Cost) tính trên mỗi đơn hàng lưu kho.</li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
@@ -490,15 +616,23 @@
             let btn = document.getElementById('toggleGuideBtn');
             if (guide.style.display === 'none') {
                 guide.style.display = 'block';
-                btn.innerHTML = '📖 Ẩn Cẩm nang Chiến thuật';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
                 btn.style.background = 'rgba(255,255,255,0.15)';
                 btn.style.color = 'white';
             } else {
                 guide.style.display = 'none';
-                btn.innerHTML = '📖 Xem Cẩm nang Chiến thuật & Công thức';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
                 btn.style.background = 'rgba(255,255,255,0.05)';
                 btn.style.color = '#cbd5e1';
             }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = renderUI;

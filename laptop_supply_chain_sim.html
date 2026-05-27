@@ -177,6 +177,83 @@
         .log-entry:last-child {
             border-bottom: none;
         }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -256,24 +333,86 @@
         <!-- Hướng dẫn chiến thuật -->
         <div style="text-align: center; margin-top: 40px;">
             <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #cbd5e1; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                📖 Xem Cẩm nang Chiến thuật & Công thức
+                📖 Xem Chuyên đề Lý thuyết & Thực tiễn
             </button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px);">
-            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px;">📚 Cẩm nang Chiến thuật & Công thức Tối ưu</h2>
-            <div style="line-height: 1.8; color: #cbd5e1;">
-                <p><strong>CÔNG THỨC ĐẶT HÀNG CHUẨN (Base Stock Policy):</strong></p>
-                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-left: 4px solid var(--primary); border-radius: 4px; margin-bottom: 20px; font-size: 1.1rem; color: white;">
-                    Lượng cần đặt = (Max Demand × Lead Time) - Tồn kho hiện tại - Hàng đang vận chuyển
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Quản Trị Vận Hành Căn Bản & Cân Bằng Cung Cầu</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title">🎯 Base Stock Policy (Mức Tồn Kho Mục Tiêu)</div>
+                    <p>Mô hình dự trữ căn bản trong vận hành chuỗi cung ứng, dùng để cân bằng giữa dòng cung và cầu khi có thời gian trễ giao hàng (Lead Time).</p>
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-left: 4px solid var(--primary); border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 1.05rem; color: #f8fafc;">
+                        Mức tồn kho mục tiêu (S) = Nhu cầu tối đa trong Lead Time + Safety Stock
+                    </div>
+                    <p>Khi có bất kỳ đơn hàng bán ra nào, hệ thống lập tức phát lệnh bổ sung (Reorder) đúng bằng lượng đã bán để kéo mức tồn kho (gồm cả hàng đang đi đường) về mức mục tiêu <strong>S</strong>.</p>
                 </div>
-                
-                <h4 style="color: white; margin-bottom: 10px;">Các bước phân tích ra công thức (Ví dụ trong mô phỏng này):</h4>
-                <ol style="padding-left: 20px; margin-bottom: 0;">
-                    <li style="margin-bottom: 10px;"><strong>Phân tích Chi phí cơ hội (Newsvendor Model):</strong> Mất doanh thu 1 Laptop là thiệt hại $250 lợi nhuận tiềm năng. Trong khi phí lưu kho 1 linh kiện chỉ $5. Vì $250 > $5 rất nhiều lần, bắt buộc phải chọn chiến lược an toàn tuyệt đối (Worst-case scenario) để không bao giờ thiếu hàng.</li>
-                    <li style="margin-bottom: 10px;"><strong>Xác định Nhu cầu tối đa (Max Demand):</strong> Trong mô phỏng này, nhu cầu lớn nhất mỗi tuần có thể lên tới <strong>30 máy</strong>.</li>
-                    <li style="margin-bottom: 10px;"><strong>Xác định Thời gian trễ (Lead Time):</strong> Đặt mua Tuần 1, hàng mất Tuần 2 để vận chuyển, đến Tuần 3 mới có thể đưa vào sản xuất. Vậy Thời gian trễ là <strong>2 tuần</strong>.</li>
-                    <li><strong>Mục tiêu dự trữ:</strong> Lấy Nhu cầu lớn nhất × Thời gian trễ = 30 × 2 = <strong>60 linh kiện</strong>. Đây là Mức tồn kho mục tiêu (Base Stock Level) để đảm bảo an toàn tuyệt đối cho chuỗi cung ứng của bạn.</li>
-                </ol>
+                <div class="theory-card">
+                    <div class="theory-title">⚖️ Newsvendor Model (Bài Toán Người Bán Báo)</div>
+                    <p>Phân tích đánh đổi kinh điển giữa hai loại chi phí trong điều kiện nhu cầu bất định:</p>
+                    <ul>
+                        <li><strong>Chi phí thừa hàng (Overage Cost - Co):</strong> Phí tổn phát sinh khi dự trữ quá nhiều (lưu kho, lỗi thời, thanh lý rẻ mạt).</li>
+                        <li><strong>Chi phí thiếu hàng (Underage Cost - Cu):</strong> Cơ hội lợi nhuận bị mất đi và sự phật lòng của khách hàng khi không có sẵn sản phẩm.</li>
+                    </ul>
+                    <p>Trong bài toán này, biên lợi nhuận của 1 chiếc Laptop là cực kỳ lớn ($250 lãi ròng) so với chi phí lưu kho linh kiện cực thấp ($5/tuần). Theo lý thuyết kinh tế, <strong>Cu &gt;&gt; Co</strong> chỉ ra rằng bạn nên ưu tiên chiến lược an toàn (Worst-case scenario) để bảo vệ doanh số.</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">💻 Case Study: Dell vs. Lenovo (Make-to-Order vs. Make-to-Stock)</div>
+                    <p>Sự đột phá mang tính lịch sử của Dell những năm 2000 nằm ở mô hình **Direct Business Model (Make-to-Order)**:</p>
+                    <ul>
+                        <li><strong>Lenovo (Make-to-Stock):</strong> Dự báo nhu cầu ➔ Mua linh kiện ➔ Sản xuất hàng loạt ➔ Đẩy hàng ra kênh phân phối (đại lý). Mô hình này chịu rủi ro tồn kho thành phẩm cực lớn và lỗi thời công nghệ nhanh chóng nếu dự báo sai.</li>
+                        <li><strong>Dell (Make-to-Order):</strong> Khách đặt cấu hình trực tuyến và thanh toán trước ➔ Dell mới gửi lệnh lắp ráp đến nhà máy ➔ Ship trực tiếp đến khách hàng. Tồn kho thành phẩm của Dell gần như bằng <strong>0</strong>. Thời gian lưu kho linh kiện giảm từ vài tháng xuống chỉ còn vài ngày nhờ tích hợp thông tin chặt chẽ với nhà cung ứng linh kiện (Just-In-Time).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Một nhà quản trị vận hành kho bãi và chuỗi cung ứng chuyên nghiệp phải luôn theo sát các chỉ số sau:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Service Level (Mức Dịch Vụ)</div>
+                        <div class="kpi-value">95% - 99%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ đơn hàng được đáp ứng ngay lập tức từ kho sẵn có.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Inventory Turnover (Vòng Quay Kho)</div>
+                        <div class="kpi-value">8 - 12 Lần/Năm</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Số lần hàng tồn kho trung bình được bán và thay thế trong năm.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Carrying Cost (Chi Phí Lưu Kho)</div>
+                        <div class="kpi-value">15% - 25% / Năm</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tổng chi phí vốn, bảo quản, bảo hiểm và hao hụt trên giá trị hàng tồn.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Tinh Gọn Không Phải Là Cắt Giảm Mù Quáng</div>
+                    <p>Nhiều giám đốc tài chính (CFO) thường ép phòng Logistics phải triệt tiêu hàng tồn kho về mức tối thiểu để giải phóng dòng tiền mặt. Tuy nhiên, điều này có thể dẫn tới thảm họa <strong>đứt gãy chuỗi cung ứng (Stockout)</strong>.</p>
+                    <p>Là nhà quản trị chuỗi cung ứng, bạn cần làm rõ cho ban lãnh đạo thấy:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Tồn kho là lớp đệm bảo vệ (Buffer):</strong> Nó hấp thụ các biến động về nhu cầu thị trường đột biến và các rủi ro vận chuyển trễ từ nhà cung cấp.</li>
+                        <li style="margin-bottom: 10px;"><strong>Đo lường chi phí cơ hội:</strong> Mất đi một khách hàng trung thành do thiếu hàng đắt hơn gấp hàng chục lần chi phí thuê thêm 1m² kho để giữ hàng dự phòng.</li>
+                        <li><strong>Công thức hóa quy trình:</strong> Hãy áp dụng mô hình toán học (như Base Stock Policy trong mô phỏng) để thay thế cho cảm tính cá nhân trong việc ra quyết định đặt mua hàng.</li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
@@ -485,15 +624,23 @@
             let btn = document.getElementById('toggleGuideBtn');
             if (guide.style.display === 'none') {
                 guide.style.display = 'block';
-                btn.innerHTML = '📖 Ẩn Cẩm nang Chiến thuật';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
                 btn.style.background = 'rgba(255,255,255,0.15)';
                 btn.style.color = 'white';
             } else {
                 guide.style.display = 'none';
-                btn.innerHTML = '📖 Xem Cẩm nang Chiến thuật & Công thức';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
                 btn.style.background = 'rgba(255,255,255,0.05)';
                 btn.style.color = '#cbd5e1';
             }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
 
         // Init UI

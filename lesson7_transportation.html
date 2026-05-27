@@ -36,6 +36,83 @@
         .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
         
         .demand-box { background: rgba(255,255,255,0.05); border: 1px dashed var(--warning); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px;}
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -105,16 +182,85 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #22d3ee; margin-top: 0;">📚 Cẩm nang Vận tải Bền vững (Green Logistics)</h3>
-            <p>Bài toán này mô phỏng áp lực thực tế của các tập đoàn đa quốc gia: Vừa phải tiết kiệm tiền, vừa phải đúng hạn, và giờ đây còn bị áp "Thuế Carbon" (Carbon Tax/Emission Trading System).</p>
-            <ul>
-                <li><strong>Chiến thuật 1 (100% Máy bay):</strong> Giao siêu nhanh, không bao giờ trễ. Nhưng phí vận chuyển khổng lồ. Chưa kể lượng Carbon tạo ra sẽ phá vỡ hạn mức 500 tấn chỉ trong vài tuần đầu, khiến bạn nợ hàng chục ngàn đô la tiền phạt môi trường. Phá sản!</li>
-                <li><strong>Chiến thuật 2 (100% Tàu biển):</strong> Rẻ vô địch, thân thiện với môi trường. Nhưng Tàu biển mất 4 tuần! Những lô hàng Urgent (Deadline 1 tuần) sẽ bị trễ 3 tuần. Mỗi tuần trễ đền bù $1,000, khiến tiền phạt trễ hạn còn đắt hơn tiền thuê máy bay!</li>
-                <li><strong>Chiến thuật 3 (Đa phương thức - Phân loại hàng):</strong> Lọc ra. Hàng Urgent bắt buộc đi Máy bay (hoặc Tàu hỏa nếu deadline dài hơn xíu). Còn hàng Standard (Deadline 4 tuần) thì ném hết lên Tàu biển. Đây là sự cân bằng hoàn hảo giữa Cost (Tiền) - Speed (Tốc độ) - Environment (Môi trường).</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #22d3ee, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Vận Tải Đa Phương Thức & Thuế Carbon (Green Logistics)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #22d3ee;">🚛 Vận Tải Đa Phương Thức (Multimodal Transportation)</div>
+                    <p>Giải pháp tối ưu hóa logistics thông qua việc kết hợp nhiều phương thức vận tải khác nhau (Đường hàng không, Đường sắt liên vận, Đường biển) dưới một hợp đồng duy nhất.</p>
+                    <p>Mỗi phương thức có sự đánh đổi (Trade-off) sâu sắc giữa 3 biến số chính: **Chi phí (Cost) - Tốc độ (Speed) - Phát thải (Emission)**:</p>
+                    <ul>
+                        <li><strong>Đường hàng không (Air):</strong> Siêu nhanh (1 tuần), Cước đắt ($1,000), Phát thải cực lớn (20 tấn Carbon/lô).</li>
+                        <li><strong>Đường biển (Ocean):</strong> Siêu rẻ ($100), Giao chậm (4 tuần), Thân thiện môi trường (2 tấn Carbon/lô).</li>
+                        <li><strong>Đường sắt liên vận (Rail):</strong> Trung hòa (2 tuần), Cước vừa ($400), Phát thải vừa (8 tấn Carbon/lô).</li>
+                    </ul>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--danger);">🌱 Logistics Xanh & Hạn Ngạch Phát Thải (Carbon Quota / Carbon Tax)</div>
+                    <p>Trong kinh doanh hiện đại, phát thải không còn là vấn đề đạo đức mà là một **chi phí tài chính thực tế**. Các chính phủ áp dụng Thuế Carbon hoặc Hệ thống giao dịch phát thải (ETS):</p>
+                    <p>Doanh nghiệp được cấp một hạn ngạch (Quota) phát thải (ví dụ 500 tấn trong mô phỏng). Nếu vượt quá, mỗi tấn dôi dư sẽ bị phạt thuế cực nặng ($200/tấn). Điều này bắt buộc các nhà quản lý chuỗi cung ứng phải thiết kế dòng luân chuyển hàng hóa thân thiện với môi trường hơn.</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">💻 Case Study: Chiến Lược Vận Đơn Phân Phối Linh Kiện Của Apple & Samsung</div>
+                    <p>Cách các tập đoàn đa quốc gia phân bổ luồng hàng để tối ưu hóa Landed Cost và cam kết Carbon Net-Zero:</p>
+                    <ul>
+                        <li><strong>Khi ra mắt sản phẩm mới (Mùa cao điểm):</strong> Để chiếm lĩnh thị trường và giao hàng ngay lập tức cho các khách hàng đặt trước (pre-order), Apple thuê trọn các chuyên cơ Boeing 777 chở hàng trực tiếp từ nhà máy Trung Quốc sang các store Mỹ/châu Âu. Cước hàng không cực đắt và xả thải lớn được bù đắp bởi biên lợi nhuận khổng lồ của sản phẩm mới ra mắt (Hớt váng sữa).</li>
+                        <li><strong>Khi chu kỳ sản phẩm ổn định (Mùa thường quy):</strong> Với các lô linh kiện cồng kềnh hoặc hàng bù kho tiêu chuẩn (Standard), các hãng chuyển sang đi Đường biển để hưởng cước cực rẻ.</li>
+                        <li><strong>Đường sắt liên vận Á - Âu (New Silk Road):</strong> Các hãng công nghệ lắp ráp tại Việt Nam, Trung Quốc tận dụng tuyến đường sắt kết nối thẳng sang châu Âu để giao hàng trong 15-20 ngày, nhanh gấp đôi đường biển và rẻ bằng 1/3 đường hàng không, cân bằng hoàn hảo mục tiêu ESG của tập đoàn.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Các chỉ số KPIs quản trị vận tải bền vững:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">On-Time Delivery (OTD)</div>
+                        <div class="kpi-value">Tỷ Lệ Giao Đúng Hạn</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ đơn hàng giao đúng hạn cam kết để tránh án phạt đền bù trễ hạn ($1,000/tuần trễ).</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Carbon Footprint per Ton-Mile</div>
+                        <div class="kpi-value">Tấn Carbon / Đơn hàng</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Lượng khí thải nhà kính tạo ra để vận chuyển một đơn vị hàng hóa trên quãng đường xác định.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Freight Cost Ratio</div>
+                        <div class="kpi-value">Chi Phí Vận Tải / Doanh Thu</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ chi phí vận chuyển trên doanh thu bán hàng để đánh giá hiệu quả sử dụng phương thức.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Tối Ưu Hóa Dòng Hàng Dựa Trên Mức Độ Khẩn Cấp</div>
+                    <p>Trong thực tế doanh nghiệp, việc chọn phương thức vận chuyển thường bị áp đặt một cách cứng nhắc: Phòng Sales đòi đi máy bay cho nhanh, phòng Kế toán đòi đi đường biển cho rẻ.</p>
+                    <p>Là nhà điều hành chuỗi cung ứng, bạn cần dẫn dắt quy trình tối ưu bằng khoa học:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Phân loại hàng hóa theo mức độ khẩn cấp (Urgency Segmentation):</strong> Đừng gom chung mọi lô hàng vào một phương thức. Hãy thiết lập quy tắc tự động: Hàng hỏa tốc (Urgent) bắt buộc đi đường hàng không để bảo vệ uy tín thương hiệu; hàng thường quy (Standard) đi đường biển để giảm chi phí tối đa.</li>
+                        <li style="margin-bottom: 10px;"><strong>Chi phí thực của việc trễ hẹn (True Cost of Delay):</strong> Hãy lượng hóa tiền phạt chậm tiến độ hoặc mất uy tín khách hàng để so sánh trực tiếp với chi phí chênh lệch cước vận chuyển trước khi đưa ra quyết định.</li>
+                        <li><strong>Đón đầu luật chơi ESG toàn cầu:</strong> Thuế carbon đang được áp dụng rộng rãi tại châu Âu (CBAM) và sớm muộn sẽ áp dụng toàn thế giới. Do nghiệp đi trước trong việc xanh hóa chuỗi cung ứng sẽ sở hữu lợi thế cạnh tranh khổng lồ về mặt pháp lý và thuế quan trong tương lai.</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -252,8 +398,27 @@
         }
 
         function toggleGuide() {
-            let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let guide = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
+                btn.style.background = 'rgba(255,255,255,0.15)';
+                btn.style.color = 'white';
+            } else {
+                guide.style.display = 'none';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

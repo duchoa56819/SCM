@@ -29,6 +29,21 @@
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
         
         .slider-container { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #f97316; border-bottom-color: #f97316; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -98,16 +113,78 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #fb923c; margin-top: 0;">📚 Cẩm nang Lý thuyết Điểm nghẽn (Goldratt)</h3>
-            <p>Trò chơi này dựa trên cuốn sách quản trị huyền thoại <strong>"The Goal"</strong> của Eliyahu M. Goldratt.</p>
-            <ul>
-                <li><strong>Khi Buffer = 0 (Làm tới đâu chuyển tới đó):</strong> Mặc dù công suất trung bình mỗi trạm là 3.5, nhưng khi Trạm 1 quay được số 1 (Yếu), Trạm 2 dù quay được số 6 (Mạnh) cũng đành ngồi chơi xơi nước vì chỉ có 1 phôi truyền qua. Trạm 2 bị <em>Đói hàng (Starvation)</em>. Lợi ích của số 6 bị mất vĩnh viễn, trong khi hậu quả của số 1 được truyền đi. Kết quả sau 20 ngày chỉ đạt khoảng ~45-50 sản phẩm (Thấp hơn xa con số 70).</li>
-                <li><strong>Khi Tăng Buffer (Kho đệm WIP):</strong> Nếu bạn cho phép tồn kho đệm lớn (Ví dụ Buffer = 10). Khi Trạm 1 yếu, Trạm 2 vẫn có thể rút phôi từ kho đệm ra làm. Kho đệm hấp thụ "Biến động thống kê", giúp hệ thống chạy trơn tru và đạt sản lượng cao hơn rất nhiều (Lên tới ~60-65 sản phẩm).</li>
-                <li><strong>Bài học:</strong> Hệ thống Toyota (Just-in-Time) với tồn kho bằng 0 CHỈ hoạt động nếu dây chuyền hoàn hảo 100%. Trong đời thực, có vô vàn sự cố (máy hư, kẹt xe). Việc cắt giảm tồn kho một cách mù quáng (Buffer = 0) sẽ bóp nghẹt toàn bộ nhà máy! Cần phải có một lượng Buffer hợp lý.</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #fb923c; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #fb923c, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Lý Thuyết Điểm Nghẽn & Biến Động Thống Kê (TOC)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #fb923c;">⚙️ Lý Thuyết Điểm Nghẽn (Theory of Constraints - TOC)</div>
+                    <p>Được phát triển bởi TS. Eliyahu M. Goldratt trong cuốn sách quản trị kinh điển **"The Goal" (Mục Tiêu)**. TOC khẳng định rằng: **Năng suất của toàn bộ hệ thống luôn bị giới hạn bởi khâu yếu nhất - Điểm nghẽn (Bottleneck)**. Mọi nỗ lực tối ưu hóa các khâu không nghẽn đều vô ích và gây lãng phí tài sản.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--danger);">⚡ Sự Tàn Phá của Biến Động Thống Kê & Sự Phụ Thuộc Tuần Tự</div>
+                    <p>Trong một chuỗi sản xuất tuần tự (Dependent Events), mỗi trạm có sự biến động ngẫu nhiên (Statistical Fluctuations - như việc đổ xúc xắc ngẫu nhiên từ 1 đến 6). Khi tồn kho đệm bằng 0 (JIT cực đoan):</p>
+                    <ul>
+                        <li><strong>Đói hàng (Starvation):</strong> Nếu Trạm 1 quay được xúc xắc = 1 (công suất yếu), Trạm 2 dù quay được = 6 (công suất mạnh) cũng chỉ có thể xử lý tối đa 1 sản phẩm. Lợi ích của năng suất cao bị mất vĩnh viễn, trong khi hậu quả của sự gián đoạn lại lan truyền và tích lũy xuống hạ nguồn.</li>
+                        <li><strong>Nghẽn tắc (Blocking):</strong> Khâu trước sản xuất nhiều nhưng khâu sau bị nghẽn làm ứ đọng bán thành phẩm, đẩy chi phí lưu kho lên cao.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">🏢 Case Study 1: Toyota Production System (TPS) & Kho Đệm JIT Thực Tế</div>
+                    <p>Nhiều nhà quản lý hiểu sai rằng hệ thống sản xuất tinh gọn (Lean/JIT) của Toyota là cắt giảm tồn kho đệm (WIP Buffer) về 0 bằng mọi giá. Trên thực tế, Toyota coi tồn kho giống như mực nước trong lòng sông, còn các sự cố vận hành (máy hư, công nhân chậm) là những tảng đá ngầm.</p>
+                    <p>Toyota thực hiện **hạ mực nước tồn kho từ từ** để làm lộ ra các tảng đá ngầm (điểm nghẽn). Khi đá lộ ra, họ dừng dây chuyền, giải quyết triệt để sự cố để dòng chảy trơn tru hơn, rồi mới tiếp tục hạ tồn kho xuống mức thấp hơn. Họ tuyệt đối không cắt giảm cơ học tồn kho khi quy trình vận hành chưa hoàn hảo, vì điều đó sẽ gây tê liệt toàn hệ thống ngay lập tức.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--primary);">🚗 Case Study 2: Tesla Gigafactory & Cấu Hình Buffer Trạm Lắp Ráp</div>
+                    <p>Tại các siêu nhà máy Gigafactory của Tesla, hàng ngàn robot thực hiện lắp ráp xe tự động tuần tự siêu nhanh. Do tần suất xảy ra các sự cố kỹ thuật nhỏ của robot là không thể tránh khỏi, Tesla đã thiết kế các **vùng đệm vật lý thông minh (Accumulators/Buffers)** giữa các trạm chính.</p>
+                    <p>Nếu Trạm A gặp sự cố phần mềm phải dừng 2 phút, Trạm B phía sau vẫn tiếp tục rút linh kiện từ kho đệm accumulator để làm việc mà không phải dừng lại chờ đợi. Điều này giúp Tesla giữ vững năng suất toàn xưởng và bảo vệ trạm nghẽn cốt lõi luôn hoạt động 100% thời gian.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #fb923c;">
+                        <div class="kpi-title">📊 Buffer Utilization Rate (%)</div>
+                        <div class="kpi-desc">Tỷ lệ sử dụng dung lượng kho đệm bán thành phẩm. Giữ chỉ số này ở mức hợp lý (ví dụ 30% - 70%) đảm bảo dây chuyền hấp thụ tốt biến động mà không gây thừa ứ chôn vốn.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--danger);">
+                        <div class="kpi-title">⚠️ Starvation Rate (Tỷ lệ đói hàng)</div>
+                        <div class="kpi-desc">Phần trăm thời gian một trạm sản xuất phải ngồi nhàn rỗi do trạm trước không cấp đủ phôi (WIP = 0). Chỉ số này ở trạm nghẽn bắt buộc phải bằng 0%.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--success);">
+                        <div class="kpi-title">📈 System Throughput (Sản lượng đầu ra)</div>
+                        <div class="kpi-desc">Số lượng thành phẩm thực tế hoàn thiện xuất xưởng. Mục tiêu cuối cùng của toàn bộ cải tiến chuỗi sản xuất.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--danger);">
+                    <div class="theory-title" style="color: var(--danger);">🎯 Bản Lĩnh Lãnh Đạo: Triết Lý Drum-Buffer-Rope & Tầm Nhìn Hệ Thống</div>
+                    <p>Là một giám đốc vận hành, bạn cần áp dụng tư duy quản trị hệ thống Drum-Buffer-Rope (Trống - Đệm - Dây):</p>
+                    <ul>
+                        <li style="margin-bottom: 8px;"><strong>Drum (Cái Trống):</strong> Nhịp điệu của Điểm nghẽn (Trạm có công suất thấp nhất). Toàn bộ chuỗi sản xuất chỉ được phép chạy theo nhịp trống của khâu này. Bất kỳ trạm nào chạy nhanh hơn nhịp trống chỉ tạo ra rác thải tồn kho lãng phí.</li>
+                        <li style="margin-bottom: 8px;"><strong>Buffer (Kho Đệm):</strong> Tồn kho đệm bán thành phẩm được đặt NGAY TRƯỚC điểm nghẽn để bảo đảm khâu nghẽn không bao giờ bị đói hàng. Một phút lãng phí tại điểm nghẽn là một phút mất đi vĩnh viễn của toàn doanh nghiệp.</li>
+                        <li><strong>Rope (Sợi Dây):</strong> Cơ chế truyền tin ngược dòng (giống như thẻ Kanban). Khi điểm nghẽn tiêu thụ một phôi từ buffer, sợi dây sẽ "kéo" tín hiệu bắt khâu đầu tiên phóng phôi mới vào dây chuyền, giữ cho lượng tồn kho toàn hệ thống luôn ở mức trần tối ưu.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -196,6 +273,36 @@
             }
             isPlaying = false;
             document.getElementById('playBtn').innerText = "▶ Chạy lại từ đầu";
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

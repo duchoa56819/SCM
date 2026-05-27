@@ -26,6 +26,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -76,16 +91,74 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Gom hàng (Consolidation) & EOQ</h3>
-            <p>Bài toán này chính là công thức <strong>EOQ (Economic Order Quantity)</strong> nổi tiếng áp dụng cho Vận tải.</p>
-            <ul>
-                <li><strong>Giao hàng ngày:</strong> Kho bằng 0. Tiền kho = $0. Nhưng mỗi ngày tốn $300 tiền xe chở 10 thùng rỗng tuếch. Tổng phí = $9,000! Khủng khiếp!</li>
-                <li><strong>Đợi đầy xe (100 thùng):</strong> 10 ngày mới tốn $300 tiền xe (rất tiết kiệm phí ship). NHƯNG trong 10 ngày đó, hàng đọng trong kho nhân lên theo cấp số cộng. Tính ra tiền kho mất gần $500 cho chu kỳ đó. Tổng phí khoảng $2,400.</li>
-                <li><strong>Toán học EOQ (Tối ưu):</strong> Đạo hàm hàm tổng chi phí chỉ ra điểm cân bằng nằm ở <strong>Ngày thứ 8 (80 thùng)</strong>. Khi đó Chi phí lưu kho vừa đuổi kịp Chi phí vận tải. Giao hàng ở mốc 80 thùng sẽ mang lại Tổng chi phí thấp nhất (~$2,300)!</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Gom Hàng Tối Ưu Vận Tải (Load Consolidation & EOQ)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #60a5fa;">⚖️ Gom Hàng (Load Consolidation) LTL thành FTL</div>
+                    <p>Trong vận tải đường bộ, cước phí thuê xe nguyên chuyến (FTL - Full Truckload) là một khoản **Chi phí cố định (Fixed Cost)** cực lớn bất kể xe chở đầy hay vơi (ví dụ $300/chuyến xe 100 thùng). Việc gom các lô hàng nhỏ lẻ (LTL - Less-than-Truckload) thành một lô hàng lớn nguyên xe giúp chia đều chi phí cố định này cho nhiều đơn vị sản phẩm hơn, từ đó giảm tối đa **Chi phí vận tải đơn vị (Logistics Cost per Unit)**.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">📐 Điểm Cân Bằng Toán Học (Transportation EOQ)</div>
+                    <p>Mô hình EOQ (Economic Order Quantity) trong vận tải là bài toán tìm điểm tối ưu tổng chi phí bằng cách đánh đổi giữa:</p>
+                    <ul>
+                        <li><strong>Chi phí lưu kho (Holding Cost):</strong> Hàng hóa nằm chờ trong kho để gom cho đầy xe sẽ phát sinh chi phí lưu kho tích lũy tăng dần theo cấp số cộng theo thời gian ($1/thùng/ngày).</li>
+                        <li><strong>Chi phí vận tải (Shipping Cost):</strong> Nếu giao hàng quá thường xuyên (JIT cực đoan), chi phí thuê xe cố định sẽ rất cao do chạy nhiều chuyến xe rỗng.</li>
+                    </ul>
+                    <p>Đạo hàm toán học chứng minh rằng: **Tổng chi phí đạt cực tiểu tại ngày thứ 8 (80 thùng)** - đúng thời điểm chi phí lưu kho tích lũy đuổi kịp và bằng chi phí thuê xe ($240 tiền kho vs. $300 tiền xe).</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--warning);">🏢 Case Study: Walmart & Hệ Thống Trung Chuyển Cross-Docking</div>
+                    <p>Walmart là gã khổng lồ đè bẹp các đối thủ bán lẻ bằng chi phí logistics đơn vị siêu thấp nhờ chiến lược gom hàng đỉnh cao. Thay vì các nhà cung ứng giao hàng nhỏ lẻ LTL trực tiếp đến từng siêu thị, toàn bộ hàng hóa được đưa về các **Trung tâm phân phối Cross-Docking**.</p>
+                    <p>Tại đây, hàng hóa từ hàng trăm nhà cung cấp khác nhau được bốc dỡ, phân loại tự động bằng hệ thống băng chuyền tốc độ cao, rồi gom trực tiếp lên các xe tải FTL chạy thẳng đến từng siêu thị cụ thể trong vòng chưa đầy 24 giờ. Gần như 100% xe tải Walmart di chuyển trên đường đều lấp đầy FTL, giúp loại bỏ hoàn toàn chi phí lưu kho trung gian và đè bẹp chi phí vận hành logistics.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #3b82f6;">
+                        <div class="kpi-title">🚛 Truck Capacity Utilization Rate (%)</div>
+                        <div class="kpi-desc">Hiệu suất lấp đầy tải trọng hoặc thể tích xe tải. Mục tiêu của phòng Logistics luôn là tối ưu chỉ số này tiệm cận 90% - 95% trước khi xuất bến.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--success);">
+                        <div class="kpi-title">📉 Holding vs. Shipping Cost Ratio</div>
+                        <div class="kpi-desc">Tỷ lệ giữa chi phí lưu kho tích lũy và chi phí thuê xe. Chỉ số này ở trạng thái tối ưu tiệm cận tỷ lệ 1:1, báo hiệu điểm cân bằng EOQ hoàn hảo.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--danger);">
+                        <div class="kpi-title">💰 Transportation Cost per Ton-Mile</div>
+                        <div class="kpi-desc">Chi phí vận tải trên mỗi Tấn-Dặm. Chỉ số vàng để đánh giá hiệu quả tài chính của toàn bộ đội xe và mạng lưới logistics hạ nguồn.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--danger);">
+                    <div class="theory-title" style="color: var(--danger);">🎯 Bản Lĩnh Lãnh Đạo: Phá Vỡ Tư Duy Cục Bộ (Total Cost Perspective)</div>
+                    <p>Là một nhà điều hành chuỗi cung ứng, bạn cần thấu hiểu bản chất của sự hợp tác và tối ưu hóa hệ thống:</p>
+                    <ul>
+                        <li style="margin-bottom: 8px;"><strong>Tránh bẫy KPI cục bộ (Silo Effect):</strong> Trưởng bộ phận Kho luôn muốn giảm tồn kho bằng mọi giá nên giao hàng liên tục (Làm chi phí vận tải tăng vọt). Ngược lại, Trưởng bộ phận Logistics chỉ muốn xe đầy FTL mới chạy nên bắt kho đợi quá lâu (Làm chi phí lưu kho tăng vọt và trễ đơn của khách). Bạn phải đứng ra thiết lập chính sách dựa trên **Tổng chi phí tối ưu (Total Cost Optimization)**.</li>
+                        <li style="margin-bottom: 8px;"><strong>Hợp tác vận tải (Milk-Run):</strong> Để vừa có FTL vừa giữ được tần suất giao hàng nhanh cho khách, hãy thiết kế tuyến đường Milk-run: Một xe tải chạy vòng quanh thu gom hàng từ nhiều nhà cung cấp lân cận rồi gom thành một xe đầy FTL về kho trung tâm.</li>
+                        <li><strong>Thương lượng SRM:</strong> Chia sẻ một phần chi phí logistics tiết kiệm được từ việc gom hàng FTL cho nhà cung ứng hoặc khách hàng để khuyến khích họ tuân thủ lịch trình gom hàng định kỳ thay vì ép giao hỏa tốc.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -157,7 +230,32 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
         window.onload = renderUI;
     </script>

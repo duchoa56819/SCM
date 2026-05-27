@@ -29,6 +29,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #f43f5e; border-bottom-color: #f43f5e; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -87,16 +102,59 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #fb7185; margin-top: 0;">📚 Cẩm nang Double Marginalization (Blockbuster Case Study)</h3>
-            <p>Đây là bài toán kinh điển đã cứu sống chuỗi cho thuê băng đĩa Blockbuster thập niên 90.</p>
-            <ul>
-                <li><strong>Hợp đồng Bán sỉ Truyền thống ($50, 0%):</strong> Nhà máy đòi ăn lãi $40/đĩa. Đại lý mua sỉ $50, bán $100. Đại lý sợ ôm hàng ế (vì vốn $50 quá đắt), nên họ nhát gan chỉ nhập khoảng 40 đĩa. Nếu khách đông, đại lý thiếu hàng. Tổng lợi nhuận của toàn bộ Chuỗi cung ứng bị giảm sút. Đây gọi là <em>Hiệu ứng cận biên kép (Double Marginalization)</em> - Ai cũng muốn chèn biên lợi nhuận của mình vào khiến giá quá cao.</li>
-                <li><strong>Hợp đồng Ép giá ($80, 0%):</strong> Bạn quá tham lam. Đại lý nhập $80 bán $100 lãi quá mỏng. Họ sẽ sợ chết khiếp và chỉ dám nhập 20 đĩa. Khách hàng không có phim xem.</li>
-                <li><strong>Hợp đồng Chia sẻ Doanh thu (Revenue Sharing):</strong> Nhà máy bán sỉ VỚI GIÁ GỐC ($10), nhưng thòng thêm điều kiện "Ăn 45% doanh thu mỗi đĩa bán ra". Lúc này, Đại lý nhập hàng không mất đồng rủi ro nào ($10 quá rẻ), họ sẽ đặt liền 90 đĩa để phủ ngập thị trường. Hàng bán đắt như tôm tươi. Kết quả: Đại lý lãi khủng, và BẠN cũng được bú 45% doanh thu khổng lồ đó! Tổng lợi nhuận Chuỗi được tối đa hóa!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #fb7185;">📈 Hiệu Ứng Cận Biên Kép (Double Marginalization)</div>
+                    <p>Trong chuỗi cung ứng độc lập, mỗi thành viên (Nhà sản xuất và Nhà bán lẻ) đều tự tối ưu hóa lợi nhuận của riêng mình bằng cách cộng thêm một phần biên lợi nhuận (margin). Kết quả là giá bán lẻ cuối cùng tăng cao, nhưng tổng sản lượng và lợi nhuận của toàn chuỗi lại sụt giảm so với một chuỗi tích hợp tập trung.</p>
+                    <p>Để giải quyết, <strong>Hợp đồng Chia sẻ Doanh thu (Revenue Sharing)</strong> được thiết lập: Nhà sản xuất giảm giá bán sỉ cực thấp (gần bằng chi phí sản xuất) để giải phóng áp lực rủi ro tồn kho cho nhà bán lẻ, đổi lại, nhà bán lẻ sẽ chia sẻ một tỷ lệ doanh thu bán hàng cuối cùng về cho nhà sản xuất.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🎬 Case Study Kinh Điển: Blockbuster Video (1998)</div>
+                    <p>Trước năm 1998, các studio phim bán đĩa VHS cho Blockbuster với giá sỉ rất cao <strong>$65/băng</strong>, trong khi giá thuê chỉ $3. Vì chi phí mua đĩa quá cao, Blockbuster chỉ dám mua một vài băng cho mỗi tựa phim để tránh rủi ro ế hàng. Khách hàng đến cửa hàng gặp tình cảnh <strong>cháy hàng liên tục (20% cơ hội tìm thấy phim mới)</strong>, cực kỳ ức chế.</p>
+                    <p><strong>Giải pháp đột phá:</strong> Blockbuster thỏa thuận với các studio lớn (như Disney) giảm giá sỉ mỗi băng xuống chỉ còn <strong>$8</strong>, thòng thêm điều kiện Blockbuster sẽ <strong>chia sẻ 40% doanh thu thuê băng</strong> lại cho studio. Nhờ vốn đầu tư siêu rẻ, Blockbuster nhập ngập tràn hàng ngàn băng đĩa, đảm bảo 100% khách đến đều có phim xem. Chỉ trong 1 năm, thị phần của Blockbuster tăng vọt, lợi nhuận của cả Blockbuster lẫn các studio phim đều tăng trưởng ngoạn mục!</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📊 Tỷ Lệ Quyết Định (Critical Ratio - CR)</div>
+                        <div class="kpi-desc">CR = (Cu - Co) / (Cu + Co). Trong đó Cu là chi phí thiếu hàng (lợi nhuận bỏ lỡ), Co là chi phí thừa hàng (tồn kho ế). CR quyết định mức phục vụ và lượng hàng tối ưu mà Đại lý bán lẻ sẵn sàng nhập. Hợp đồng chia sẻ doanh thu làm giảm Co một cách triệt để, kéo CR tiệm cận 1.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Mức Độ Phối Hợp Chuỗi (Supply Chain Coordination Rate)</div>
+                        <div class="kpi-desc">Tỷ lệ đo lường tổng lợi nhuận thực tế đạt được của toàn chuỗi phi tập trung so với lợi nhuận lý tưởng của chuỗi tích hợp hoàn hảo. Mục tiêu là thiết lập giá sỉ và tỷ lệ chia sẻ sao cho con số này đạt 100%.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Nghệ Thuật Đàm Phán Win - Win</div>
+                    <ul>
+                        <li><strong>Thách thức lớn nhất là Chi Phí Giám Sát (Audit Cost):</strong> Hợp đồng chia sẻ doanh thu yêu cầu hệ thống thông tin cực kỳ minh bạch. Nhà sản xuất phải có quyền truy cập trực tiếp vào hệ thống POS (Điểm bán hàng) của nhà bán lẻ để theo dõi doanh thu thực tế, tránh hiện tượng "gian lận doanh thu" (Revenue Leakage).</li>
+                        <li><strong>Không áp dụng đại trà:</strong> Hợp đồng này cực kỳ hiệu quả với sản phẩm có chi phí sản xuất thấp, biên lợi nhuận bán lẻ cao, và vòng đời ngắn hoặc nhu cầu biến động mạnh (sách, phim, thời trang nhanh). Với các ngành hàng công nghiệp giá trị cao hoặc biên mỏng, cần cân nhắc các hợp đồng thay thế như Buy-back (Mua lại hàng thừa) hoặc Quantity Flexibility (Linh hoạt sản lượng).</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -202,7 +260,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = updateContract;

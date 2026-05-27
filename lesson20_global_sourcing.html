@@ -31,6 +31,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -94,16 +109,60 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Global Sourcing (Chuỗi cung ứng Toàn cầu)</h3>
-            <p>Hàng thập kỷ qua, các công ty phương Tây chỉ nhìn vào <strong>Phí gia công rẻ (Labor Cost)</strong> để mang nhà máy sang Châu Á (Offshoring). Nhưng tư duy hiện đại yêu cầu tính toán <strong>Total Landed Cost (TLC)</strong>.</p>
-            <ul>
-                <li><strong>Ảo tưởng giá rẻ:</strong> Đồ gia công Trung Quốc chỉ có $10. Nhưng bạn phải cõng thêm $3 tiền cước biển, $2.5 tiền thuế quan (Trade War), và $3 tiền lưu kho tĩnh (Vì hàng lênh đênh trên biển 6 tuần, vốn bị đọng lại). Chi phí thực đội lên $18.5!</li>
-                <li><strong>Nearshoring (Mexico):</strong> Chi phí gia công đắt hơn ($15). Nhưng nhờ giáp biên giới, bạn được miễn thuế hoàn toàn theo Hiệp định USMCA, cước xe tải rẻ ($1) và hàng về trong 1 tuần. Tính ra TLC chỉ $16.5, NGON HƠN Trung Quốc! Đây là lý do làn sóng dịch chuyển nhà máy (Reshoring/Nearshoring) đang bùng nổ hiện nay.</li>
-                <li><strong>Đại dịch & Thiên tai:</strong> Nếu kênh đào Suez tắc nghẽn hoặc Covid-19 làm cước tàu biển tăng X5 lần. Đột nhiên việc Onshoring (Sản xuất ngay tại Mỹ) với giá đắt đỏ $20.5 lại trở thành lựa chọn RẺ NHẤT và AN TOÀN NHẤT. SC Manager xuất sắc là người linh hoạt dịch chuyển chuỗi cung ứng theo tình hình vĩ mô!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #60a5fa;">🌍 Bản Đồ Tái Cấu Trúc Sourcing & Tổng Chi Phí Cập Cảng (TLC)</div>
+                    <p>Trong kỷ nguyên toàn cầu hóa đầy biến động, chiến lược tìm nguồn cung (Sourcing) đã dịch chuyển mạnh mẽ. Doanh nghiệp không còn chỉ so sánh đơn thuần "Giá xuất xưởng" (FOB Price) giữa các quốc gia, mà bắt buộc phải tính toán chỉ số <strong>Tổng Chi Phí Cập Cảng (Total Landed Cost - TLC)</strong>.</p>
+                    <p>TLC đại diện cho toàn bộ chi phí thực tế để đưa một đơn vị hàng hóa từ nhà máy của NCC nước ngoài về tới kho của bạn, bao gồm: <strong>Chi phí mua hàng gốc</strong>, <strong>Chi phí vận tải quốc tế</strong> (biển/bộ/hàng không), <strong>Bảo hiểm</strong>, <strong>Thuế quan nhập khẩu</strong> (Tariffs), và cả <strong>Chi phí cơ hội/đọng vốn tồn kho</strong> (Transit Inventory Cost) do hàng hóa lênh đênh trên biển nhiều tuần liền.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🏭 Làn Sóng Nearshoring Tại Mexico & Chiến Lược "China + 1"</div>
+                    <p><strong>Case Study 1: Làn sóng Mexico Nearshoring:</strong> Các tập đoàn sản xuất lớn của Mỹ (như Ford, Tesla, General Electric) đang ồ ạt xây dựng nhà máy mới tại Mexico (Nearshoring). Dù chi phí nhân công và gia công tại Mexico cao hơn Trung Quốc, họ vẫn đạt tổng chi phí TLC rẻ hơn đáng kể. Lý do: Mexico chung đường biên giới đất liền với Mỹ (chỉ mất 1-3 ngày vận chuyển bằng xe tải thay vì 6 tuần tàu biển từ Thượng Hải), giúp giảm triệt để hàng tồn kho đệm trên đường đi, và được hưởng thuế suất 0% nhờ hiệp định thương mại tự do <strong>USMCA</strong>.</p>
+                    <p><strong>Case Study 2: Friendshoring & China + 1:</strong> Sau đại dịch Covid-19 và căng thẳng chiến tranh thương mại Mỹ - Trung, các hãng công nghệ lớn như Apple, Samsung chuyển hướng áp dụng chiến lược "China + 1". Họ giữ một phần sản xuất tại Trung Quốc để phục vụ thị trường nội địa đại lục, đồng thời mở rộng nhà máy vệ tinh sang các nước thân thiện có vị trí chiến lược như Việt Nam và Ấn Độ (Friendshoring/Offshoring diversification) nhằm triệt tiêu rủi ro đứt gãy 100% chuỗi cung ứng khi xảy ra địa chính trị phức tạp.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">💰 Tổng Chi Phí Cập Cảng Trên Đơn Vị (TLC per Unit)</div>
+                        <div class="kpi-desc">Tổng hợp tất cả các cấu phần chi phí (FOB + Vận tải + Thuế + Tồn kho tĩnh trên đường đi + Bảo hiểm) chia cho tổng số lượng sản phẩm nhập về. Đây là thước đo chuẩn mực nhất để so sánh các NCC.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Thời Gian Mua Hàng & Vận Chuyển (Sourcing Lead Time)</div>
+                        <div class="kpi-desc">Tổng thời gian từ lúc phát lệnh đặt hàng (PO) đến khi hàng cập kho thành phẩm của doanh nghiệp. Lead time ngắn (của Nearshoring) giúp phản ứng nhanh với thị trường và giảm dự trữ an toàn (Safety Stock).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Vượt Qua "Ảo Tưởng Giá FOB Rẻ"</div>
+                    <ul>
+                        <li><strong>Cấm Tuyệt Đối Bộ Phận Procurement Chỉ Nhìn Giá FOB:</strong> Nhiều giám đốc mua hàng nhận hoa hồng hoặc đạt KPI dựa trên việc đàm phán giá FOB rẻ từ Trung Quốc, để rồi chuỗi cung ứng phải gánh chịu chi phí logistics tăng vọt và đọng vốn tồn kho khổng lồ. Hãy bắt buộc bộ phận thu mua trình bày bảng phân tích TLC chi tiết trước khi ký hợp đồng vĩ mô.</li>
+                        <li><strong>Thiết Kế Chuỗi Cung Ứng Agility (Linh Hoạt):</strong> Trong một thế giới đầy biến động địa chính trị, chiến lược tốt nhất là xây dựng <strong>Chuỗi cung ứng đa quốc gia (Dual/Multi-Sourcing)</strong>. Duy trì 70% sản lượng ở quốc gia có chi phí tối ưu (như Mexico/Trung Quốc) và 30% sản lượng ở quốc gia nội địa (Mỹ) để làm nguồn cung dự phòng khẩn cấp khi xảy ra thiên tai hoặc biến động cước biển X5 lần.</li>
+                        <li><strong>Tận Dụng Hiệp Định Thương Mại Tự Do (FTAs):</strong> Nắm rõ quy tắc xuất xứ (Rules of Origin) để được hưởng lợi thế thuế quan tối đa từ các hiệp định đa phương như USMCA, EVFTA, CPTPP. Đây chính là vũ khí giúp TLC giảm đi từ 10% đến 25% một cách hợp pháp.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -233,7 +292,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = triggerEvent;

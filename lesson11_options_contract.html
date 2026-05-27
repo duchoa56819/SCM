@@ -22,6 +22,21 @@
         .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 200px; overflow-y: auto; border: 1px solid var(--border); }
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #10b981; border-bottom-color: #10b981; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -79,18 +94,79 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #34d399; margin-top: 0;">📚 Cẩm nang Hợp đồng (Financial Hedging)</h3>
-            <p>Hợp đồng Quyền chọn (Options) là công cụ sinh ra để bảo hiểm rủi ro. Bạn trả một khoản tiền nhỏ để có QUYỀN mua, chứ không có NGHĨA VỤ phải mua.</p>
-            <ul>
-                <li><strong>Liều ăn nhiều (Firm 1000):</strong> Khi trời Lạnh (Cầu 1000), bạn lãi $50/máy = $50,000. Nhưng khi trời Ấm (Cầu 200), bạn ế 800 máy. Bạn phải bán phế liệu $10, lỗ $40 x 800 = Lỗ -$32,000. Tiền lãi không bù nổi tiền lỗ!</li>
-                <li><strong>Danh mục đầu tư Tối ưu (Portfolio):</strong> Vì cầu tồi tệ nhất luôn là 200, bạn hãy dùng Hợp đồng cứng (Firm) mua chắc chắn 200 cái. Đối với 800 cái biến động còn lại, mua bằng Hợp đồng Quyền Chọn (Options). 
-                <br>- Nếu trời Lạnh: Bạn kích hoạt Options lấy hàng. Lãi mỏng hơn xíu ($45/máy) nhưng an toàn.
-                <br>- Nếu trời Ấm: Bạn vứt bỏ Options, chỉ mất $10/máy x 800 = -$8,000 phí cọc.
-                <br>➔ Bằng cách kết hợp, bạn khóa chặt mức rủi ro thua lỗ tối đa nhưng vẫn mở tung cánh cửa đón nhận lợi nhuận khổng lồ.</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #34d399; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #34d399, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Hợp Đồng Quyền Chọn & Bảo Hiểm Rủi Ro (Options & Hedging)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #34d399;">📜 Hợp Đồng Quyền Chọn Mua (Options Contracts)</div>
+                    <p>Trong Mua sắm doanh nghiệp (B2B Procurement), **Options Contract** là một công cụ bảo hiểm rủi ro tài chính linh hoạt. Người mua trả cho nhà cung cấp một khoản phí giữ chỗ không hoàn lại (**Option Premium** - ví dụ $10/sản phẩm) để bảo đảm năng lực sản xuất (Capacity Reservation). Khi có nhu cầu thực tế, người mua có QUYỀN (chứ không có nghĩa vụ) kích hoạt mua sản phẩm với giá ưu đãi định trước (**Strike Price** - ví dụ $45/sản phẩm).</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--warning);">⚡ Tối Ưu Hóa Danh Mục Phòng Vệ (Hedging Portfolio)</div>
+                    <p>Nếu chỉ dùng một loại hợp đồng duy nhất, doanh nghiệp sẽ rơi vào tình thế bất lợi:</p>
+                    <ul>
+                        <li><strong>100% Đặt mua cứng (Firm Order):</strong> Biên lợi nhuận cao ($50/sp) nhưng chịu toàn bộ rủi ro tồn kho khi thị trường đóng băng (ế ẩm phải thanh lý phế liệu lỗ nặng).</li>
+                        <li><strong>100% Quyền chọn (Options):</strong> Biên lợi nhuận mỏng hơn ($45/sp) do phải cộng thêm chi phí cọc premium mất đi.</li>
+                    </ul>
+                    <p><strong>Giải pháp tối ưu:</strong> Chia nhu cầu thành 2 phần: (1) Lượng hàng chắc chắn bán được trong kịch bản xấu nhất (Base Demand - 200 chiếc) mua bằng <strong>Firm Order</strong> để hưởng chi phí rẻ; (2) Lượng hàng dao động không chắc chắn (Fluctuating Demand - 800 chiếc) mua bằng <strong>Options</strong> để triệt tiêu hoàn toàn rủi ro dư thừa.</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">✈️ Case Study 1: Jet Fuel Hedging trong Ngành Hàng Không</div>
+                    <p>Chi phí nhiên liệu (Jet Fuel) chiếm tới 30% - 40% tổng chi phí vận hành của một hãng bay. Giá dầu thô luôn biến động dữ dội bởi bất ổn chính trị quốc tế. Các hãng bay lớn như **Southwest Airlines** hay **Delta Air Lines** liên tục sử dụng các hợp đồng quyền chọn dầu thô (Fuel Hedging) để chốt trước giá nhiên liệu cho các quý tiếp theo.</p>
+                    <p>Nếu giá dầu thế giới tăng vọt, hãng bay kích hoạt quyền chọn mua giá rẻ để tiếp tục bay có lãi. Nếu giá dầu giảm sâu, hãng bay chấp nhận vứt bỏ phí cọc quyền chọn và mua dầu giá rẻ trực tiếp ngoài thị trường giao ngay (Spot Market). Điều này giúp họ luôn chủ động kiểm soát tài chính.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--primary);">⚙️ Case Study 2: Apple, Nvidia & TSMC - Năng Lực Đúc Chip</div>
+                    <p>TSMC là nhà sản xuất chip độc quyền cho các dòng vi xử lý tối tân nhất thế giới (A-series, H100). Do nhu cầu quá lớn, năng lực đúc chip của TSMC luôn trong tình trạng quá tải. Để bảo đảm dòng sản xuất iPhone và GPU không bị đứt quãng, Apple và Nvidia luôn ký các **hợp đồng giữ chỗ công suất dài hạn** trước cả năm.</p>
+                    <p>Họ trả trước hàng tỷ USD "phí đặt chỗ" (Capacity Reservation Fees). Nếu thị trường sụt giảm, họ có thể giảm sản lượng lấy hàng (chấp nhận chịu mất phí cọc); nhưng nếu thị trường bùng nổ, họ chắc chắn có chip để giao đến tay người tiêu dùng, đè bẹp các đối thủ không có chỗ tại nhà máy.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #34d399;">
+                        <div class="kpi-title">📈 Option Execution Rate (%)</div>
+                        <div class="kpi-desc">Tỷ lệ các hợp đồng quyền chọn thực tế được kích hoạt lấy hàng. Chỉ số này phản ánh mức độ biến động của thị trường thực tế so với kịch bản dự phòng ban đầu.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--warning);">
+                        <div class="kpi-title">💰 Hedging Cost-to-Benefit Ratio</div>
+                        <div class="kpi-desc">Tỷ lệ chi phí bảo hiểm (Option Premium) so với khoản thiệt hại tồn kho được giảm thiểu nhờ tránh được việc ôm hàng ế thừa.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--danger);">
+                        <div class="kpi-title">📦 Return on Inventory Assets (ROIA)</div>
+                        <div class="kpi-desc">Tỷ suất sinh lời trên tài sản tồn kho. Việc duy trì danh mục hợp đồng tối ưu giúp loại bỏ tài sản chết và cải thiện dòng quay dòng tiền mặt.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--success);">
+                    <div class="theory-title" style="color: var(--success);">🎯 Bản Lĩnh Lãnh Đạo: Phân Biệt Giữa Đầu Cơ & Bảo Vệ Chuỗi Cung Ứng</div>
+                    <p>Là một nhà điều hành chuỗi cung ứng ở cấp độ cao nhất, bạn cần thấu hiểu bản chất của quản trị rủi ro tài chính:</p>
+                    <ul>
+                        <li style="margin-bottom: 8px;"><strong>Hợp đồng linh hoạt (Contract Flexibility):</strong> Đừng bao giờ đàm phán hợp đồng mua sắm với nhà cung ứng chỉ dựa trên giá mua đơn vị rẻ nhất. Hãy chủ động đề xuất cấu trúc hợp đồng linh hoạt (như chia tỷ lệ Firm/Options). Sự linh hoạt trong chuỗi cung ứng luôn có giá trị quy đổi thành tiền mặt thực tế.</li>
+                        <li style="margin-bottom: 8px;"><strong>Tránh bẫy đầu cơ (Speculation trap):</strong> Mục tiêu của Hedging là ổn định và bảo vệ biên lợi nhuận cốt lõi của doanh nghiệp khỏi biến động ngoài tầm kiểm soát, chứ không phải để kiếm lời từ chênh lệch giá tài chính (Đó là nhiệm vụ của quỹ đầu cơ rủi ro).</li>
+                        <li><strong>Chia sẻ rủi ro (Risk-Sharing Contracts):</strong> Tạo lập mối quan hệ đối tác chiến lược dài hạn với nhà cung ứng (SRM). Bằng cách trả phí giữ chỗ, nhà cung ứng có nguồn vốn để lên kế hoạch mở rộng nhà xưởng ổn định, tạo ra thế cân bằng cùng có lợi (Win-Win) bền vững cho toàn chuỗi.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -173,7 +249,32 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

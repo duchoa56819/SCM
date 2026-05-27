@@ -25,6 +25,21 @@
 
         .action-btn { padding: 15px; font-size: 1.1rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0369a1); color: white; cursor: pointer; transition: all 0.3s; text-transform: uppercase; margin: 0 5px;}
         .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4); }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #06b6d4; border-bottom-color: #06b6d4; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -58,16 +73,73 @@
         </div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #22d3ee; margin-top: 0;">📚 Cẩm nang Định tuyến (Routing Algorithms)</h3>
-            <p><strong>Last Mile Delivery (Giao hàng chặng cuối)</strong> từ Trạm trung chuyển đến nhà khách hàng là đoạn đường ngắn nhất nhưng lại tốn kém nhất, chiếm tới <strong>53% tổng chi phí Logistics</strong> của một món hàng.</p>
-            <ul>
-                <li><strong>Giao Ngẫu Nhiên:</strong> Tài xế không có kinh nghiệm, bốc bừa đơn hàng để giao. Tuyến đường bị đan chéo (zigzag) vào nhau. Bạn sẽ thấy xe tải chạy lượn vòng quanh thành phố, tốn hàng ngàn Đô la tiền xăng.</li>
-                <li><strong>Thuật toán Tham lam (Nearest Neighbor):</strong> Luôn đi đến điểm gần nhất chưa được giao. Thuật toán này không phải là tuyệt đối tối ưu (toán học gọi là NP-Hard), nhưng nó giải quyết bài toán với tốc độ phần nghìn giây và tiết kiệm được 30-40% quãng đường so với chạy ngẫu nhiên.</li>
-                <li><strong>Công nghệ thực tế:</strong> UPS có một phần mềm tên là ORION (On-Road Integrated Optimization and Navigation). Thuật toán của họ nổi tiếng với quy tắc <em>"Không bao giờ rẽ trái"</em> để tránh chờ đèn đỏ. Mỗi năm, ORION tiết kiệm cho UPS 100 triệu dặm lái xe, 10 triệu gallon xăng và 300-400 triệu Đô la!</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #22d3ee; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #22d3ee, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Định Tuyến Tối Ưu Chặng Cuối (Last Mile Delivery)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #22d3ee;">⚖️ Tính Kinh Tế Chặng Cuối (Last Mile Economics)</div>
+                    <p>**Last Mile Delivery (Giao hàng chặng cuối)** là công đoạn di chuyển hàng hóa từ trung tâm phân phối địa phương (Local Depot) đến cửa nhà khách hàng tiêu dùng. Mặc dù đây là chặng ngắn nhất về cự ly vật lý, nhưng lại là khâu tốn kém, phức tạp và kém hiệu quả nhất – **chiếm tới 53% tổng chi phí Logistics của toàn chuỗi cung ứng**.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--warning);">📐 Bài Toán Định Tuyến Tối Ưu (TSP & VRP)</div>
+                    <p>Trong toán học, bài toán định tuyến tìm tuyến đường ngắn nhất đi qua tất cả khách hàng rồi quay về kho được gọi là **Traveling Salesman Problem (TSP - Bài toán Người bán hàng)** hoặc **Vehicle Routing Problem (VRP - Bài toán định tuyến đội xe)**. Đây là bài toán NP-hard cực kỳ phức tạp:</p>
+                    <ul>
+                        <li><strong>Chạy ngẫu nhiên (Zigzag):</strong> Tài xế giao hàng tự phát, bốc đơn ngẫu nhiên dẫn đến hành trình chồng chéo chéo chéo, tăng vọt chi phí xăng dầu và trễ hẹn khách hàng.</li>
+                        <li><strong>Thuật toán Tham lam (Nearest Neighbor):</strong> Luôn ưu tiên di chuyển đến khách hàng gần nhất chưa được giao. Đây là giải pháp heuristics nhanh chóng giúp cắt giảm 30% - 40% chi phí xăng dầu chặng cuối so với giao ngẫu nhiên.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">🏢 Case Study: Thuật Toán ORION Của Gã Khổng Lồ UPS</div>
+                    <p>Hãng vận chuyển hàng đầu thế giới **UPS** xử lý hơn 20 triệu bưu kiện mỗi ngày. Để tối ưu hóa chi phí chặng cuối khổng lồ, UPS đã tự phát triển phần mềm định tuyến **ORION (On-Road Integrated Optimization and Navigation)** dựa trên dữ liệu bản đồ số hóa siêu chi tiết.</p>
+                    <p>ORION nổi tiếng thế giới với quy tắc vàng: **"Không bao giờ rẽ trái"** (tại các nước đi bên phải). ORION nhận diện việc rẽ trái bắt xe tải phải chờ đợi đèn đỏ rất lâu để cắt ngang dòng xe ngược chiều, gây lãng phí thời gian và nhiên liệu. Bằng cách thiết kế tuyến đường rẽ phải vòng quanh block nhà (dù có thể xa hơn một chút về khoảng cách nhưng nhanh hơn về thời gian), mỗi năm ORION giúp UPS tiết kiệm **100 triệu dặm di chuyển, 10 triệu gallon xăng và từ 300 - 400 triệu USD chi phí vận hành**.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #22d3ee;">
+                        <div class="kpi-title">🚛 Route Efficiency (%)</div>
+                        <div class="kpi-desc">Tỷ lệ so sánh giữa Tuyến đường tối ưu thuật toán và Tuyến đường thực tế tài xế di chuyển. Đo lường hiệu quả giám sát định tuyến của phòng điều vận.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--danger);">
+                        <div class="kpi-title">⛽ Fuel Cost per Delivery ($)</div>
+                        <div class="kpi-desc">Chi phí nhiên liệu bình quân tính trên mỗi đơn hàng được giao thành công. Chỉ số tài chính cốt lõi để đánh giá hiệu năng chặng cuối.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--success);">
+                        <div class="kpi-title">⏱️ On-Time Delivery (OTD) / First-Time Delivery Rate</div>
+                        <div class="kpi-desc">Tỷ lệ giao hàng đúng giờ cam kết và tỷ lệ giao thành công ngay trong lần đầu tiên (tránh giao hụt gây lãng phí chi phí Re-delivery).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--danger);">
+                    <div class="theory-title" style="color: var(--danger);">🎯 Bản Lĩnh Lãnh Đạo: Số Hóa Chặng Cuối & Xóa Bỏ Điểm Mù Vận Hành</div>
+                    <p>Là một giám đốc logistics hoặc người đứng đầu chuỗi bán lẻ omnichannel, bạn cần định hình các quyết định công nghệ chặng cuối:</p>
+                    <ul>
+                        <li style="margin-bottom: 8px;"><strong>Đầu tư vào Phần mềm tối ưu hóa định tuyến (Route Optimization Software):</strong> Đừng để tài xế tự sắp xếp đơn hàng bằng trí nhớ cá nhân. Bắt buộc phải số hóa quy trình điều vận, tự động hóa phân bổ đơn hàng thông minh dựa trên tải trọng xe và vị trí định vị địa lý.</li>
+                        <li style="margin-bottom: 8px;"><strong>Chiến lược Mạng lưới kho vệ tinh (Micro-fulfillment Centers - MFC):</strong> Để giao hàng hỏa tốc trong vòng 1-2 tiếng mà không làm tăng chi phí vận chuyển đơn vị, hãy dịch chuyển kho tổng ra xa trung tâm và xây dựng mạng lưới các kho tối vệ tinh siêu nhỏ (MFC) đặt ngay lòng đô thị đông đúc.</li>
+                        <li><strong>Thương lượng SRM và Trải nghiệm khách hàng:</strong> Khai thác các giải pháp giao hàng linh hoạt như: Trạm tủ khóa thông minh tự phục vụ (Smart Lockers), giao nhận kết hợp gom đơn theo khu vực để vừa tối ưu FTL chặng cuối vừa tăng tỷ lệ giao hàng thành công ngay lần đầu tiên.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -213,7 +285,32 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = initMap;

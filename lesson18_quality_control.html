@@ -26,6 +26,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -84,18 +99,60 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #8b5cf6; margin-top: 0;">📚 Cẩm nang Quản trị Chất lượng (Six Sigma)</h3>
-            <p>Bài toán này mô phỏng Khái niệm <strong>Cost of Poor Quality (COPQ)</strong> - Chi phí của Sự yếu kém.</p>
-            <ul>
-                <li><strong>Không kiểm tra (Niềm tin tuyệt đối):</strong> Bạn tiết kiệm được 100% tiền kiểm định. Nhưng nếu xui xẻo nhận trúng 1 lô hàng có 5% lỗi (500 chip hỏng), khi xuất cho Khách, bạn bị phạt đền bù $50,000! Một đòn chí mạng phá sản công ty.</li>
-                <li><strong>Kiểm tra 100% (Cực đoan):</strong> Bạn bắt được mọi lỗi. Bạn không bao giờ bị đền bù. NHƯNG phí kiểm tra là $10,000/lô. Sau 10 lô bạn đốt $100,000 tiền thuê kỹ sư kiểm tra. Đây là sự lãng phí tài nguyên khủng khiếp. Không có nhà máy nào làm vậy.</li>
-                <li><strong>Lấy mẫu Thống kê (Acceptance Sampling - Chuẩn quân đội MIL-STD-105):</strong> Bạn chỉ rút ra 200 con chip để kiểm (Tốn $200). 
-                <br>➔ Nếu phát hiện >= 3 lỗi trong 200 con này, xác suất cao lô này là "Lô rác". Bạn <strong>Trả Về (Reject)</strong> nguyên lô 10,000 cái cho NCC, không tốn 1 cắc đền bù khách hàng. 
-                <br>➔ Nếu chỉ có 1 lỗi, lô này khá sạch. Bạn Chấp Nhận (Accept) nguyên lô. Sẽ có vài con chip lỗi lọt lưới (tốn vài trăm đô đền bù), nhưng con số này RẤT NHỎ so với 10 ngàn đô nếu phải đi test toàn bộ. Tổng lãng phí được tối thiểu hóa (Minimizing Total Cost of Quality)!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #ea580c;">🎯 Khoa Học Rút Mẫu & Chi Phí Chất Lượng (COQ)</div>
+                    <p>Trong quản trị chất lượng chuỗi cung ứng, việc kiểm thử 100% sản phẩm là cực kỳ đắt đỏ, trong khi không kiểm thử lại dẫn đến rủi ro đền bù khổng lồ. <strong>Lấy Mẫu Nghiệm Thu (Acceptance Sampling)</strong> giải quyết sự đánh đổi này bằng cách áp dụng lý thuyết xác suất thống kê để đưa ra quyết định nghiệm thu hay bác bỏ toàn bộ lô hàng dựa trên một cỡ mẫu (Sample Size - n) nhỏ.</p>
+                    <p>Mô hình này tối ưu hóa <strong>Tổng chi phí chất lượng (Total Cost of Quality - COQ)</strong>, bao gồm: Chi phí kiểm thử phòng ngừa (Inspection Cost) và Chi phí chất lượng kém (Cost of Poor Quality - COPQ/Phạt đền bù khách hàng). Mục tiêu là thiết lập AQL (Acceptable Quality Limit) và số chấp nhận lỗi (C) phù hợp.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">💻 Thảm Họa Pentium Của Intel & Quy Trình Của Nike/Adidas</div>
+                    <p><strong>Case Study 1 (Đền bù triệu đô):</strong> Năm 1994, chip xử lý Pentium đời đầu của Intel dính lỗi toán học FDIV nhỏ nhưng bị phát hiện bởi cộng đồng. Ban đầu Intel xem nhẹ rủi ro chất lượng này. Kết quả, dưới áp lực truyền thông cực lớn, Intel buộc phải công bố chính sách thu hồi và đền bù cho mọi khách hàng yêu cầu, tiêu tốn đến <strong>$475 triệu USD</strong> (một bài học đắt giá về COPQ).</p>
+                    <p><strong>Case Study 2 (AQL Công nghiệp):</strong> Các hãng thời trang thể thao lớn như Nike hay Adidas sản xuất hàng triệu đôi giày mỗi năm tại các nước Đông Nam Á. Họ không thể kiểm tra từng chiếc giày trước khi chất lên container sang Mỹ. Thay vào đó, bộ phận QA áp dụng nghiêm ngặt tiêu chuẩn thống kê quân đội <strong>MIL-STD-105E</strong>. Lấy mẫu ngẫu nhiên khoảng 200-315 đôi từ mỗi lô 10,000 đôi. Nếu số lỗi vượt quá ngưỡng AQL quy định (ví dụ: AQL 1.5, chấp nhận tối đa 7 lỗi), nguyên container hàng trị giá hàng trăm ngàn USD sẽ bị từ chối ngay tại cảng xuất khẩu, buộc nhà máy OEM phải tự rà soát sửa chữa lại!</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📉 Tỷ Lệ Lỗi PPM (Defects per Million)</div>
+                        <div class="kpi-desc">Chỉ số đo lường số lượng sản phẩm lỗi trên mỗi một triệu sản phẩm xuất ra. Trong tiêu chuẩn chất lượng Six Sigma cao cấp, đích ngắm tối thượng là 3.4 PPM (tức chỉ 3.4 lỗi trong 1 triệu sản phẩm).</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💰 Tỷ Lệ COPQ (Cost of Poor Quality Rate)</div>
+                        <div class="kpi-desc">COPQ Rate = Tổng chi phí chất lượng kém (đền bù, thu hồi, bảo hành, làm lại) / Tổng doanh thu. Chỉ số này phản ánh trực tiếp sức khỏe của quy trình sản xuất và hiệu quả quản lý chuỗi cung ứng.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Chất Lượng Hiện Đại</div>
+                    <ul>
+                        <li><strong>Không Thể "Kiểm Thử" Để Có Sản Phẩm Tốt:</strong> Triết lý chất lượng của Edwards Deming nhấn mạnh: chất lượng phải được xây dựng ngay từ khâu thiết kế sản phẩm và kiểm soát quy trình (Quality by Design - QbD), chứ không phải cố gắng thuê kỹ sư đi nhặt lỗi ở khâu cuối cùng.</li>
+                        <li><strong>Thiết Lập Quality SLA Nghiêm Ngặt:</strong> Trong hợp đồng mua bán với NCC, phải thòng điều khoản về tiêu chuẩn AQL (ví dụ: AQL 1.0 cho lỗi nặng - Major, 2.5 cho lỗi nhẹ - Minor). Nếu lô hàng bị bác bỏ theo kiểm thử thống kê, NCC phải chịu toàn bộ chi phí lưu bãi, làm lại hoặc đền bù thiệt hại sản xuất cho bạn.</li>
+                        <li><strong>Áp Dụng SPC & Chống Lỗi (Poka-Yoke):</strong> Dịch chuyển từ kiểm tra bị động sang kiểm soát chủ động bằng biểu đồ kiểm soát quá trình bằng thống kê (SPC - Statistical Process Control) và các cơ cấu chống lỗi vật lý tại dây chuyền sản xuất để triệt tiêu lỗi từ gốc rễ.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -204,7 +261,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = updateSliders;

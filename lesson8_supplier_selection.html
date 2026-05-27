@@ -40,6 +40,83 @@
 
         .winner-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: none; }
         .winner .winner-badge { display: block; }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -135,16 +212,88 @@
         </div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #f43f5e; margin-top: 0;">📚 Cẩm nang Lựa chọn Nhà cung cấp</h3>
-            <p><strong>Weighted Scoring Model (Mô hình chấm điểm có trọng số)</strong> là công cụ mạnh mẽ nhất trong B2B Procurement. Nó chuyển hóa các quyết định cảm tính thành những con số toán học.</p>
-            <ul>
-                <li><strong>Thay đổi Trọng số = Thay đổi Kết quả:</strong> Nếu bạn chỉ quan tâm đến Giá (70%), tự động NCC A sẽ thắng thầu bất chấp chất lượng kém. Đây là cách các nhãn hàng thời trang nhanh (Fast Fashion) hoạt động.</li>
-                <li><strong>Chiến lược Khác biệt hóa (Differentiation):</strong> Nếu công ty bạn định vị là Hàng Cao Cấp, bạn sẽ đặt trọng số Chất lượng lên 60-70%. Khi đó NCC C sẽ thắng, dù giá của họ đắt đỏ.</li>
-                <li><strong>Xu hướng Tương lai (ESG - Môi trường & Xã hội):</strong> Ngày nay, các tập đoàn lớn bị áp lực bởi Cổ đông và Luật pháp, họ bắt buộc phải tăng trọng số ESG lên. Lúc này, NCC A (xả thải bừa bãi) sẽ bị loại bỏ ngay lập tức, nhường chỗ cho NCC B hoặc C.</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #fb7185, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Lựa Chọn Nhà Cung Cấp & Định Hướng Chiến Lược</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #fb7185;">⚖️ Mô Hình Điểm Số Có Trọng Số (Weighted Scoring Model)</div>
+                    <p>Đây là phương pháp nền tảng trong Mua sắm doanh nghiệp (B2B Procurement) dùng để **loại bỏ các quyết định cảm tính cá nhân**. Quy trình thực hiện khoa học:</p>
+                    <ol>
+                        <li style="margin-bottom: 8px;">Xác định danh sách tiêu chí đánh giá năng lực (ví dụ: Giá, Chất lượng, Tốc độ giao hàng, ESG).</li>
+                        <li style="margin-bottom: 8px;">Phân bổ **Trọng số (Weights)** cho từng tiêu chí sao cho **Tổng = 100%** dựa theo chiến lược kinh doanh của công ty.</li>
+                        <li style="margin-bottom: 8px;">Đo đoàn chuyên gia chấm điểm thô (Raw Scores) thang điểm 10 cho từng nhà thầu.</li>
+                        <li>Nhân điểm thô với trọng số để tính điểm tổng kết tối ưu.</li>
+                    </ol>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">🌱 Xu Thế Mua Sắm Bền Vững (ESG Procurement)</div>
+                    <p>Ngày nay, tiêu chí Môi trường - Xã hội - Quản trị (ESG) không còn là tiêu chí phụ. Các tập đoàn lớn bắt buộc phải chấm điểm ESG của nhà cung cấp vì:</p>
+                    <ul>
+                        <li><strong>Scope 3 Emissions:</strong> Doanh nghiệp phải chịu trách nhiệm về lượng khí thải carbon phát sinh từ toàn bộ chuỗi cung ứng của mình.</li>
+                        <li><strong>Rủi ro danh tiếng:</strong> NCC vi phạm lao động trẻ em hoặc xả thải hóa chất (như điểm ESG = 2 của NCC A) sẽ khiến thương hiệu bị tẩy chay toàn cầu.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">🏢 Case Study: Trọng Số Quyết Định Đối Tác Của Shein, Apple Và Patagonia</div>
+                    <p>Sự khác biệt hoàn toàn về thiết lập trọng số đấu thầu giữa 3 mô hình kinh doanh điển hình:</p>
+                    <ul>
+                        <li><strong>Shein (Cạnh tranh giá & Tốc độ cực đoan):</strong> Định vị phân khúc thời trang siêu rẻ cho giới trẻ. Trọng số mua sắm của họ đặt **Giá cả = 60%, Tốc độ giao = 30%, Chất lượng = 10%, ESG = 0%**. Do đó, họ lập tức chọn các xưởng may nhỏ lẻ tại Quảng Châu có chi phí cực rẻ và tốc độ hoàn thành đơn hàng thần tốc trong 3 ngày.</li>
+                        <li><strong>Apple (Khác biệt hóa chất lượng):</strong> Định vị sản phẩm điện tử cao cấp giá trị lớn. Trọng số của họ đặt **Chất lượng = 50%, Tốc độ giao = 30%, Giá cả = 10%, ESG = 10%**. Apple sẵn sàng trả giá đắt để chọn các đối tác hàng đầu như TSMC hay Samsung OLED để đảm bảo chất lượng linh kiện hoàn mỹ tuyệt đối.</li>
+                        <li><strong>Patagonia (Thương hiệu xanh vì môi trường):</strong> Định vị sản phẩm dã ngoại bền bỉ và bảo vệ trái đất. Trọng số của họ đặt **ESG & Bền vững = 45%, Chất lượng = 35%, Giá cả = 10%, Tốc độ = 10%**. Bất kỳ nhà cung cấp nào sử dụng sợi nylon nguyên sinh hoặc không cam kết lương đủ sống cho công nhân đều bị Patagonia loại thẳng tay, bất kể giá thầu rẻ thế nào.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Các chỉ số KPIs cốt lõi để đánh giá hiệu quả mua sắm chiến lược:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Supplier Performance Scorecard</div>
+                        <div class="kpi-value">Thẻ Điểm Nhà Cung Cấp</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Bảng theo dõi và chấm điểm hiệu suất thực tế của NCC định kỳ hàng quý/hàng năm.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Total Cost of Purchase (TCP)</div>
+                        <div class="kpi-value">Tổng Chi Phí Mua Sắm</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tổng cộng giá mua + chi phí vận tải + chi phí xử lý chất lượng lỗi phát sinh do NCC kém năng lực.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">ESG Compliance Rate</div>
+                        <div class="kpi-value">Tỷ Lệ Tuân Thủ ESG</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ phần trăm các nhà cung cấp đạt chuẩn chứng chỉ xanh và lao động đạo đức của tập đoàn.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Trọng Số Phải Đi Đôi Với Định Hướng Chiến Lược</div>
+                    <p>Rất nhiều doanh nghiệp Việt Nam mắc sai lầm khi tuyên bố định vị thương hiệu là **"Sản phẩm cao cấp, chất lượng hàng đầu"** nhưng trong phòng đấu thầu mua sắm, các nhân viên thu mua lại thiết lập trọng số Giá cả lên tới **70%**.</p>
+                    <p>Lời khuyên dành cho Giám đốc Mua sắm & Giám đốc Điều hành:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Đồng bộ hóa Chiến lược kinh doanh và Tiêu chí mua sắm (Strategic Fit):</strong> Mua sắm là công cụ thực thi chiến lược. Nếu ban lãnh đạo muốn đánh phân khúc trung và cao cấp, hãy hạ trọng số Giá cả xuống tối đa 20% và nâng trọng số Chất lượng lên hàng đầu.</li>
+                        <li style="margin-bottom: 10px;"><strong>Áp dụng ma trận Kraljic để quản trị danh mục:</strong> Phân chia nguyên vật liệu thành 4 nhóm ( bottlenecks, leverage, non-critical, strategic). Với mỗi nhóm, ta có cách phân bổ trọng số và phương thức tiếp cận đàm phán hoàn toàn khác nhau để tối đa hóa vị thế của doanh nghiệp.</li>
+                        <li><strong>Nuôi dưỡng nhà cung cấp (Supplier Relationship Management - SRM):</strong> Xem nhà cung cấp chiến lược là đối tác đồng hành phát triển lâu dài. Hãy đầu tư chuyển giao công nghệ cho họ thay vì liên tục đổi nhà thầu để ép giá rẻ hơn một vài phần trăm lẻ.</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -204,7 +353,32 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = calculate;

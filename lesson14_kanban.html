@@ -33,6 +33,21 @@
         .stat-value { font-size: 2rem; font-weight: 800; color: white; margin-top: 5px; }
 
         .btn-ctrl { padding: 10px 20px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; border: none; font-weight: bold;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #10b981; border-bottom-color: #10b981; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -109,16 +124,83 @@
         </div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #3b82f6; margin-top: 0;">📚 Cẩm nang: Tại sao PULL (Kanban) đánh bại PUSH?</h3>
-            <p>Hệ thống MRP truyền thống của phương Tây (Push) thường tạo ra thảm họa tồn kho. Trong khi hệ thống Kanban của Nhật Bản (Pull) tạo ra sự tinh gọn tuyệt đối.</p>
-            <ul>
-                <li><strong>Hệ thống Đẩy (PUSH):</strong> Trong chế độ này, Quản đốc đo lường KPI bằng "độ bận rộn" của máy móc. Máy 1 làm 5sp/s sẽ chạy hết tốc lực vì sợ máy nhàn rỗi. Máy 2 chỉ xử lý được 3sp/s, dẫn đến ùn ứ phôi ở giữa. Cửa hàng chỉ bán 1sp/s, ùn ứ thành phẩm. Tồn kho (WIP) bùng nổ vươn lên tới hàng ngàn sản phẩm, vốn bị chôn chặt trong nhà xưởng!</li>
-                <li><strong>Hệ thống Kéo (PULL - Kanban):</strong> Tồn kho được ấn định mức trần (Giới hạn WIP). Máy 1 CHỈ ĐƯỢC PHÉP chạy khi Máy 2 gửi thẻ "Cần hàng" (Kanban). Máy 2 CHỈ ĐƯỢC PHÉP chạy khi Cửa hàng gửi thẻ "Vừa bán 1 cái". 
-                <br>Kết quả: Khách hàng "kéo" toàn bộ chuỗi sản xuất. Mặc dù Máy 1 và Máy 2 thường xuyên phải... tắt máy ngồi chơi (Công suất nhàn rỗi), nhưng Lợi nhuận của toàn công ty lại đạt đỉnh vì không tốn 1 xu chi phí lưu kho nào!</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #34d399; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #34d399, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Hệ Thống Đẩy vs Kéo & Tồn Kho Tinh Gọn (Kanban System)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">⚙️ Chiến Lược Đẩy (Push) vs. Kéo (Pull)</div>
+                    <p>Đây là hai triết lý điều hành sản xuất và cung ứng đối lập sâu sắc:</p>
+                    <ul>
+                        <li><strong>Hệ thống Đẩy (Push - MRP):</strong> Lập kế hoạch sản xuất dựa trên dự báo dài hạn. Các công đoạn sản xuất độc lập, trạm trước chạy hết công suất và đẩy bán thành phẩm (WIP) cho trạm sau bất kể trạm sau có cần hay không. Hệ quả: WIP bùng nổ, chôn chặt dòng vốn và lãng phí kho bãi.</li>
+                        <li><strong>Hệ thống Kéo (Pull - JIT):</strong> Chỉ sản xuất khi nhận được tín hiệu tiêu thụ thực tế từ khâu hạ nguồn. Khách hàng mua 1 sản phẩm ở cửa hàng sẽ gửi tín hiệu kéo toàn bộ chuỗi sản xuất chuyển dịch nhịp nhàng, triệt tiêu 100% lãng phí tồn kho.</li>
+                    </ul>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--warning);">⚡ Thẻ Báo Kanban & Giới Hạn WIP (WIP Limit)</div>
+                    <p>**Kanban** (tiếng Nhật: 看板, nghĩa là bảng trực quan) là công cụ điều phối thông tin trong hệ thống Kéo. Kanban hoạt động như một thẻ thông hành:</p>
+                    <ul>
+                        <li>Trạm sau chỉ được rút hàng từ trạm trước khi có thẻ Kanban trống đi kèm.</li>
+                        <li>Trạm trước chỉ được phép khởi động máy để sản xuất khi nhận lại thẻ Kanban từ trạm sau.</li>
+                        <li>Bằng cách giới hạn số lượng thẻ Kanban lưu hành trên dây chuyền, nhà quản trị thiết lập được **Giới hạn tồn kho bán thành phẩm (WIP Limit)** nghiêm ngặt, giữ cho nhà xưởng luôn tinh gọn.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">🇯🇵 Case Study 1: Siêu Thị Mỹ Khơi Nguồn Kanban Cho Toyota</div>
+                    <p>Vào những năm 1950, **Taiichi Ohno** (cha đẻ của Hệ thống Sản xuất Toyota - TPS) đã đến tham quan các siêu thị bán lẻ tại Mỹ. Ông vô cùng kinh ngạc trước cách vận hành tinh gọn: siêu thị không trữ hàng vạn sản phẩm trong kho sau nhà xưởng. Thay vào đó, khách hàng rút 1 lon sữa trên kệ, nhân viên thu ngân quét mã quét, và kệ trống đó chính là tín hiệu "Kanban" bắt nhân viên kho đem đúng 1 lon sữa mới ra lấp đầy kệ.</p>
+                    <p>Ohno đem triết lý này áp dụng vào sản xuất ô tô Toyota: Coi trạm lắp ráp sau là khách hàng của trạm dập thép trước. Trạm sau tiêu thụ 1 khung xe thì trạm trước mới dập khung mới. TPS đã đè bẹp các hãng xe Mỹ thời bấy giờ về năng suất lao động và tỷ suất lợi nhuận trên tài sản.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--primary);">👕 Case Study 2: Fast Retailing (Uniqlo) - Kéo Nhanh Chuỗi Thời Trang</div>
+                    <p>Ngành thời trang truyền thống luôn chạy theo chế độ Push (dự báo xu hướng từ 9 tháng trước, dệt may hàng loạt rồi đẩy ra cửa hàng bắt khách mua). Điều này dẫn tới thảm họa tồn kho lỗi mốt phải Markdown bán lỗ xả kho.</p>
+                    <p>**Uniqlo (Fast Retailing)** đảo ngược cuộc chơi bằng hệ thống Pull cực mạnh. Họ lưu kho phôi áo cơ bản chưa nhuộm. Thông qua hệ thống POS trực tiếp tại cửa hàng thu thập dữ liệu bán ra từng giây (ví dụ: áo phao siêu nhẹ màu Olive đang bán chạy vọt lên), Uniqlo gửi lệnh nhuộm và hoàn thiện hỏa tốc gửi thẳng đến cửa hàng trong vòng vài ngày. Họ sản xuất cực kỳ chính xác nhu cầu thực tế của thị trường.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #10b981;">
+                        <div class="kpi-title">📦 WIP (Work-in-Process) Level</div>
+                        <div class="kpi-desc">Lượng tồn kho bán thành phẩm đang nằm ùn tắc trên dây chuyền. Giữ WIP ở mức tối thiểu giúp nhà máy giải phóng hàng triệu USD vốn lưu động chôn chân trong nhà xưởng.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--warning);">
+                        <div class="kpi-title">⏱️ Production Throughput Time (Lead Time)</div>
+                        <div class="kpi-desc">Thời gian một sản phẩm đi từ khâu đầu tiên đến khi ra lò. Theo định luật Little, giảm WIP sẽ rút ngắn trực tiếp thời gian Throughput Time, giúp doanh nghiệp giao hàng nhanh hơn.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--danger);">
+                        <div class="kpi-title">💸 Inventory Carrying Cost</div>
+                        <div class="kpi-desc">Chi phí lưu kho tồn kho (phí mặt bằng, bảo hiểm, khấu hao, hư hỏng). Chỉ số này bùng nổ ở hệ thống Push và tiệm cận mức cực tiểu ở hệ thống Pull.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--danger);">
+                    <div class="theory-title" style="color: var(--danger);">🎯 Bản Lĩnh Lãnh Đạo: Phá Bỏ Bẫy Hiệu Suất Cục Bộ (Local Efficiency Trap)</div>
+                    <p>Là một giám đốc nhà máy hoặc COO, bạn phải dũng cảm đối mặt với sự đánh đổi lớn về tư duy đo lường:</p>
+                    <ul>
+                        <li style="margin-bottom: 8px;"><strong>Cạm bẫy KPI bận rộn (Asset Utilization Trap):</strong> Tư duy quản trị cũ luôn đo lường hiệu suất dựa trên tỷ lệ hoạt động của thiết bị (OEE/Utilization). Quản đốc bắt máy M1 chạy 100% công suất để báo cáo đẹp mắt, nhưng sản phẩm làm ra chỉ đi chất đống trong kho lãng phí (như mô phỏng chế độ PUSH). Đó là một sự phá hoại tài chính âm thầm.</li>
+                        <li style="margin-bottom: 8px;"><strong>Dũng cảm để máy nhàn rỗi (Planned Idle Time):</strong> Trong hệ thống Pull, khi kho đệm đã đầy thẻ Kanban, Máy M1 bắt buộc phải TẮT MÁY ngồi chơi nhàn rỗi để chờ máy M2 tiêu thụ. Người lãnh đạo xuất sắc phải thấu hiểu và bảo vệ nhàn rỗi thông minh này trước sự chất vấn của bộ phận Tài chính. Hiệu quả toàn cục luôn quan trọng hơn hiệu suất cục bộ.</li>
+                        <li><strong>Số hóa Kanban chặng dài (e-Kanban):</strong> Ngày nay, Kanban không còn là thẻ giấy dán trên rổ hàng. Các doanh nghiệp lớn áp dụng phần mềm điện tử e-Kanban để kết nối trực tiếp dòng kéo nhu cầu của siêu thị chặng cuối (Bán lẻ) xuyên biên giới về thẳng đến lệnh sản xuất của nhà máy thượng nguồn ở quốc gia khác.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -257,7 +339,32 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = renderUI;

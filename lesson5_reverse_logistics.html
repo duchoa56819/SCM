@@ -34,6 +34,83 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 200px; overflow-y: auto; border: 1px solid var(--border); }
         .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; line-height: 1.5; }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -107,20 +184,84 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
-            <h3 style="color: #fdba74; margin-top: 0;">📚 Cẩm nang Xử lý Hàng Hoàn (Theory of Constraints)</h3>
-            <p>Bài toán này kết hợp giữa Reverse Logistics và <strong>Lý thuyết Điểm nghẽn (Theory of Constraints)</strong>.</p>
-            <ul>
-                <li><strong>Chiến thuật Tham lam (Tân trang hết):</strong> Một máy tân trang lãi $400. Nhưng xưởng chỉ sửa được 5 máy/tuần. Nếu bạn đẩy cả 15 máy vào xưởng, 10 máy sẽ bị kẹt lại trong kho chờ sửa. Phí lưu kho $100/máy sẽ nuốt chửng toàn bộ lợi nhuận trong chớp mắt.</li>
-                <li><strong>Chiến thuật Lười biếng (Vứt hết):</strong> Tiêu hủy 15 máy tốn $750/tuần. Kho luôn sạch sẽ, không tốn phí lưu kho, nhưng bạn đang vứt tiền qua cửa sổ thay vì gỡ gạc.</li>
-                <li><strong>Chiến thuật Tối ưu:</strong> Tuân thủ công suất tối đa!
-                    <br>1. Ưu tiên 1: Đẩy 5 máy đi Tân trang (Max công suất, Lãi $400/máy).
-                    <br>2. Ưu tiên 2: Đẩy 5 máy đi Tái chế (Max công suất, Lãi $130/máy).
-                    <br>3. Ưu tiên 3: Còn dư 5 máy, <strong>bắt buộc phải đem Tiêu hủy</strong> (Lỗ $50/máy) để dọn sạch kho. Lỗ $50 còn đỡ hơn phải chịu phí lưu kho $100.
-                </li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #fdba74, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Logistics Ngược & Quản Trị Điểm Nghẽn (TOC)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--primary);">♻️ Chuỗi Cung Ứng Ngược (Reverse Logistics)</div>
+                    <p>Logistics ngược là quy trình lập kế hoạch, thực hiện và kiểm soát dòng chảy của nguyên vật liệu, bán thành phẩm và thành phẩm **ngược chiều** từ điểm tiêu thụ cuối cùng trở về nguồn cung ứng để thu hồi lại giá trị sản phẩm hoặc tiêu hủy đúng cách.</p>
+                    <p>Các hoạt động cốt lõi bao gồm: Phân loại, Tân trang (Refurbish), Rã xác tái chế (Recycle) và Tiêu hủy (Scrap).</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--danger);">⚙️ Lý Thuyết Điểm Nghẽn (Theory of Constraints - TOC)</div>
+                    <p>Mọi chuỗi cung ứng đều có ít nhất một nút thắt cổ chai (Bottleneck) giới hạn năng lực của toàn bộ hệ thống. Trong bài toán này:</p>
+                    <ul>
+                        <li>Xưởng Tân Trang chỉ có công suất tối đa **5 máy/tuần**.</li>
+                        <li>Xưởng Tái Chế chỉ có công suất tối đa **5 máy/tuần**.</li>
+                    </ul>
+                    <p>Nguyên lý cốt lõi của TOC chỉ ra rằng: **Việc bơm nguyên liệu vào khâu nghẽn vượt quá công suất xử lý của nó là một sai lầm chết người**. Lượng dư thừa sẽ chuyển thành hàng dở dang (WIP) ứ đọng trong kho, làm phát sinh chi phí lưu kho điện tử khổng lồ ($100/máy/tuần) nuốt chửng toàn bộ lợi nhuận thu hồi.</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">📱 Case Study: Chương Trình Thu Cũ Đổi Mới (Apple Trade-In & Samsung Exchange)</div>
+                    <p>Cách các ông lớn công nghệ biến Logistics ngược thành mỏ vàng doanh thu thứ hai:</p>
+                    <ul>
+                        <li><strong>Hệ thống thu hồi thông minh:</strong> Khi khách hàng mua iPhone mới, Apple thu lại máy cũ và tặng voucher giảm giá. Hàng triệu chiếc máy cũ được gom về các trung tâm xử lý tập trung (Centralized Return Centers).</li>
+                        <li><strong>Phân loại bằng Robot (Daisy Robot):</strong> Apple phát triển Robot Daisy có khả năng tự động tháo dỡ hoàn toàn 200 chiếc iPhone mỗi giờ, bóc tách hoàn hảo các linh kiện màn hình, pin và kim loại quý (vàng, bạc, đồng, coban) với độ chính xác cao để đưa thẳng vào dây chuyền tái chế làm nguyên liệu cho sản phẩm tiếp theo.</li>
+                        <li><strong>Thị trường Refurbished cao cấp:</strong> Những chiếc máy còn tốt sẽ được thay màn hình, thay pin chính hãng, cấp số series mới và bán lại ra thị trường dưới dạng máy "Apple Certified Refurbished" với giá rẻ hơn 15-20% nhưng biên lợi nhuận thu hồi vẫn cực kỳ cao.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Các chỉ số KPIs quan trọng để đánh giá hiệu quả chuỗi cung ứng ngược:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Return Rate (Tỷ Lệ Hàng Hoàn)</div>
+                        <div class="kpi-value">5% - 15% / Tổng bán</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ hàng hóa bị lỗi hoặc khách hàng trả lại cần xử lý trong chu kỳ.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Refurbishment Yield (Tỷ Lệ Thu Hồi)</div>
+                        <div class="kpi-value">60% - 80%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ linh kiện hoặc máy lỗi được phục hồi thành công sang dạng thương mại hóa.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">WIP in Bottleneck (Hàng Tồn Dở Dang)</div>
+                        <div class="kpi-value">Tối thiểu hóa</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Đo lường lượng hàng ứ đọng chờ xử lý ở các khâu giới hạn công suất.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Chế Ngự Điểm Nghẽn Trong Logistics Ngược</div>
+                    <p>Trong thực tế, hàng hoàn trả thường bị coi là "phế phẩm" và xếp xó ở cuối kho. Đây là sự lãng phí tài sản vô cùng lớn và tiềm ẩn rủi ro cháy nổ cao (như phí lưu kho rác thải điện tử $100/tuần trong mô phỏng).</p>
+                    <p>Bài học chiến lược cho Giám đốc Chuỗi cung ứng:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Xác định và Bảo vệ Điểm nghẽn (Drum-Buffer-Rope):</strong> Năng lực sửa chữa (Tân trang) luôn là khâu yếu nhất. Hãy đảm bảo xưởng sửa chữa luôn hoạt động 100% công suất không bị gián đoạn (Drum). Nhưng tuyệt đối **không được tích lũy đống rác điện tử trước cửa xưởng vượt quá khả năng xử lý**, hãy mang đi tái chế hoặc tiêu hủy ngay lập tức để giữ kho sạch sẽ.</li>
+                        <li style="margin-bottom: 10px;"><strong>Tiêu hủy chủ động (Scrap Strategy):</strong> Việc chấp nhận tiêu hủy chịu lỗ nhẹ ($50/máy phí môi trường) là quyết định đau đớn nhưng cực kỳ sáng suốt và thực tế, giúp giải phóng diện tích kho bãi và loại bỏ chi phí cơ hội của việc ôm đống rác điện tử không có lối ra.</li>
+                        <li><strong>Thiết kế xanh (Design for Disassembly):</strong> Hãy tác động lên phòng R&D để họ thiết kế các sản phẩm dễ tháo lắp, dễ sửa chữa và tái chế. Một sản phẩm được thiết kế tốt sẽ giúp giảm 50% chi phí lao động của chuỗi cung ứng ngược sau này.</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -217,8 +358,27 @@
         }
 
         function toggleGuide() {
-            let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let guide = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
+                btn.style.background = 'rgba(255,255,255,0.15)';
+                btn.style.color = 'white';
+            } else {
+                guide.style.display = 'none';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
         window.onload = renderUI;
     </script>

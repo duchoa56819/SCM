@@ -34,6 +34,83 @@
         .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; line-height: 1.5; }
         
         .chain-box { padding: 15px; border-radius: 8px; text-align: center; flex: 1; border: 1px solid var(--border); }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -89,16 +166,86 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #c026d3; margin-top: 0;">📚 Cẩm nang Hiệu ứng Cái Roi Da (Bullwhip Effect)</h3>
-            <p><strong>Hiệu ứng Bullwhip</strong> xảy ra khi thông tin về Nhu cầu khách hàng bị bóp méo khi truyền ngược lên chuỗi cung ứng. Khách hàng chỉ tăng mua một chút, Đại lý hoảng sợ đặt gấp đôi để phòng hờ, Nhà phân phối đặt gấp 3, và Nhà máy nhận lãnh hậu quả (sản xuất khổng lồ rồi ế ẩm).</p>
-            <ul>
-                <li><strong>Chiến thuật 1 (Đuổi hình bắt bóng):</strong> Bạn thấy Đại lý đặt 70 máy, bạn lập tức tăng ca sản xuất 70. Tuần sau Đại lý phát hiện ế, không đặt nữa (đặt 0). Bạn lại sa thải công nhân. Chi phí tuyển dụng/sa thải sẽ hủy diệt lợi nhuận của bạn.</li>
-                <li><strong>Chiến thuật 2 (Sản xuất phẳng):</strong> Mặc kệ Đại lý nhảy múa, bạn giữ nhịp sản xuất đều đặn 25 máy/tuần. Giảm tối đa chi phí thay đổi công suất, nhưng sẽ có lúc thiếu hàng, lúc thừa hàng. Đây là cách các nhà máy thép hoạt động.</li>
-                <li><strong>Chiến thuật 3 (Chia sẻ thông tin - VMI):</strong> Bạn bắt ép Đại lý mở cổng API chia sẻ dữ liệu bán lẻ (Customer Demand). Mặc kệ Đại lý order bao nhiêu, bạn thấy Khách hàng thực tế chỉ mua 22 máy, bạn sản xuất đúng 22. <strong>Đây là phương pháp triệt tiêu hoàn toàn Bullwhip Effect mà Walmart và P&G đã áp dụng thành công.</strong></li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #d946ef, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Hiệu Ứng Cái Roi Da (Bullwhip Effect) & Quản Trị Dự Báo</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #d946ef;">🌾 Hiệu Ứng Cái Roi Da (Bullwhip Effect)</div>
+                    <p>Hiện tượng méo mó thông tin cực kỳ phổ biến trong chuỗi cung ứng: **Biến động nhu cầu nhỏ từ người tiêu dùng cuối sẽ bị khuếch đại thành dao động khổng lồ khi truyền ngược lên nhà sản xuất**. Nguyên nhân chủ yếu do:</p>
+                    <ul>
+                        <li><strong>Cập nhật dự báo độc lập:</strong> Mỗi cấp tự dự báo dựa trên lượng đặt hàng của cấp liền kề, thay vì nhu cầu thực tế của khách hàng.</li>
+                        <li><strong>Gom lô đặt hàng (Order Batching):</strong> Đại lý đợi tích lũy đơn hàng lớn để giảm phí vận chuyển, tạo ra các đỉnh nhu cầu nhân tạo.</li>
+                        <li><strong>Bẫy thiếu hụt (Rationing & Shortage Gaming):</strong> Khi đại lý sợ thiếu hàng, họ đặt khống số lượng để được phân bổ nhiều hơn, tạo ra nhu cầu ảo khổng lồ.</li>
+                    </ul>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">🛠️ Level vs. Chase Production Strategy (Sản Xuất Phẳng vs. Đuổi Theo Cầu)</div>
+                    <p>Hai chiến thuật vận hành nhà máy cơ bản:</p>
+                    <ul>
+                        <li><strong>Chase Strategy (Đuổi theo cầu):</strong> Sản xuất khớp 100% với đơn hàng của đại lý. Ưu điểm: Tồn kho bằng 0. Nhược điểm: Phí thay đổi công suất cực lớn ($10/đơn vị do tuyển dụng/sa thải, tăng ca đột ngột), phá vỡ sự ổn định của nhà máy.</li>
+                        <li><strong>Level Strategy (Sản xuất phẳng):</strong> Duy trì nhịp sản xuất không đổi (ví dụ 25 máy/tuần). Ưu điểm: Tối thiểu hóa chi phí công suất, sản xuất cực kỳ ổn định. Nhược điểm: Phải gánh chi phí lưu kho ($5/tuần) khi cầu sụt giảm và nguy cơ thiếu hàng khi cầu tăng vọt.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">🍼 Case Study Điển Hình: Sự Khởi Phát Tã Giấy Pampers Của P&G & Giải Pháp VMI</div>
+                    <p>Câu chuyện kinh điển khởi xướng ra thuật ngữ "Bullwhip Effect" tại tập đoàn P&G:</p>
+                    <ul>
+                        <li><strong>Sự phát hiện:</strong> Vào những năm 1990, các giám đốc của P&G nhận thấy lượng đặt hàng tã giấy Pampers của đại lý biến động dữ dội như một cái roi da. Tuy nhiên, khi kiểm tra dữ liệu tiêu dùng thực tế tại siêu thị, họ ngạc nhiên khi thấy trẻ em sử dụng tã giấy với tần suất vô cùng ổn định theo ngày. Sự bất cân xứng thông tin và gom lô từ các cấp đại lý trung gian đã tự tạo ra "roi da" tàn phá năng lực sản xuất của nhà máy P&G.</li>
+                        <li><strong>Giải pháp đột phá cùng Walmart (Vendor Managed Inventory - VMI):</strong> P&G và Walmart đã ký thỏa thuận mang tính lịch sử. Walmart chia sẻ toàn bộ dữ liệu máy quét POS (Point of Sales) tại quầy thu ngân cho P&G. Mặc kệ đại lý Walmart đặt bao nhiêu, P&G tự động nhìn thấy lượng tiêu thụ thực tế và tự điều phối dòng bổ sung hàng. Kết quả: Triệt tiêu hoàn toàn hiệu ứng roi da, giảm 50% tồn kho và nâng mức đáp ứng dịch vụ lên 99%.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Các chỉ số đo lường mức độ biến động chuỗi cung ứng:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Bullwhip Ratio (Chỉ Số Roi Da)</div>
+                        <div class="kpi-value">Var(Orders) / Var(Demand)</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ số độ lệch chuẩn lượng đặt hàng chia cho độ lệch chuẩn nhu cầu thực tế. Tỷ số > 1 thể hiện hiệu ứng roi da đang tàn phá chuỗi.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Capacity Change Cost</div>
+                        <div class="kpi-value">$10 / Unit chênh lệch</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Chi phí tuyển dụng, sa thải, thay đổi dây chuyền để đáp ứng dao động nhu cầu.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Stockout & Holding Cost Ratio</div>
+                        <div class="kpi-value">Tỷ lệ chi phí tối ưu</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Cân đối chi phí tổn thất cơ hội do mất đơn hàng vs chi phí gánh tồn kho thành phẩm.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Thay Thế Phỏng Đoán Bằng Sự Minh Bạch</div>
+                    <p>Trong kinh doanh, phản ứng tự nhiên của phòng sản xuất khi thấy đại lý đặt hàng tăng vọt là **tăng công suất hết mức**. Điều này dẫn tới thảm họa thừa hàng nghiêm trọng ngay tuần tiếp theo khi đại lý nhận ra họ đã ôm quá nhiều hàng dở dang.</p>
+                    <p>Lời khuyên dành cho nhà quản trị chuỗi cung ứng:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Chia sẻ thông tin là vũ khí mạnh nhất:</strong> Hãy đàm phán với các nhà phân phối lớn để tích hợp dữ liệu bán hàng. Thay vì phỏng đoán nhu cầu trong bóng tối thông tin, hãy thiết lập cơ chế cộng tác **CPFR (Collaborative Planning, Forecasting, and Replenishment)**.</li>
+                        <li style="margin-bottom: 10px;"><strong>Đơn giản hóa cấu trúc giá (Everyday Low Price - EDLP):</strong> Tránh tạo ra các chương trình khuyến mãi giảm giá sốc ngắn hạn. Khuyến mãi đẩy đại lý vào bẫy đầu cơ tích trữ (Forward Buying), tạo ra các đỉnh nhu cầu ảo tàn phá dây chuyền sản xuất của bạn.</li>
+                        <li><strong>Kiểm soát hành vi đặt hàng khống:</strong> Khi nguồn cung khan hiếm, hãy phân bổ hàng dựa trên lịch sử bán hàng thực tế của đại lý trong quá khứ, thay vì phân bổ theo tỷ lệ lượng đặt khống hiện tại của họ.</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -206,8 +353,27 @@
         }
 
         function toggleGuide() {
-            let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let guide = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
+                btn.style.background = 'rgba(255,255,255,0.15)';
+                btn.style.color = 'white';
+            } else {
+                guide.style.display = 'none';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
         window.onload = renderUI;
     </script>

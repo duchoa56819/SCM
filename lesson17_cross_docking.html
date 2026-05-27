@@ -29,6 +29,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -90,16 +105,60 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Cross-Docking (Kỹ thuật của Walmart)</h3>
-            <p>Vào những năm 1980, Walmart đánh bại Kmart và thống trị ngành bán lẻ thế giới chủ yếu nhờ một phát kiến Logistics: <strong>Cross-Docking</strong>.</p>
-            <ul>
-                <li><strong>Kho truyền thống (Warehousing):</strong> Xe hàng tới -> Đưa hàng vào kho -> Cất lên kệ cao -> Lưu trữ -> Hôm sau có đơn -> Lấy xe nâng kéo hàng xuống -> Đóng gói -> Đưa ra xe xuất. Quá trình này tạo ra <em>"Double Handling" (Chạm vào hàng hóa 2 lần)</em>, tốn rất nhiều tiền nhân công, diện tích kho và thời gian. Chi phí: $10/Pallet.</li>
-                <li><strong>Cross-Docking (Sang xe trực tiếp):</strong> Hàng từ xe Inbound vừa dỡ xuống cửa bên trái, được công nhân đẩy thẳng bằng xe đẩy sang cửa bên phải và chất luôn lên xe Outbound đang chờ sẵn. Hàng hóa KHÔNG BAO GIỜ chạm vào sàn kho (Zero Inventory). Quá trình diễn ra trong vài giờ. Chi phí chỉ tốn $2/Pallet (tiền công nhân đẩy hàng).</li>
-                <li>Để làm được Cross-Docking, bạn cần một hệ thống <strong>Đồng bộ thông tin cực tốt (IT System)</strong> để các xe tải đến kho cùng một khung giờ. Nếu xe xuất đến trễ, hàng buộc phải tống vào kho và bạn sẽ thất bại.</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #60a5fa;">⚡ Triết Lý "Không Lưu Kho" (Zero-Inventory Logistics)</div>
+                    <p><strong>Cross-Docking</strong> là kỹ thuật phân phối logistics, trong đó hàng hóa từ các phương tiện vận tải nhập kho (Inbound) được dỡ xuống và chuyển trực tiếp sang các phương tiện vận tải xuất kho (Outbound) với thời gian lưu trữ tối thiểu hoặc bằng không.</p>
+                    <p>Mục đích cốt lõi là loại bỏ quy trình <strong>Nhập kho (Put-away)</strong>, <strong>Lưu kho (Storage)</strong>, và <strong>Lấy hàng (Picking)</strong>. Bằng cách giảm thiểu việc chạm tay vào hàng hóa nhiều lần (Double Handling), doanh nghiệp tiết kiệm 80% chi phí vận hành kho bãi và đẩy nhanh tốc độ quay vòng vốn lưu động cực kỳ mạnh mẽ.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🛒 Thống Trị Nhờ Công Nghệ: Siêu Hệ Thống Của Walmart</div>
+                    <p>Vào những năm 1980, Walmart đánh bại gã khổng lồ Kmart nhờ áp dụng Cross-Docking trên diện rộng. Họ xây dựng các Trung tâm Phân phối (Distribution Center - DC) khổng lồ có dạng chữ T hoặc chữ I, với hàng trăm cửa dỡ hàng (inbound docks) ở một bên và cửa xếp hàng (outbound docks) ở bên đối diện.</p>
+                    <p>Để đảm bảo hàng ngàn xe tải đến DC trùng khớp thời gian, Walmart đã đầu tư mạng lưới viễn thông vệ tinh tư nhân lớn nhất thế giới lúc bấy giờ để chia sẻ dữ liệu POS trực tiếp từ cửa hàng đến các nhà xe vận tải. Kết quả là <strong>hơn 85% hàng hóa của Walmart được phân phối qua cơ chế Cross-Docking</strong>, giúp giá bán lẻ luôn rẻ hơn đối thủ từ 10% đến 15% mà biên lợi nhuận vẫn cực kỳ khỏe mạnh!</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Tỷ Lệ Xử Lý Trực Tiếp (Cross-Dock Fill Rate)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm tổng số pallet/thùng hàng được chuyển thẳng trực tiếp từ inbound sang outbound mà không cần đưa vào khu vực lưu trữ tạm thời. Target tối ưu của các DC hiện đại là trên 85%.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏳ Thời Gian Giải Phóng Cửa Dock (Dock Turnaround Time)</div>
+                        <div class="kpi-desc">Thời gian trung bình tính từ lúc xe tải cập cửa dock nhập, bốc dỡ hàng, chuyển hàng chéo sang xe xuất, và xe tải xuất bánh rời khỏi cửa dock xuất. Tối ưu hóa chỉ số này giúp nâng cao công suất của DC mà không cần mở rộng diện tích.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Điều Kiện Đủ Để Triển Khai</div>
+                    <ul>
+                        <li><strong>Đồng Bộ Thông Tin Là Lẽ Sống (Data Synchronization):</strong> Doanh nghiệp phải triển khai hệ thống quản lý bãi xe (YMS - Yard Management System) tích hợp chặt chẽ với WMS và TMS. Luồng thông tin (ASN - Advanced Shipping Notice) phải đi trước luồng hàng hóa thực tế ít nhất vài giờ.</li>
+                        <li><strong>Tính Kỷ Luật Của Đơn Vị Vận Chuyển (Carrier Discipline):</strong> Một chiếc xe Inbound đến muộn 30 phút có thể phá hỏng toàn bộ lịch trình xếp chéo của cả ca làm việc, buộc hàng phải đưa vào kho lưu trữ (Warehouse Slip rate tăng). Do đó, cần có SLA cực kỳ khắt khe với các nhà xe vận tải.</li>
+                        <li><strong>Chuẩn Hóa Bao Bì & Dán Nhãn (Standardization):</strong> Hàng hóa bắt buộc phải được đóng pallet chuẩn hóa, dán mã vạch UCC/EAN-128 rõ ràng để các băng tải phân loại tự động (sorting systems) đọc được và định tuyến chuẩn xác mà không cần công nhân mở thùng kiểm đếm.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -192,7 +251,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = generateTrucks;

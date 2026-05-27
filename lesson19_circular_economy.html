@@ -28,6 +28,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -74,16 +89,60 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #34d399; margin-top: 0;">📚 Cẩm nang Nền Kinh tế Tuần hoàn (Circular Economy)</h3>
-            <p><strong>LCA (Life Cycle Assessment)</strong> là Đánh giá toàn bộ vòng đời sản phẩm, không chỉ nhìn vào chi phí sản xuất.</p>
-            <ul>
-                <li><strong>Tư duy Ngắn hạn (Linear):</strong> Giám đốc thiển cận sẽ chọn Thiết kế Nguyên khối vì nó rẻ ($200) và bán lấy tiền ngay (Lãi $300). NHƯNG sau 1 năm, rác thải công nghệ ngập tràn, công ty bị phạt $50 triệu. Sang năm sau, họ lại phải xuất tiền mua nguyên vật liệu mới $200 từ đầu. Tổng lãi ròng thực tế/năm chỉ là $250.</li>
-                <li><strong>Tư duy Dài hạn (Circular/Modular):</strong> Thiết kế bằng ốc vít tốn kém R&D và nhân công ($280). Lợi nhuận năm đầu tiên rất mỏng (Lãi $220). Cổ đông có thể mắng bạn. 
-                <br>NHƯNG, điều kỳ diệu xảy ra ở các năm sau! Bạn thu hồi lại máy cũ, rã xác lấy lại chip và màn hình (Trị giá $100). Sang năm thứ 2, thứ 3... chi phí sản xuất của bạn được giảm trừ (280 - 100 = Chỉ còn tốn $180). Bạn không bị phạt môi trường. Tổng lãi ròng các năm sau vọt lên $320/năm. Đường dài, Kinh tế tuần hoàn MANG LẠI NHIỀU LỢI NHUẬN HƠN Kinh tế tuyến tính!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #6ee7b7;">♻️ Đóng Vòng Lặp Chuỗi Cung Ứng (Closed-Loop Supply Chain)</div>
+                    <p>Mô hình kinh tế truyền thống vận hành theo cơ chế tuyến tính <strong>"Khai thác -> Sản xuất -> Tiêu dùng -> Thải bỏ" (Take-Make-Waste)</strong> gây lãng phí tài nguyên và chịu nhiều chi phí phạt môi trường. Ngược lại, <strong>Kinh Tế Tuần Hoàn (Circular Economy)</strong> hướng tới việc đóng vòng lặp bằng cách thiết kế loại bỏ rác thải, kéo dài tuổi thọ của sản phẩm và vật liệu, và tái tạo hệ thống tự nhiên.</p>
+                    <p>Chìa khóa nằm ở <strong>Thiết kế sinh thái (Eco-Design)</strong> và Thiết kế mô-đun (Modular Design). Bằng cách cho phép tháo dỡ sản phẩm dễ dàng, doanh nghiệp có thể vận hành hệ thống <strong>Logistics ngược (Reverse Logistics)</strong> hiệu quả để thu hồi linh kiện giá trị cao, đưa chúng quay lại chu kỳ sản xuất tiếp theo (Remanufacturing) thay vì phải chôn lấp.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🤖 Robot Daisy Của Apple & Triết Lý "Worn Wear" Của Patagonia</div>
+                    <p><strong>Case Study 1: Apple Daisy Robot:</strong> Apple đặt mục tiêu một ngày nào đó sẽ chỉ sản xuất thiết bị từ vật liệu tái chế 100%. Để làm được điều đó, họ phát triển robot Daisy. Daisy có thể tháo dỡ 15 dòng iPhone khác nhau với tốc độ <strong>200 chiếc/giờ</strong>. Khác với các phương pháp nghiền nát phế liệu truyền thống làm lẫn lộn vật liệu, Daisy tách rời từng mô-đun (pin, camera, màn hình, bo mạch), giúp thu hồi các kim loại quý hiếm như Cobalt, Đất hiếm, Vàng, Đồng với độ tinh khiết cực kỳ cao để tái chế trực tiếp vào chuỗi cung ứng linh kiện mới.</p>
+                    <p><strong>Case Study 2: Patagonia:</strong> Thương hiệu đồ dã ngoại nổi tiếng thế giới cam kết bảo vệ môi trường bằng cách mở chương trình "Worn Wear". Họ xây dựng trung tâm sửa chữa quần áo lớn nhất Bắc Mỹ để sửa đồ cũ cho khách hàng. Patagonia thậm chí còn mua lại quần áo cũ của hãng từ người dùng, giặt sạch, tân trang và bán lại (Repurpose/Resell) trên một kênh riêng. Nhờ tư duy tuần hoàn vượt trội này, Patagonia không chỉ giảm thiểu rác thải mà còn xây dựng được tệp khách hàng trung thành tuyệt đối và mở ra dòng doanh thu mới vô cùng bền vững.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Tỷ Lệ Sử Dụng Linh Kiện Tái Chế (Recycled Component Rate)</div>
+                        <div class="kpi-desc">Tỷ lệ giá trị hoặc khối lượng vật liệu tái chế/thu hồi được đưa trở lại vào quá trình sản xuất thế hệ mới. Chỉ số này phản ánh độ đóng kín của vòng lặp chuỗi cung ứng.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏳ Chi Phí Vòng Đời Sản Phẩm (Life Cycle Cost - LCC)</div>
+                        <div class="kpi-desc">Tổng chi phí phát sinh từ lúc nghiên cứu R&D, mua sắm nguyên liệu, sản xuất, tiêu dùng, cho đến khi thu hồi, tái chế hoặc tiêu hủy cuối vòng đời. LCC giúp sếp có cái nhìn dài hạn thay vì chỉ tập trung vào chi phí sản xuất ngắn hạn.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy "Lợi Nhuận Đường Dài"</div>
+                    <ul>
+                        <li><strong>Vượt Qua Bẫy Lợi Nhuận Ngắn Hạn (Short-Term Margin Trap):</strong> Đầu tư R&D cho Modular design ở năm đầu có vẻ làm biên lợi nhuận mỏng đi (như trong bài toán: $280M so với $200M của thiết kế nguyên khối). Nhưng từ năm 2 trở đi, khi linh kiện cũ được thu hồi quay lại làm đầu vào giá rẻ, chi phí sản xuất thực tế giảm mạnh giúp doanh nghiệp đạt biên lợi nhuận vượt trội và hoàn toàn độc lập về nguồn nguyên liệu đầu vào.</li>
+                        <li><strong>Xây Dựng Khả Năng Thu Hồi (Reverse Logistics Capabilities):</strong> Logistics ngược khó hơn logistics xuôi vì nhu cầu thu hồi và tình trạng hàng cũ trả về rất khó dự báo. Doanh nghiệp cần thiết lập các điểm thu hồi thuận tiện, các chính sách khuyến khích đổi cũ lấy mới (Trade-in Programs) để tạo dòng hàng ngược ổn định.</li>
+                        <li><strong>Nghĩ Về EPR (Extended Producer Responsibility):</strong> Trách nhiệm mở rộng của nhà sản xuất đang trở thành luật hóa trên toàn cầu. Các doanh nghiệp xả rác công nghệ hoặc bao bì nhựa ra môi trường sẽ phải gánh những khoản phạt khổng lồ (như mức phạt $50M trong mô phỏng). Hãy chủ động tuần hoàn hóa trước khi bị pháp luật trừng phạt.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -164,7 +223,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

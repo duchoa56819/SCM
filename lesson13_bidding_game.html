@@ -27,6 +27,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: #eab308; border-bottom-color: #eab308; }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -72,16 +87,79 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #eab308; margin-top: 0;">📚 Cẩm nang Lý thuyết Trò chơi (Game Theory)</h3>
-            <p>Trong Đấu thầu mù (Sealed-bid Auction), bạn đối mặt với <strong>Lời nguyền của Người thắng (Winner's Curse)</strong>.</p>
-            <ul>
-                <li><strong>Trượt thầu (Lợi nhuận = 0):</strong> Nếu bạn cộng biên độ lợi nhuận quá dày (ví dụ Giá vốn 75, bạn báo 150), bạn sẽ vĩnh viễn trượt thầu vì các đối thủ sẵn sàng ăn lãi mỏng hơn.</li>
-                <li><strong>Thắng nhưng Lỗ:</strong> Nếu vì quá khát khao thắng, bạn báo giá 74. Bạn chắc chắn thắng, nhưng mỗi gói thầu bạn làm xong lại âm $1. Bạn càng làm càng nợ. Đây chính là Winner's Curse ngoài đời thực trong ngành Xây dựng và Logistics.</li>
-                <li><strong>Cân bằng Nash (Nash Equilibrium):</strong> Mức cộng giá (Markup) tối ưu thường rơi vào khoảng 10% - 20% trên giá vốn tùy thuộc vào số lượng đối thủ. (Ví dụ vốn 75, báo giá 85-90). Hãy chấp nhận việc <strong>bạn phải thua phần lớn số vòng</strong>. Việc bạn kiên nhẫn trượt thầu ở những vòng mà đối thủ phá giá, rồi ăn lãi gộp ở 1-2 vòng mà đối thủ đặt cao, mới là cách một tay chơi Lõi Đời sống sót!</li>
-            </ul>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #eab308; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #fde047, #ca8a04); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Lời Nguyền Người Thắng & Lý Thuyết Trò Chơi (Winner's Curse)</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #eab308;">⚖️ Lời Nguyền Của Người Thắng Thầu (Winner's Curse)</div>
+                    <p>Trong mua sắm doanh nghiệp (B2B Procurement) và logistics chặng dài, hình thức đấu thầu ngược kín (**Sealed-bid Reverse Auction**) là phổ biến nhất. Tại đây, bên chào giá **Thấp Nhất** sẽ giành chiến thắng.</p>
+                    <p>**Winner's Curse (Lời nguyền của người thắng)** là hiện tượng kinh tế trong đó nhà thầu trúng thầu do đưa ra mức giá quá thấp, nhưng sau khi thực hiện dự án mới phát hiện ra giá thầu **thậm chí không đủ bù đắp giá vốn thực tế** (lập dự toán sai hoặc cố tình phá giá thầu do áp lực tâm lý "phải thắng bằng mọi giá"). Kết quả là càng làm càng lỗ nặng.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">📐 Định Giá Thầu Tối Ưu & Cân Bằng Nash (Nash Equilibrium)</div>
+                    <p>Trong lý thuyết trò chơi, **Nash Equilibrium** là trạng thái mà không nhà thầu nào muốn đơn phương thay đổi chiến thuật định giá của mình. Để tối ưu hóa biên lợi nhuận gộp lâu dài, công thức định giá thầu khoa học phải tính toán:</p>
+                    <ul>
+                        <li><strong>Biên Markup tích lũy:</strong> Cộng thêm một khoản biên độ an toàn hợp lý (Markup - ví dụ 10% - 20% trên giá vốn) dựa theo số lượng đối thủ cạnh tranh tham gia thầu.</li>
+                        <li><strong>Xác suất trúng thầu:</strong> Chấp nhận quy luật toán học: **Bạn phải thua phần lớn số vòng đấu thầu**. Hãy kiên nhẫn trượt thầu ở những gói bị đối thủ phá giá vô tội vạ, và ăn lãi đậm ở những gói thầu mà đối thủ đặt biên quá cao.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--danger);">🚧 Case Study 1: Lời Nguyền Vận Tải Đường Bộ & Xây Dựng Hạ Tầng</div>
+                    <p>Ngành xây dựng hạ tầng (làm đường cao tốc, cầu cống) và ngành vận tải xe container chặng dài là hai khu vực chịu sự tàn phá nặng nề nhất của Winner's Curse. Rất nhiều doanh nghiệp logistics nhỏ lẻ chấp nhận chào giá thầu vận chuyển siêu rẻ để "lấy doanh thu nuôi bộ máy" hoặc "chạy lấy sản lượng".</p>
+                    <p>Khi trúng thầu, họ đối mặt với thực tế: giá dầu tăng, chi phí cầu đường, khấu hao lốp xe vọt lên làm chi phí vận hành thực tế vượt xa giá thầu đã chốt cố định. Hàng loạt doanh nghiệp rơi vào vòng xoáy nợ nần, phá sản hoặc bỏ dở hợp đồng giữa chừng, gây đứt gãy nghiêm trọng cho chuỗi cung ứng của chủ hàng.</p>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--primary);">🏢 Case Study 2: Chiến Lược Mua Sắm B2B Kỷ Luật của Samsung</div>
+                    <p>Các tập đoàn lớn như Samsung khi tổ chức đấu thầu tìm kiếm nhà cung cấp linh kiện hoặc nhà xe vận tải luôn áp dụng nguyên tắc **"Chống phá giá thầu (Abnormally Low Bid)"**. Họ xây dựng bộ phận tính toán giá vốn nội bộ cực kỳ chuẩn xác.</p>
+                    <p>Nếu một nhà thầu chào giá thấp hơn 80% so với giá sàn ước tính của Samsung, hồ sơ thầu đó sẽ bị loại ngay lập tức (bất kể rẻ thế nào). Samsung hiểu rõ rằng, ép nhà cung cấp vào mức lỗ thảm hại sẽ chỉ nhận lại dịch vụ tồi tệ, hàng giả hàng lỗi hoặc sự phá sản của nhà cung ứng giữa chừng – gây thiệt hại hàng triệu USD cho dây chuyền sản xuất cốt lõi.</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-left-color: #eab308;">
+                        <div class="kpi-title">📈 Bid Win Rate (%)</div>
+                        <div class="kpi-desc">Tỷ lệ trúng thầu thực tế trên tổng số hồ sơ nộp thầu. Chỉ số này quá cao (ví dụ > 80%) thường báo hiệu doanh nghiệp đang chào giá quá rẻ và có nguy cơ cao dính Winner's Curse.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--success);">
+                        <div class="kpi-title">💵 Profit Margin per Won Bid (%)</div>
+                        <div class="kpi-desc">Biên lợi nhuận gộp thực tế thu về trên các gói thầu giành chiến thắng. Đây là thước đo hiệu quả tài chính thực chất thay vì chạy theo doanh thu ảo.</div>
+                    </div>
+                    <div class="kpi-card" style="border-left-color: var(--danger);">
+                        <div class="kpi-title">⚠️ Winner's Curse Risk Index</div>
+                        <div class="kpi-desc">Chỉ số đánh giá độ lệch giữa Giá thầu chiến thắng và Giá vốn thực tế ước tính của thị trường. Cảnh báo sớm các gói thầu rủi ro cao gây thua lỗ.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--danger);">
+                    <div class="theory-title" style="color: var(--danger);">🎯 Bản Lĩnh Lãnh Đạo: Kỷ Luật Mua Sắm & Tư Duy "Thà Trượt Còn Hơn Lỗ"</div>
+                    <p>Là một giám đốc mua sắm (CPO) hoặc nhà điều hành doanh nghiệp, bạn cần khắc sâu tư duy chiến lược:</p>
+                    <ul>
+                        <li style="margin-bottom: 8px;"><strong>Kỷ luật thép trong định giá (Procurement Discipline):</strong> Đừng bao giờ để bộ phận kinh doanh chào giá dựa trên cảm tính hoặc sự hoảng loạn sợ mất khách. Phải thiết lập hệ thống định giá sàn tự động (Floor Pricing) nghiêm ngặt dựa trên dữ liệu giá vốn thực tế đã được kiểm toán đầy đủ.</li>
+                        <li style="margin-bottom: 8px;"><strong>Đa dạng hóa gói thầu (Bid Portfolio):</strong> Rải hồ sơ thầu vào nhiều dự án và khách hàng khác nhau. Việc đa dạng hóa giúp doanh nghiệp không bị phụ thuộc vào một khách hàng duy nhất, từ đó tránh được áp lực bắt buộc phải phá giá thầu để sinh tồn.</li>
+                        <li><strong>Chuyển dịch sang đàm phán giá trị (Value-based Procurement):</strong> Thay vì tham gia các sàn đấu thầu ngược chỉ so kè về giá, hãy thuyết phục chủ hàng bằng năng lực vận hành ổn định, công nghệ theo dõi thời gian thực, cam kết ESG và độ an toàn chuỗi cung ứng – chuyển hướng cạnh tranh từ Giá sang Giá Trị.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -163,7 +241,32 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Chuyên đề Lý thuyết';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            
+            // Deactivate all tab buttons in this container
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Deactivate all tab contents in this container
+            container.querySelectorAll('.theory-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activate current button and matching content
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = generateCost;

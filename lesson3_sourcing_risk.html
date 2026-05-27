@@ -34,6 +34,83 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 200px; overflow-y: auto; border: 1px solid var(--border); }
         .log-entry { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* CSS cho Tabs Lý Thuyết Chuyên Sâu */
+        .theory-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .theory-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .theory-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .theory-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .theory-tab-content {
+            display: none;
+            line-height: 1.8;
+            color: #cbd5e1;
+            animation: fadeIn 0.4s ease;
+        }
+        .theory-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theory-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .theory-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .kpi-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -91,13 +168,83 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button onclick="toggleGuide()" id="toggleGuideBtn" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Chuyên đề Lý thuyết & Thực tiễn</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
-            <h3 style="color: #60a5fa; margin-top: 0;">📚 Cẩm nang Dual Sourcing (Nguồn cung kép)</h3>
-            <p><strong>1. Chỉ mua hàng giá rẻ (Tham lam):</strong> Lợi nhuận mỗi máy rất cao ($100 - $40 = $60). Nhưng xác suất 20% bị trễ hàng nghĩa là trong 12 tuần, bạn chắc chắn sẽ bị đứt hàng khoảng 2-3 lần. Mỗi lần đứt hàng bị phạt $50/máy x 50 = $2,500. Tiền phạt sẽ phá nát toàn bộ lợi nhuận của bạn.</p>
-            <p><strong>2. Chỉ mua hàng nội địa (Nhát gan):</strong> Không bao giờ bị phạt. Nhưng lợi nhuận quá mỏng ($100 - $70 = $30). Tổng tiền kiếm được cuối cùng rất khiêm tốn.</p>
-            <p><strong>3. Phân tán rủi ro (Dual Sourcing):</strong> Đặt mua 40 máy từ A và 10 máy từ B. Luôn dự trữ sẵn một lượng an toàn (Safety Stock) để "gánh" trong trường hợp A bị trễ. Khi có sự cố, B vẫn cung cấp túc tắc để bạn không bị phạt quá nặng. Đây là chiến thuật sống còn của các tập đoàn như Apple (luôn có ít nhất 2 nhà cung cấp cho mỗi linh kiện).</p>
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 16px; padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Chuyên Đề: Quản Trị Rủi Ro Mua Sắm & Chiến Lược Đa Nguồn Cung</h2>
+            
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'tab-frameworks')">📖 LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-cases')">🏢 ỨNG DỤNG THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-kpis')">📊 CHỈ SỐ KPIs CHỦ CHỐT</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'tab-executive')">💡 BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- TAB 1: FRAMEWORKS -->
+            <div id="tab-frameworks" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--danger);">🚢 Single vs. Dual Sourcing (Đơn Nguồn vs. Nguồn Kép)</div>
+                    <p>Trong chiến lược mua sắm hàng hóa (Procurement), doanh nghiệp luôn phải lựa chọn giữa:</p>
+                    <ul>
+                        <li><strong>Single Sourcing (Đơn nguồn):</strong> Mua 100% từ một nhà cung cấp giá rẻ để tối đa hóa chiết khấu theo số lượng (Volume discount). Rủi ro: Bị động hoàn toàn, nếu NCC gặp thiên tai, đình công hay kẹt cảng (như 20% rủi ro của NCC A), toàn bộ chuỗi cung ứng của bạn sẽ bị tê liệt lập tức.</li>
+                        <li><strong>Dual/Multi-Sourcing (Nguồn kép/Đa nguồn):</strong> Phân bổ sản lượng cho tối thiểu hai NCC (ví dụ 80% cho A giá rẻ và 20% cho B giá cao). Điều này đảm bảo luôn có phương án dự phòng (Backup) và tạo sự cạnh tranh lành mạnh để ép giá các bên.</li>
+                    </ul>
+                </div>
+                <div class="theory-card">
+                    <div class="theory-title" style="color: var(--success);">🛡️ Supply Chain Resilience & Safety Stock (Tồn Kho An Toàn)</div>
+                    <p>Khả năng đàn hồi (Resilience) là khả năng chuỗi cung ứng hấp thụ cú sốc gián đoạn và hồi phục nhanh chóng. Để xây dựng chuỗi cung ứng đàn hồi trong mô phỏng này:</p>
+                    <p>Bạn không thể chỉ "ăn đong" đủ 50 máy mỗi tuần. Bạn cần chủ động **tích lũy tồn kho an toàn (Safety Stock)** trong những tuần đầu từ cả hai nguồn. Khi NCC A gặp sự cố kẹt cảng, lượng Safety Stock này sẽ là "bình oxy" gánh dòng bán, giúp bạn tránh được án phạt vi phạm hợp đồng cực nặng ($50/máy thiếu).</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: CASES -->
+            <div id="tab-cases" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title">🏢 Siêu Masterclass: Cách Apple Chế Ngự Rủi Ro Nguồn Cung</div>
+                    <p>Apple nổi tiếng là bậc thầy về quản trị rủi ro mua sắm linh kiện toàn cầu nhờ áp dụng triệt để chiến lược **Dual/Multi-Sourcing**:</p>
+                    <ul>
+                        <li><strong>Linh kiện cốt lõi (Màn hình OLED):</strong> Mặc dù Samsung sở hữu công nghệ màn hình OLED tốt nhất và giá cạnh tranh nhất, Apple không bao giờ cho phép Samsung độc quyền cấp hàng. Apple đã rót hàng tỷ USD để nâng đỡ LG Display và BOE (Trung Quốc) trở thành nhà cung cấp thứ 2 và thứ 3.</li>
+                        <li><strong>Đại diện lắp ráp (Foxconn vs. Pegatron):</strong> Dù Foxconn (Hon Hai) cực kỳ xuất sắc, Apple vẫn phân bổ 20-30% sản lượng iPhone cho Pegatron và Luxshare để giảm thiểu sự phụ thuộc độc tôn vào Foxconn, đồng thời tạo ra thế đối trọng đàm phán giá hàng năm.</li>
+                        <li><strong>Kiểm soát chuỗi giá trị:</strong> Apple tự thiết kế chip (Apple Silicon) và nắm bản quyền thiết kế, chỉ thuê các xưởng đúc như TSMC sản xuất. Điều này giúp Apple dễ dàng chuyển dịch hoặc can thiệp sâu vào sản xuất khi có sự cố địa chính trị.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: KPIS -->
+            <div id="tab-kpis" class="theory-tab-content">
+                <p>Các chỉ số mà Trưởng phòng Thu mua (Procurement Manager) phải báo cáo định kỳ:</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Supplier OTIF (Đúng Hạn & Đầy Đủ)</div>
+                        <div class="kpi-value">NCC A: 80% | NCC B: 100%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Tỷ lệ giao hàng đúng hẹn và đủ số lượng của từng nhà cung cấp.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Supplier Concentration Index</div>
+                        <div class="kpi-value">HHI Risk Indicator</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Chỉ số đo lường mức độ tập trung nguồn cung, cảnh báo nguy cơ độc quyền.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="font-weight: 600; color: #cbd5e1;">Premium Surcharge Cost</div>
+                        <div class="kpi-value">Chi phí chênh lệch rủi ro</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Số tiền chênh lệch phải trả cho NCC nội địa B để đổi lấy sự cam kết an toàn 100%.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EXECUTIVE -->
+            <div id="tab-executive" class="theory-tab-content">
+                <div class="theory-card" style="border-left: 4px solid var(--warning);">
+                    <div class="theory-title" style="color: var(--warning);">💡 Góc Nhìn Lãnh Đạo SCM: Chi Phí Rủi Ro Là Phí Bảo Hiểm Sinh Tồn</div>
+                    <p>Trong thực tế doanh nghiệp, bộ phận Mua hàng (Procurement) thường bị KPI **"Tối thiểu hóa giá mua đơn vị" (Unit Cost Reduction)** đè nặng. Điều này ép họ phải chọn nhà cung cấp A có giá rẻ nhất ($40) bất chấp rủi ro đứt gãy.</p>
+                    <p>Là một nhà lãnh đạo chuỗi cung ứng tầm cỡ C-level, bạn cần thay đổi tư duy này:</p>
+                    <ol>
+                        <li style="margin-bottom: 10px;"><strong>Định nghĩa lại giá vốn - Total Cost of Ownership (TCO):</strong> Hãy chứng minh cho Tổng giám đốc (CEO) thấy giá mua rẻ $40 chỉ là bề nổi. Nếu cộng thêm chi phí phạt vi phạm hợp đồng ($50/máy), chi phí mất cơ hội bán hàng, và chi phí quản lý rủi ro, thì "giá thực tế" của nguồn cung A cao hơn rất nhiều.</li>
+                        <li style="margin-bottom: 10px;"><strong>Phân bổ nguồn cung theo ma trận Kraljic:</strong> Phân nhóm nguyên vật liệu. Với hàng hóa chiến lược, bắt buộc phải có chính sách song nguồn (Dual Sourcing) và cam kết sản lượng tối thiểu (Allocation Share) rõ ràng cho từng bên để nuôi dưỡng mối quan hệ lâu dài.</li>
+                        <li><strong>Xây dựng mối quan hệ cộng sinh:</strong> Thay vì ép giá nhà cung cấp đến mức nghẹt thở, hãy hỗ trợ họ nâng cấp quy trình và chia sẻ thông tin dự báo nhu cầu (Forecast Sharing) để họ chuẩn bị năng lực sản xuất tốt nhất cho bạn.</li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -213,8 +360,27 @@
         }
 
         function toggleGuide() {
-            let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let guide = document.getElementById('strategyGuide');
+            let btn = document.getElementById('toggleGuideBtn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerHTML = '📖 Ẩn Chuyên đề Lý thuyết';
+                btn.style.background = 'rgba(255,255,255,0.15)';
+                btn.style.color = 'white';
+            } else {
+                guide.style.display = 'none';
+                btn.innerHTML = '📖 Xem Chuyên đề Lý thuyết & Thực tiễn';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            const parent = el.closest('#strategyGuide');
+            parent.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            parent.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            parent.querySelector('#' + tabId).classList.add('active');
         }
         window.onload = renderUI;
     </script>
