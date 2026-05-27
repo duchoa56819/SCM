@@ -34,7 +34,24 @@
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
 
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0c4a6e); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -84,13 +101,74 @@
 
         <div class="log-container" id="logContent"></div>
 
-        <div class="detail-box">
-            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Logistics Dược phẩm (Pharma Cold Chain)</h3>
-            <p>Vận chuyển hàng lạnh không đơn thuần là bỏ vào tủ lạnh. Nó là bài toán đánh đổi giữa <strong>Chi phí Bao bì (Packaging Cost)</strong> và <strong>Chi phí Rủi ro (Risk Cost)</strong>.</p>
-            <ul>
-                <li><strong>Passive Packaging (Đóng gói thụ động - EPS, VIP):</strong> Dùng đá khô (Dry Ice) hoặc Gel lạnh để giữ nhiệt. Nó giống như cục pin, sẽ cạn dần theo thời gian. Nếu kẹt hải quan quá lâu (Delay), đá tan hết, hàng hóa trị giá hàng trăm ngàn Đô la sẽ bốc hơi. Mua Thùng Xốp rẻ ($200) nhưng rủi ro cực cao. Mua Thùng VIP chân không ($800) bảo vệ được 3 ngày là mức Cân bằng (Sweet spot) mà nhiều hãng dược lựa chọn.</li>
-                <li><strong>Active Packaging (Đóng gói chủ động - Envirotainer):</strong> Đây là những chiếc Container nhỏ có gắn động cơ máy nén lạnh riêng và cắm điện trên máy bay. Chi phí thuê cực đắt ($3,000+), nhưng nhiệt độ được khóa chặt ở -70°C vĩnh viễn (miễn là có điện). Dùng khi lô hàng quá đắt tiền và không được phép sai sót dù chỉ 1%.</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #38bdf8;">❄️ Tính Toàn Vẹn Của Chuỗi Lạnh (Cold Chain Integrity) & Bài Toán Đánh Đổi Bao Bì</div>
+                    <p>Trong quản trị chuỗi cung ứng y tế và thực phẩm cao cấp, **Chuỗi cung ứng lạnh (Cold Chain)** là một phân hệ kỹ thuật cực kỳ ngặt nghèo. Một sự gián đoạn nhiệt độ dù chỉ diễn ra trong vài phút cũng có thể phá hủy hoàn toàn dược tính của vaccine hoặc gây ôi thiu thực phẩm, dẫn đến tổn thất hàng trăm ngàn USD và rủi ro pháp lý lớn.</p>
+                    <p><strong>Bản chất của Đóng gói & Giữ nhiệt (Packaging Decision)</strong>: Đây là bài toán tối ưu hóa chi phí kinh điển giữa **Chi phí Bao bì cố định (Packaging Cost)** và **Chi phí Rủi ro hao hụt (Risk Cost of Spoilage)**.</p>
+                    <ul>
+                        <li><strong>Passive Packaging (Đóng gói thụ động)</strong>: Sử dụng các vật liệu cách nhiệt truyền thống như Thùng xốp (EPS) hoặc cao cấp hơn là Thùng cách nhiệt chân không (Vacuum Insulated Panels - VIP) kết hợp với chất làm lạnh (Đá khô, Gel lạnh). Cơ chế này giống như một cục pin - nó chỉ tích lũy một lượng năng lượng lạnh hữu hạn và sẽ cạn dần theo thời gian.
+                            <ul>
+                                <li>*Thùng xốp EPS + Đá khô ($200)*: Chi phí cực rẻ, nhưng giới hạn chịu đựng ngắn (30 giờ). Nếu xảy ra delay hải quan, rủi ro hỏng hàng là 100%.</li>
+                                <li>*Thùng chân không VIP ($800)*: Mức độ bảo vệ vượt trội lên tới 72 giờ. Đây là "điểm ngọt chiến lược" (sweet spot) cân bằng hoàn hảo chi phí và an toàn cho các chặng bay quốc tế.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Active Packaging (Đóng gói chủ động)</strong>: Sử dụng các container chuyên dụng có gắn động cơ máy nén lạnh chạy bằng điện (như Envirotainer). Nhiệt độ được khóa chặt và kiểm soát chủ động vĩnh viễn (miễn là được cắm nguồn điện). Chi phí thuê cực đắt đỏ ($3,000+), thường chỉ dùng cho các lô hàng siêu nhạy cảm hoặc có giá trị hàng triệu USD.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #38bdf8;">💉 Chiến Dịch Phân Phối Siêu Lạnh Vaccine Pfizer & Siêu Kho Lạnh Lineage Logistics</div>
+                    <p><strong>Case Study 1: Siêu Chiến Dịch Vận Chuyển Vaccine Pfizer COVID-19 Ở Nhiệt Độ -70°C:</strong> Khi Pfizer công bố vaccine mRNA yêu cầu bảo quản ở nhiệt độ cực đoan từ -90°C đến -60°C, toàn bộ ngành logistics toàn cầu đã đối mặt với thử thách chưa từng có. Pfizer đã tự thiết kế các hộp vận chuyển đặc biệt sử dụng công nghệ chân không (VIP) nhồi đầy đá khô. Mỗi thùng chứa được gắn thiết bị giám sát thông minh GPS tích hợp cảm biến nhiệt độ liên tục gửi dữ liệu về trung tâm điều hành 24/7. Nhờ sự chuẩn bị bao bì thụ động đỉnh cao này, hàng triệu liều vaccine đã được phân phối thông suốt xuyên biên giới từ Bỉ về Việt Nam mà không bị đứt gãy nhiệt độ, vượt qua mọi sự cố chậm trễ thông quan.</p>
+                    <p><strong>Case Study 2: Hệ Thống Kho Lạnh Tự Động Hóa Của Lineage Logistics:</strong> Lineage Logistics là tập đoàn kho lạnh lớn nhất thế giới. Tại các siêu kho lạnh của Lineage, robot tự hành (AS/RS) hoạt động trong môi trường âm độ để cất và lấy hàng mà không cần ánh sáng hay sự hiện diện của con người, giảm thiểu thất thoát nhiệt độ do mở cửa kho. Lineage áp dụng thuật toán sắp xếp thông minh và quy tắc FEFO (First Expired, First Out - Hàng hết hạn trước xuất trước) để đảm bảo nông sản và thực phẩm luôn duy trì độ tươi ngon tối đa khi ra khỏi kho.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🌡️ Tỷ Lệ Lệch Nhiệt Độ (Temperature Excursion Rate - %)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm thời gian hoặc số lượng chuyến hàng bị lệch ra ngoài dải nhiệt độ tiêu chuẩn cho phép trong suốt hành trình vận chuyển. Mục tiêu nghiêm ngặt là $0\%$.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🍎 Tỷ Lệ Hao Hụt Do Hỏng Hàng (Spoilage/Wastage Rate - %)</div>
+                        <div class="kpi-desc">Tỷ lệ giá trị hàng hóa bị hư hỏng, biến chất phải tiêu hủy do lỗi nhiệt độ chuỗi lạnh. Chỉ số này đo lường năng lực quản trị rủi ro của chuỗi.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">📦 Hiệu Quả Chi Phí Bao Bì (Packaging ROI - %)</div>
+                        <div class="kpi-desc">Cân đối giữa số tiền bỏ ra nâng cấp bao bì chất lượng cao so với giá trị thiệt hại hàng hóa được cứu sống trước các sự cố trì hoãn.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #38bdf8;">💡 Executive Insights: Tư Duy "Chất Lượng Là Pháp Lý" Và Đầu Tư Vào IoT Giám Sát Real-Time</div>
+                    <ul>
+                      <li><strong>Đừng Nhìn Vào Đơn Giá Bao Bì, Hãy Nhìn Vào Giá Trị Lô Hàng:</strong> Nhiều sếp mua hàng tự hào vì tiết kiệm được vài trăm USD nhờ chọn thùng xốp rẻ tiền cho các lô sinh phẩm y tế đắt đỏ. Đây là một sự thiếu chuyên nghiệp nghiêm trọng. Một khi lô hàng hỏng, toàn bộ danh tiếng thương hiệu và chi phí bồi thường sẽ lớn gấp hàng ngàn lần tiền bao bì. Hãy đầu tư bao bì tương xứng với giá trị rủi ro.</li>
+                      <li><strong>Triển Khai Cảm Biến Giám Sát Thời Gian Thực (Real-Time IoT Sensors):</strong> Đóng gói kỹ là chưa đủ. Chuỗi cung ứng lạnh hiện đại đòi hỏi sự giám sát thời gian thực. Hãy cài đặt các thiết bị IoT phát sóng (như TempTale) gửi dữ liệu nhiệt độ và định vị GPS liên tục lên cloud. Khi phát hiện nhiệt độ tăng đột biến do xe lạnh hỏng điều hòa, hệ thống lập tức cảnh báo để tài xế tấp vào kho lạnh gần nhất cứu hàng.</li>
+                      <li><strong>Thiết Lập SLA Nghiêm Ngặt Với Đối Tác 3PL Kho Lạnh:</strong> Khi thuê ngoài dịch vụ logistics lạnh, hãy ràng buộc SLA chặt chẽ về dải nhiệt độ cam kết kèm điều khoản đền bù 100% giá trị lô hàng nếu xảy ra sự cố tắt máy lạnh xe tải để tiết kiệm dầu của tài xế (một tình trạng tiêu cực rất phổ biến ở các nước đang phát triển).</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -149,6 +227,21 @@
             }
 
             document.getElementById('btnShip').disabled = false;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function switchTab(btn, tabId) {
+            let tabs = btn.parentElement.querySelectorAll('.theory-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            let contents = btn.parentElement.parentElement.querySelectorAll('.theory-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
     </script>
 </body>

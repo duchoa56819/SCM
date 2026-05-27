@@ -36,7 +36,24 @@
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-bottom: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
 
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--warning), #b45309); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; transform: none;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -83,14 +100,75 @@
 
         <div class="log-container" id="logContent"></div>
 
-        <div class="detail-box">
-            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang AI trong Quản trị Rủi ro (Logistics 5.0)</h3>
-            <p>Bảo trì thiết bị trong SCM đã trải qua 3 kỷ nguyên:</p>
-            <ul>
-                <li><strong>1. Chờ hỏng mới sửa (Run-to-Failure):</strong> Cách làm ngu ngốc nhất. Bạn vắt kiệt động cơ, nhưng khi nó hỏng giữa đường, toàn bộ chuỗi cung ứng đứt gãy. Tàu kẹt ở kênh Suez, nhà máy dừng chuyền, tổn thất hàng triệu Đô la (Downtime Cost).</li>
-                <li><strong>2. Bảo trì Định kỳ (Preventive Maintenance):</strong> Cứ 6 tháng là thay linh kiện mới, không cần biết linh kiện cũ hỏng chưa. Rất an toàn, NHƯNG cực kỳ lãng phí. Rất nhiều linh kiện bị thay ra khi vẫn còn xài tốt được 2 năm nữa. Cạn kiệt phụ tùng.</li>
-                <li><strong>3. Bảo trì Dự đoán (Predictive Maintenance) & Digital Twin:</strong> Gắn cảm biến IoT vào động cơ thực. Dữ liệu truyền lên Cloud, tại đó một "Bản sao Số" (Digital Twin) mô phỏng chính xác hao mòn vật lý. AI tính toán và báo cáo: <em>"Động cơ này sẽ gãy vào lúc 14:00 ngày 20/10"</em>. Nhờ đó, bạn tối đa hóa được tuổi thọ linh kiện (dùng đến ngày 19/10 mới vứt), vừa né được 100% rủi ro hỏng giữa chừng. Tiết kiệm tỷ Đô!</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">🤖 Bản Sao Số (Digital Twin) & Kỷ Nguyên Bảo Trì Dự Đoán (Predictive Maintenance)</div>
+                    <p>Trong quản trị chuỗi cung ứng công nghiệp và logistics quốc tế, sự cố hỏng hóc đột ngột của phương tiện vận tải (như tàu viễn dương, máy bay) hay robot sản xuất gây ra những hậu quả tàn khốc. **Thời gian dừng máy ngoài kế hoạch (Unplanned Downtime)** không chỉ gây thiệt hại chi phí trực tiếp mà còn làm đứt gãy toàn bộ chuỗi cung ứng hạ nguồn.</p>
+                    <p><strong>Sự tiến hóa của các mô hình Bảo trì (Maintenance Models)</strong>:</p>
+                    <ul>
+                        <li><strong>1. Chạy đến khi hỏng mới sửa (Run-to-Failure / Reactive)</strong>: Mô hình lạc hậu nhất. Doanh nghiệp vắt kiệt công suất máy và chỉ sửa khi nó bị hỏng. Chi phí sửa chữa lúc này là cực lớn (hỏng liên đới nhiều bộ phận) kèm chi phí ứng phó sự cố khẩn cấp (như thuê tàu cứu hộ mất $200,000).</li>
+                        <li><strong>2. Bảo trì định kỳ (Preventive Maintenance)</strong>: Thay linh kiện theo mốc thời gian cố định (ví dụ cứ 6 tháng thay 1 lần). Rất an toàn, nhưng cực kỳ lãng phí tài chính vì thay thế nhiều linh kiện khi chúng vẫn còn hoạt động tốt tới 2 năm nữa.</li>
+                        <li><strong>3. Bảo trì dự đoán (Predictive Maintenance) & Digital Twin</strong>: Mô hình đỉnh cao của Logistics 5.0. Các cảm biến IoT liên tục thu thập dữ liệu (độ rung, nhiệt độ, áp suất) từ động cơ thực tế và truyền lên đám mây. Tại đó, một **Bản sao kỹ thuật số (Digital Twin)** được xây dựng để chạy giả lập hao mòn vật lý bằng học máy (Machine Learning). AI tự động tính toán và dự báo chính xác **Tuổi thọ hữu dụng còn lại (Remaining Useful Life - RUL)** của động cơ.
+                            <ul>
+                                <li>*Tối đa hóa vòng đời*: Doanh nghiệp tự tin vận hành động cơ đến sát ngày hỏng lý thuyết (ví dụ RUL < 15 ngày) rồi mới đưa vào xưởng bảo trì với chi phí cực thấp ($5,000).</li>
+                                <li>*Triệt tiêu rủi ro*: Ngăn chặn 100% thảm họa hỏng máy giữa biển khơi.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">✈️ Bản Sao Số Động Cơ GE Aviation & Hệ Thống Robot Gigafactory Của Tesla</div>
+                    <p><strong>Case Study 1: GE Aviation Và Bản Sao Số Cho Hàng Ngàn Động Cơ Phản Lực:</strong> GE Aviation là nhà sản xuất động cơ máy bay hàng đầu thế giới. Mỗi chiếc động cơ phản lực của GE được trang bị hàng trăm cảm biến IoT cực kỳ nhạy bén. Trong mỗi chuyến bay xuyên đại dương, động cơ liên tục truyền dữ liệu terabyte về áp suất buồng đốt, nhiệt độ khí xả và độ rung cánh quạt về máy chủ đám mây của GE. Tại đây, GE xây dựng một bản sao số (Digital Twin) riêng biệt cho từng chiếc động cơ thực tế. AI phân tích dữ liệu hao mòn để lên lịch bảo trì cực kỳ chính xác. Ngay khi máy bay hạ cánh xuống sân bay đích, đội ngũ kỹ thuật đã chuẩn bị sẵn chính xác linh kiện cần thay, giúp hãng bay cắt giảm 50% thời gian máy bay đắp chiếu chờ bảo dưỡng.</p>
+                    <p><strong>Case Study 2: Bảo Trì Dự Đoán Cánh Tay Robot Tại Tesla Gigafactory:</strong> Siêu nhà máy Gigafactory của Tesla vận hành hàng ngàn cánh tay robot hàn và lắp ráp tự động nối tiếp nhau. Nếu chỉ một robot ở khâu giữa bị kẹt hỏng ổ bi, toàn bộ dây chuyền sản xuất của siêu nhà máy sẽ bị tê liệt hoàn toàn. Tesla gắn cảm biến độ rung và dòng điện vào khớp của từng robot. Bản sao số giả lập liên tục quét dữ liệu dòng điện tăng bất thường (dấu hiệu khớp bị kẹt cơ học) để cảnh báo kỹ sư bảo trì đưa robot đó vào bảo dưỡng trong khung giờ nghỉ giữa ca, triệt tiêu hoàn toàn rủi ro dừng chuyền ngoài kế hoạch.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Tuổi Thọ Hữu Dụng Còn Lại (Remaining Useful Life - RUL)</div>
+                        <div class="kpi-desc">Khoảng thời gian (số ngày/giờ) dự kiến linh kiện có thể hoạt động an toàn trước khi xảy ra sự cố đột ngột. Chỉ số này do AI của Digital Twin tính toán liên tục.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">📉 Thời Gian Dừng Máy Ngoài Kế Hoạch (Unplanned Downtime - %)</div>
+                        <div class="kpi-desc">Tỷ lệ thời gian thiết bị ngừng hoạt động đột ngột do sự cố trên tổng thời gian vận hành dự kiến. Mục tiêu của doanh nghiệp Logistics 5.0 là đưa chỉ số này về $< 1\%$.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💵 Chi Phí Bảo Trì Trên Giá Trị Tài Sản (Maintenance Cost Index)</div>
+                        <div class="kpi-desc">Đo lường hiệu quả tài chính của hoạt động bảo trì. Việc kéo dài vòng đời linh kiện nhờ RUL giúp cắt giảm tới 30% chi phí mua sắm phụ tùng hàng năm.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #3b82f6;">💡 Executive Insights: Tư Duy "Servitization" Và Đầu Tư Nền Móng Cho Chất Lượng Dữ Liệu</div>
+                    <ul>
+                      <li><strong>Chuyển Dịch Tư Duy Từ Bán Sản Phẩm Sang Bán "Giờ Chạy An Toàn" (Servitization):</strong> Xu hướng của các hãng chế tạo thiết bị lớn hiện nay là không bán đứt máy móc nữa. Họ bán "Giải pháp đảm bảo thời gian hoạt động" (Uptime-as-a-Service). Bằng cách ứng dụng Digital Twin, sếp có thể cam kết mức Uptime $>99\%$ với khách hàng, mở ra nguồn doanh thu dịch vụ bảo hành lâu dài cực kỳ bền vững và biên lợi nhuận cao.</li>
+                      <li><strong>Tránh Bẫy Đầu Tư Công Nghệ Khi Chất Lượng Dữ Liệu Kém:</strong> Dự án AI & Digital Twin sẽ hoàn toàn thất bại nếu cảm biến rẻ tiền thu thập dữ liệu bị sai lệch hoặc đường truyền IoT chập chờn (Garbage in, Garbage out). Trước khi đầu tư phần mềm AI đắt đỏ, hãy đảm bảo hệ thống cảm biến phần cứng hoạt động chuẩn xác và có hạ tầng lưu trữ dữ liệu chuỗi thời gian (Time-series database) đồng bộ.</li>
+                      <li><strong>Đào Tạo Nhân Sự Vận Hành Tin Tưởng Vào Khuyến Nghị Của AI:</strong> Thách thức lớn khi triển khai Digital Twin là sự nghi ngờ của đội ngũ thợ máy truyền thống. Họ thường bỏ qua cảnh báo của AI chỉ vì "nhìn bên ngoài máy vẫn chạy êm". Hãy xây dựng cơ chế thưởng phạt rõ ràng gắn với chỉ số Uptime và đào tạo để công nhân xem Digital Twin là người đồng hành đáng tin cậy.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -187,6 +265,21 @@
             vibration = 0;
             rul = 100;
             updateUI();
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function switchTab(btn, tabId) {
+            let tabs = btn.parentElement.querySelectorAll('.theory-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            let contents = btn.parentElement.parentElement.querySelectorAll('.theory-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
 
         window.onload = startGame;

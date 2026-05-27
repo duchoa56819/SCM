@@ -30,7 +30,23 @@
 
         .error-msg { text-align: center; color: var(--warning); font-weight: bold; margin-bottom: 10px; height: 20px;}
 
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #5b21b6); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -79,13 +95,70 @@
             <div><div style="color: var(--text-muted);">HIỆU QUẢ SẮP XẾP</div><div class="stat-value" id="scoreStat" style="color: var(--success)">0%</div></div>
         </div>
 
-        <div class="detail-box">
-            <h3 style="margin-top: 0; color: #c084fc;">📚 Cẩm nang Tối ưu hóa Nguồn lực (Workforce Optimization)</h3>
-            <p>Bài toán chia ca (Shift Scheduling) là vấn đề đau đầu nhất của Amazon và Shopee Express.</p>
-            <ul>
-                <li><strong>Ca làm việc cố định (Fixed Shifts):</strong> Nếu bạn gom tất cả 30 người vào Ca Hành Chính (8h-16h). Vào buổi sáng (8h-10h), lượng xe tải về kho rất ít, 30 người sẽ ngồi chơi xơi nước (Overstaffed - Trả lương oan). Nhưng đến 18h tối khi xe tải ào ạt đổ về, toàn bộ công nhân đã tan làm! Hàng hóa ùn ứ thành núi qua đêm.</li>
-                <li><strong>Lịch trình đan xen (Staggered / Flexible Shifts):</strong> Lời giải là rải đều lực lượng. Dùng một nhóm nhỏ (Ca 1) để lo việc sáng sớm. Đưa lực lượng chủ lực (Ca 2 và Ca 3) đi làm trễ hơn (10h và 14h) để họ phủ kín khoảng thời gian giao thoa lúc chiều muộn (14h-18h), khi mà Nhu cầu hàng hóa lên đến đỉnh điểm. Mức độ "Vừa vặn" giữa Cung và Cầu chính là ranh giới giữa một kho vận có lãi và một kho vận phá sản.</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #c084fc;">⏱️ Cân Đối Năng Lực Nhân Sự & Quản Trị Chi Phí Cơ Hội (Shift Scheduling)</div>
+                    <p>Trong vận hành chuỗi cung ứng hiện đại, **Chi phí nhân công (Labor Cost)** luôn là một trong những định phí lớn nhất tại các Trung tâm phân loại (Sortation Centers), kho hàng và cảng biển. Việc thiết lập lịch trình trực (Workforce Scheduling) không đơn thuần là phân bổ ca kíp, mà là bài toán cân bằng tài chính phức tạp.</p>
+                    <p><strong>Sự đánh đổi khốc liệt giữa Dư thừa và Thiếu hụt</strong>:</p>
+                    <ul>
+                        <li><strong>Dư thừa nhân sự (Overstaffed / Idle hours)</strong>: Trả lương cho công nhân ngồi chơi khi lượng hàng đổ về thấp (đầu buổi sáng). Điều này trực tiếp tàn phá biên lợi nhuận của kho bãi.</li>
+                        <li><strong>Thiếu hụt nhân sự (Understaffed / Shortage)</strong>: Không có đủ công nhân bốc xếp khi làn sóng xe tải ồ ạt đổ về vào giờ cao điểm chiều tối. Hàng hóa bị ùn tắc chật cứng, trễ chuyến bay vận tải kết nối hoặc vi phạm cam kết thời gian giao hàng (SLA) ➔ Chịu mức phạt tài chính nặng nề từ khách hàng.</li>
+                    </ul>
+                    <p><strong>Giải pháp Ca làm việc linh hoạt (Staggered Shift Design)</strong>: Thay vì rập khuôn áp dụng ca 8 tiếng truyền thống đồng loạt (ví dụ cả 30 người cùng đi làm từ 8:00 đến 16:00), các kỹ sư vận hành xuất sắc sẽ thiết kế các **Ca lệch đan xen (Staggered/Flexible Shifts)**. Đưa các lực lượng nòng cốt đi làm muộn hơn (như 10h và 14h) để họ cùng phủ kín và tiếp sức vào giờ cao điểm giao thoa (14:00 - 18:00), vừa triệt tiêu giờ nhàn rỗi buổi sáng, vừa giải quyết 100% ùn ứ buổi chiều.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #c084fc;">📦 Giải Pháp Nhân Sự Linh Hoạt Của Amazon Flex & Lịch Trực Đan Xen Tại Siêu Kho DHL</div>
+                    <p><strong>Case Study 1: Amazon Flex & Mô Hình Lao Động Theo Nhu Cầu (On-Demand Labor):</strong> Amazon là tập đoàn tiên phong giải bài toán co giãn nhân sự chặng cuối. Thông qua ứng dụng **Amazon Flex**, Amazon tuyển dụng hàng trăm ngàn tài xế tự do (gig-workers) làm việc theo giờ. Dựa trên dữ liệu dự báo nhu cầu mua sắm theo thời gian thực (real-time forecasting), thuật toán AI của Amazon tự động gửi các "khung giờ bận rộn" (Block rates) kèm mức thù lao tăng thêm để kích thích tài xế đăng ký ca làm việc đúng vào các khung giờ vàng ùn tắc đơn hàng. Mô hình này giúp Amazon giải quyết gọn gàng các đợt Peak Season (Prime Day, Black Friday) mà không phải gánh chi phí lương cố định khổng lồ trong thời bình.</p>
+                    <p><strong>Case Study 2: Tối Ưu Hóa Ca Trực Đan Xen Tại Trung Tâm Phân Loại DHL Express:</strong> Tại siêu trung tâm phân loại hàng không của DHL tại Leipzig (Đức), lượng hàng đổ về phụ thuộc chặt chẽ vào giờ hạ cánh của các chuyên cơ vận tải. DHL Express không sử dụng các ca làm việc 8 tiếng cứng nhắc. Họ thiết kế hệ thống ca đan xen linh hoạt gồm ca 4 tiếng, 6 tiếng và 8 tiếng đè lên nhau. Sự đan xen này được tối ưu hóa toán học (Linear Programming) sao cho số lượng nhân công có mặt tại mỗi mét vuông bốc xếp luôn biến thiên tỷ lệ thuận với khối lượng bưu kiện cập cửa dock, triệt tiêu 95% thời gian nhàn rỗi vô ích.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📊 Hiệu Suất Sử Dụng Nhân Lực (Labor Utilization Rate - %)</div>
+                        <div class="kpi-desc">Tỷ lệ thời gian công nhân thực sự bốc xếp, quét mã trên tổng thời gian ca trực. Mục tiêu tại các kho hàng chuyên nghiệp là đạt $> 80\%$.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Độ Lệch Kế Hoạch Ca Trực (Schedule Adherence - %)</div>
+                        <div class="kpi-desc">Chỉ số đo lường mức độ khớp nhau giữa số lượng nhân sự dự kiến có mặt theo lịch trực so với số lượng thực tế check-in vân tay tại kho.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💸 Chi Phí Lãng Phí Do Nhàn Rỗi (Cost of Idle Time)</div>
+                        <div class="kpi-desc">Khoản tiền lương trả cho thời gian công nhân ngồi đợi hàng do phân bổ ca sai lệch. Đây là khoản lãng phí vô hình cần được kiểm soát chặt.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #c084fc;">💡 Executive Insights: Tư Duy Co Giãn Linh Hoạt Và Đồng Bộ Dữ Liệu S&OP</div>
+                    <ul>
+                      <li><strong>Phá Vỡ Tư Duy Ca Làm Việc Cố Định 8 Tiếng:</strong> Nhiều nhà quản lý chọn phương án chia ca 8 tiếng cứng nhắc chỉ vì nó "dễ quản lý hành chính". Đây là lối tư duy lười biếng gây lãng phí hàng tỷ đồng chi phí vận hành. Hãy dũng cảm chuyển sang thiết kế ca trực lệch (Staggered shifts) và tận dụng nhân sự bán thời gian (Part-time) cho các khung giờ cao điểm hẹp.</li>
+                      <li><strong>Kết Nối Trực Tiếp Dữ Liệu Dự Báo Hàng Với Lịch Nhân Sự:</strong> Bộ phận điều phối kho bãi và bộ phận nhân sự thường xuyên bị đứt gãy thông tin. Lịch trực tuần tới phải luôn được tính toán dựa trên dữ liệu dự báo lượng hàng Inbound/Outbound của tuần tới (S&OP data), chứ không được phép sao chép lịch trực của tuần trước một cách mù quáng.</li>
+                      <li><strong>Đầu Tư Vào Đào Tạo Công Nhân Đa Năng (Cross-Training):</strong> Khi một khu vực bị quá tải hàng hóa (như khâu đóng gói), sếp có thể lập tức dịch chuyển công nhân từ khâu đang rảnh rỗi (khâu dán nhãn) sang hỗ trợ nếu họ đã được đào tạo đa năng. Sự linh hoạt trong nội bộ giúp giảm thiểu nhu cầu tuyển dụng dư thừa.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -176,6 +249,21 @@
             let scColor = score > 85 ? 'var(--success)' : (score > 50 ? 'var(--warning)' : 'var(--danger)');
             document.getElementById('scoreStat').innerText = score.toFixed(1) + '%';
             document.getElementById('scoreStat').style.color = scColor;
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function switchTab(btn, tabId) {
+            let tabs = btn.parentElement.querySelectorAll('.theory-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            let contents = btn.parentElement.parentElement.querySelectorAll('.theory-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
 
         window.onload = initChart;

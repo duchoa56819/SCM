@@ -31,7 +31,24 @@
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6;}
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0c4a6e); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -84,14 +101,76 @@
             </div>
         </div>
 
-        <div class="detail-box">
-            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Phụ tùng Số (Spare Parts Logistics)</h3>
-            <p><strong>Additive Manufacturing (In 3D)</strong> đang phá hủy hoàn toàn khái niệm tồn kho phụ tùng bảo hành truyền thống.</p>
-            <ul>
-                <li><strong>Gánh nặng Tồn kho cũ:</strong> Các hãng như Caterpillar, Boeing hay BMW phải xây dựng hàng trăm "Kho Phụ tùng" trên khắp thế giới để lưu trữ các bánh răng, ốc vít phòng khi máy hỏng. Hàng tồn kho đọng vốn hàng Tỷ đô, sau 10 năm không ai xài lại phải đem vứt bỏ (Lỗi thời/Obsolete).</li>
-                <li><strong>Digital Inventory (Tồn kho Kỹ thuật số):</strong> Thay vì lưu trữ "Cái bánh răng sắt" trong nhà kho, họ chỉ cần lưu trữ "File thiết kế 3D (CAD)" trên hệ thống Đám mây (Cloud Server). Chi phí lưu kho = $0.</li>
-                <li><strong>Cú lừa của Giá thành:</strong> Nhìn lướt qua, tiền tiện cái bánh răng ở nhà máy cũ chỉ mất $100, còn đem In 3D mất tận $800 (In 3D kim loại rất đắt). Nhiều người chê 3D quá đắt. NHƯNG họ quên tính <strong>Chi phí Downtime ($10,000/ngày)</strong>. Vận chuyển xuyên quốc gia dính hải quan mất 7 ngày. Trong khi In 3D thì in ngay tại thành phố đó và lấy ngay trong ngày. Bài toán tổng thể chứng minh: In 3D cứu mỏ vàng tận $60,000!</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💾 Tồn Kho Kỹ Thuật Số (Digital Inventory) & Tối Ưu Hóa Phụ Tùng (Spare Parts)</div>
+                    <p>Trong chuỗi cung ứng công nghiệp nặng và dịch vụ hậu mãi B2B, **Quản lý phụ tùng bảo hành (Spare Parts Logistics)** là một gánh nặng tài chính khổng lồ. Việc duy trì hàng triệu chủng loại bánh răng, bảng mạch, ốc vít tại khắp các kho bãi toàn cầu tiêu tốn 25-30% chi phí đọng vốn mỗi năm, kèm theo rủi ro hàng hóa bị lỗi thời, rỉ sét buộc phải tiêu hủy (Obsolete Cost).</p>
+                    <p><strong>Khái niệm Sản xuất đắp lớp (In 3D - Additive Manufacturing)</strong>: Là một trong những công nghệ cốt lõi của Cách mạng Công nghiệp 4.0, cho phép in trực tiếp các sản phẩm cơ khí chính xác dạng đắp lớp từ file thiết kế 3D CAD mà không cần khuôn mẫu truyền thống.</p>
+                    <p><strong>Sự chuyển dịch mang tính cách mạng (Digital Inventory)</strong>:</p>
+                    <ul>
+                        <li>**Không lưu kho vật lý**: Thay vì cất giữ hàng ngàn bánh răng kim loại nặng nề trong nhà kho, doanh nghiệp chỉ cần lưu trữ các file thiết kế kỹ thuật số dạng `.STL` trên hệ thống Đám mây. Chi phí lưu trữ lúc này bằng KHÔNG.</li>
+                        <li>**In theo yêu cầu (Print-on-Demand)**: Khi có thiết bị của khách hàng bị hỏng, file CAD được gửi tức thời qua Internet đến máy in 3D đặt tại chi nhánh địa phương gần nhất để in và lắp ráp ngay trong ngày.</li>
+                        <li>**Bài toán tổng chi phí sở hữu (Total Cost of Ownership - TCO)**: Giá in 3D kim loại tại chỗ có thể đắt gấp 8 lần giá đúc hàng loạt tại nhà máy cũ ở Đức ($800 vs $100). Nhưng in 3D giúp rút ngắn thời gian máy ngưng hoạt động (Downtime) từ 7 ngày xuống còn 1 ngày, cứu mỏ vàng khỏi khoản thiệt hại dừng máy khổng lồ ($70,000 vs $10,000).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">⛏️ Ứng Dụng In 3D Của Gã Khổng Lồ Caterpillar & Dự Án Linh Kiện Của Hãng Bay Lufthansa</div>
+                    <p><strong>Case Study 1: Caterpillar Giải Cứu Downtime Máy Mỏ Bằng In 3D Tại Chỗ:</strong> Caterpillar là nhà sản xuất máy xây dựng và khai mỏ lớn nhất thế giới. Khi một chiếc máy xúc đào khổng lồ trị giá triệu đô của Caterpillar bị hỏng một khớp nối thủy lực tại một mỏ quặng xa xôi ở sa mạc Úc, chi phí dừng máy mỗi ngày lên tới hàng chục ngàn USD. Trước đây, Caterpillar phải gửi phụ tùng từ kho tổng tại Mỹ qua đường hàng không mất tới 5-7 ngày. Hiện nay, Caterpillar hợp tác với các trung tâm in 3D kim loại tại Úc. Họ chỉ cần tải file CAD bảo mật từ hệ thống xuống và in 3D bằng công nghệ thiêu kết laser kim loại trực tiếp (DMLS). Khớp nối được giao và lắp ngay trong vòng 12 giờ, giúp mỏ quặng tiết kiệm hàng trăm ngàn USD chi phí downtime.</p>
+                    <p><strong>Case Study 2: Lufthansa Technik Và Kho Phụ Tùng Số Cho Máy Bay Thương Mại:</strong> Hãng hàng không Lufthansa (Đức) quản lý hàng trăm máy bay. Việc lưu trữ tất cả các linh kiện nhựa, kim loại nhỏ trong cabin máy bay tại mọi sân bay toàn cầu là một sự lãng phí tài chính lớn. Lufthansa Technik đã xây dựng một **Kho phụ tùng số hóa (Digital Warehouse)**. Khi một chiếc máy bay của họ tại sân bay Singapore bị gãy chốt cài tay ghế hoặc nắp đậy mặt nạ oxy, kỹ sư tại Singapore chỉ cần truy cập thư viện số của Lufthansa, tải file CAD và in 3D ngay tại sân bay trong vòng vài giờ trước giờ cất cánh tiếp theo.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">💵 Chi Phí Tổn Thất Dừng Máy (Downtime Cost Saved - $)</div>
+                        <div class="kpi-desc">Tổng số tiền tiết kiệm được cho khách hàng/doanh nghiệp nhờ cắt giảm thời gian chờ đợi phụ tùng hỏa tốc xuyên biên giới.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">📦 Chi Phí Lưu Kho Đọng Vốn (Inventory Carrying Cost - %)</div>
+                        <div class="kpi-desc">Tỷ lệ giảm chi phí đọng vốn lưu động tại kho do chuyển dịch các phụ tùng nhóm C (ít dùng) từ dạng vật lý sang dạng số kỹ thuật số.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Thời Gian Đáp Ứng Phụ Tùng (Spare Parts Lead Time - Hours)</div>
+                        <div class="kpi-desc">Thời gian từ lúc máy phát sinh lỗi cho đến khi linh kiện thay thế được lắp ráp hoàn thành. In 3D rút ngắn chỉ số này từ mức Tuần xuống mức Giờ.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy TCO Của Nhà Lãnh Đạo & Thiết Lập Chiến Lược Hybrid Spare Parts</div>
+                    <ul>
+                      <li><strong>Đừng So Sánh Giá Đơn Vị Trên Bề Mặt, Hãy Tính Toán TCO:</strong> Rất nhiều giám đốc thu mua từ chối giải pháp in 3D vì thấy hóa đơn báo giá in một chi tiết quá đắt đỏ so với giá mua sỉ từ nhà máy đúc hàng loạt. Đây là lỗi tư duy cục bộ (Silo thinking). Hãy tính toán tổng chi phí sở hữu (Total Landed Cost) cộng thêm chi phí tổn thất cơ hội do dừng máy của khách hàng để thấy rõ hiệu quả tài chính thực tế của In 3D.</li>
+                      <li><strong>Áp Dụng Chiến Lược Hybrid Spare Parts (Kết Hợp Vật Lý & Số):</strong> In 3D không thay thế hoàn toàn kho vật lý. Hãy phân nhóm phụ tùng bằng phân loại ABC.
+                        <ul>
+                          <li>*Linh kiện nhóm A (hao mòn nhanh, dùng liên tục)*: Vẫn sản xuất đại trà và trữ kho vật lý để tận dụng lợi thế quy mô.</li>
+                          <li>*Linh kiện nhóm C (cực kỳ ít dùng, thiết kế phức tạp)*: Số hóa 100% thành file CAD và in 3D theo yêu cầu để giải phóng 100% diện tích kho bãi.</li>
+                        </ul>
+                      </li>
+                      <li><strong>Bảo Mật Tài Sản Trí Tuệ (IP Protection):</strong> Rủi ro lớn nhất của Digital Inventory là file CAD thiết kế bị rò rỉ ra ngoài, dẫn đến hàng nhái, hàng giả tràn lan. Hãy thiết lập các nền tảng truyền tải dữ liệu mã hóa đầu cuối và chỉ cho phép máy in 3D của đối tác in đúng số lượng 1 chiếc được cấp phép thông qua mã token thông minh.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -124,6 +203,21 @@
                     }, 500); // Super fast transmission
                 }, 100);
             }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function switchTab(btn, tabId) {
+            let tabs = btn.parentElement.querySelectorAll('.theory-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            let contents = btn.parentElement.parentElement.querySelectorAll('.theory-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
     </script>
 </body>

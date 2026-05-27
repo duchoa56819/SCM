@@ -39,7 +39,24 @@
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
 
-        .detail-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary); font-size: 1rem; line-height: 1.6; margin-top: 20px;}
+        .action-btn { padding: 15px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #0c4a6e); color: white; cursor: pointer; transition: all 0.3s; width: 100%; text-transform: uppercase; margin-bottom: 20px;}
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); }
+        .action-btn:disabled { background: gray; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -80,13 +97,70 @@
 
         <div class="log-container" id="logContent"></div>
 
-        <div class="detail-box">
-            <h3 style="margin-top: 0; color: var(--primary);">📚 Cẩm nang Công nghệ Tương lai (Flying Sidekick TSP)</h3>
-            <p>Bài toán Người Chào Hàng (TSP) truyền thống đã lỗi thời khi Amazon, UPS và Google Wing phát minh ra mô hình <strong>Flying Sidekick</strong> (Xe tải mang theo Drone).</p>
-            <ul>
-                <li><strong>Cơ chế Song song (Parallel Routing):</strong> Xe tải không cần dừng lại chờ Drone. Xe tải phóng Drone đi giao nhà số 2, trong khi xe tải tiếp tục chạy đi giao nhà số 3. Sau khi giao xong nhà số 2, Drone sẽ tự động bay theo tọa độ và hạ cánh chính xác xuống nóc chiếc xe tải ĐANG CHẠY ở nhà số 3 để sạc pin và nhận gói hàng tiếp theo.</li>
-                <li><strong>Giải quyết điểm yếu của cả hai:</strong> Drone bay rất nhanh, vượt mọi tắc đường, nhưng pin yếu và không mang được hàng nặng. Xe tải chở được nhiều hàng nặng, pin trâu, nhưng đi chậm và hay kẹt xe. Việc kết hợp chúng biến Xe tải thành "Kho lưu động di chuyển" và Drone thành "Vệ tinh đánh chặn". Thời gian giao hàng chặng cuối (Last-Mile) giảm đi 50%, một cuộc cách mạng tuyệt đối về tốc độ!</li>
-            </ul>
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+        </div>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #38bdf8;">🛸 Mô hình Xe tải Mẹ & Drone Đồng hành (Flying Sidekick TSP)</div>
+                    <p>Trong chặng chót của phân phối chuỗi cung ứng hiện đại, **Giao hàng chặng cuối (Last-Mile Delivery)** luôn là khâu tốn kém tiền bạc và thời gian nhất, chiếm tới 53% tổng chi phí logistics. Sự bùng nổ của thương mại điện tử đòi hỏi các doanh nghiệp phải giải được bài toán tối ưu hóa định tuyến.</p>
+                    <p><strong>Cơ chế Xe Mẹ và Drone Con (Mothership & Flying Sidekick)</strong>:</p>
+                    <ul>
+                        <li><strong>Hành trình song song (Parallel Routing)</strong>: Thay vì bắt xe tải phải len lỏi vào các ngõ ngách chật hẹp, xe tải lớn chỉ cần chạy dọc trục đường chính. Khi đến gần các điểm giao nằm sâu trong hẻm hoặc vùng đồi dốc, hệ thống sẽ phóng drone mang theo hàng bay đi giao.</li>
+                        <li><strong>Vệ tinh bổ trợ di động</strong>: Trong khi drone tự động bay đi thả hàng tại điểm A, xe tải tiếp tục di chuyển đi giao hàng tại điểm B. Sau khi hoàn tất nhiệm vụ, drone sẽ tự động tính toán tọa độ dịch chuyển của xe tải mẹ và bay về hạ cánh chính xác xuống nóc chiếc xe tải <strong>khi nó vẫn đang di chuyển</strong> để sạc pin và nhận bưu kiện tiếp theo.</li>
+                        <li><strong>Bù đắp nhược điểm chéo</strong>: Drone có tốc độ cực nhanh, không ngại kẹt xe nhưng bị giới hạn nghiêm trọng về dung lượng pin và trọng tải. Xe tải lớn có sức chứa khổng lồ, pin bền bỉ nhưng di chuyển chậm trong đô thị. Sự kết hợp biến xe tải thành một kho hàng di động sạc pin và drone thành cánh tay nối dài tác chiến không giới hạn.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #38bdf8;">📦 Chương Trình Drone Prime Air Của Amazon & Sáng Kiến Độc Đáo Của UPS</div>
+                    <p><strong>Case Study 1: Amazon Prime Air & Hệ Thống Giao Hàng Bằng Thiết Bị Bay Không Người Lái:</strong> Jeff Bezos đã làm cả thế giới kinh ngạc khi công bố dự án Prime Air giao hàng bằng drone trong 30 phút. Amazon xây dựng các trung tâm phân phối siêu nhỏ (Micro-fulfillment centers) tích hợp tháp phóng drone. Drone của Amazon tự bay dưới độ cao 120 mét, sử dụng camera và cảm biến độ sâu AI để phát hiện chướng ngại vật (như dây điện, vật nuôi, cành cây) để thả bưu kiện an toàn xuống thảm cỏ nhà khách hàng. Amazon đặt mục tiêu giao 500 triệu gói hàng bằng drone mỗi năm vào cuối thập kỷ này, biến logistics đô thị thành dòng chảy tự động hóa hoàn toàn.</p>
+                    <p><strong>Case Study 2: Xe Tải Điện Chở Drone Của Tập Đoàn UPS:</strong> UPS đã thử nghiệm thành công mô hình xe tải của hãng sản xuất Workhorse mang theo drone cắm sạc trên nóc. Xe tải của UPS có cửa trần trượt tự động. Tài xế UPS chỉ cần đặt gói hàng vào giá treo bên trong xe, drone sẽ tự động gắp, cửa nóc mở ra và drone cất cánh bay đi giao bưu kiện cho một trang trại cách đó 3km, trong khi tài xế tiếp tục lái xe đi giao cho một trang trại khác. UPS tính toán rằng việc cắt giảm chỉ 1 dặm di chuyển (1.6km) của mỗi tài xế UPS trên toàn quốc nhờ drone có thể giúp tập đoàn tiết kiệm tới <strong>50 triệu USD mỗi năm</strong> tiền xăng dầu và chi phí nhân công.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Thời Gian Giao Chặng Cuối (Last-Mile Delivery Time)</div>
+                        <div class="kpi-desc">Thời gian trung bình tính từ khi bưu kiện rời trung tâm phân phối vệ tinh cho đến khi đặt vào tay khách hàng. Mô hình xe mẹ-drone giúp rút ngắn tới 50% thời gian này.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💵 Chi Phí Giao Trên Mỗi Đơn Hàng (Cost Per Delivery)</div>
+                        <div class="kpi-desc">Tổng chi phí nhiên liệu, khấu hao xe và công lao động chia cho số đơn. Drone chạy điện có chi phí vận hành mỗi dặm rẻ hơn 80% so với xe tải chạy xăng.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔋 Tỷ Lệ Sạc Pin & Khai Thác (Battery Cycle & Drone Utility)</div>
+                        <div class="kpi-desc">Đo lường thời gian drone hoạt động thực tế trên không so với thời gian nằm sạc pin tĩnh trên nóc xe tải mẹ.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #38bdf8;">💡 Executive Insights: Định Định Vị Công Nghệ Đúng Nơi, Đúng Sản Phẩm</div>
+                    <ul>
+                      <li><strong>Hiểu Rõ Giới Hạn Tải Trọng Của Drone:</strong> Drone không phải là thuốc vạn năng thay thế xe tải. Drone hiện tại chỉ mang được các bưu kiện dưới 2.3kg (tuy nhiên nhóm này lại chiếm tới 86% số đơn hàng trên thương mại điện tử). Hãy phân tách tệp bưu kiện: Chỉ phóng drone giao thuốc men, tài liệu quan trọng, đồ ăn nóng, và giữ các mặt hàng nặng cho xe tải.</li>
+                      <li><strong>Tránh Bẫy Đầu Tư Trào Lưu Khi Chưa Có Khung Pháp Lý:</strong> Rào cản lớn nhất của drone logistics không nằm ở công nghệ, mà là luật hàng không đô thị (FAA / CAA). Đầu tư mua hàng loạt drone khi chưa được cấp phép bay ngoài tầm mắt (BVLOS - Beyond Visual Line of Sight) sẽ khiến thiết bị đắp chiếu trong kho. Hãy bắt đầu bằng việc hợp tác thử nghiệm tại các vùng nông thôn, vùng thưa dân cư hoặc các mỏ công nghiệp biệt lập trước.</li>
+                      <li><strong>Quản Trị Rủi Ro Thời Tiết Và An Toàn Bay:</strong> Drone cực kỳ nhạy cảm với sức gió và mưa lớn. Luôn cài đặt chế độ tự động quay về xe mẹ (Return-to-Home) khi cảm biến phát hiện sức gió vượt ngưỡng an toàn, đồng thời mua bảo hiểm trách nhiệm công cộng để đề phòng rủi ro rơi vỡ gây tai nạn.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -158,6 +232,21 @@
                 document.getElementById('effStat').style.color = "var(--primary)";
                 addLog(`🏁 HOÀN THÀNH ĐỈNH CAO. Tổng thời gian: <strong>30 Phút</strong>. Cắt giảm 50% thời gian giao hàng!`);
             }
+        }
+
+        function toggleGuide() {
+            let g = document.getElementById('strategyGuide');
+            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function switchTab(btn, tabId) {
+            let tabs = btn.parentElement.querySelectorAll('.theory-tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            let contents = btn.parentElement.parentElement.querySelectorAll('.theory-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
     </script>
 </body>
