@@ -32,6 +32,21 @@
 
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -68,15 +83,62 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #34d399; margin-top: 0;">📚 Cẩm nang Công nghệ Chuỗi (Blockchain SCM)</h3>
-            <p>Vào năm 2018, chuỗi cung ứng Rau xà lách Romaine ở Bắc Mỹ bị nhiễm E.Coli.</p>
-            <ul>
-                <li><strong>Hệ thống Giấy tờ (Truyền thống):</strong> Walmart mất tới <strong>7 Ngày</strong> để lật tung các đống hóa đơn giấy và gọi điện thoại cho hàng trăm nhà phân phối để tìm xem bó rau bẩn đến từ trang trại nào. Vì quá chậm, để bảo vệ sinh mạng khách hàng, họ buộc phải tiến hành <strong>Blanket Recall (Thu hồi mù)</strong>: Vứt bỏ TẤT CẢ rau xà lách trên kệ của 5.000 siêu thị. Thiệt hại lên tới hàng chục triệu Đô la!</li>
-                <li><strong>Hệ thống Blockchain (IBM Food Trust):</strong> Sau vụ đó, Walmart yêu cầu toàn bộ nhà cung cấp dùng Blockchain. Khi thu hoạch, nông dân quét mã QR lưu lên Blockchain. Khi lên xe tải, tài xế quét mã. Dữ liệu phi tập trung và không thể sửa đổi. Lần tiếp theo có sự cố, Walmart chỉ mất <strong>2.2 Giây</strong> để truy xuất chính xác lô hàng đó đang nằm ở 3 siêu thị nào. Họ chỉ phải thu hồi rau ở 3 siêu thị đó. Các siêu thị khác vẫn bán bình thường (Surgical Recall). Tiết kiệm một số tiền khổng lồ. <strong>Bài học: Công nghệ Minh bạch hóa Chuỗi cung ứng (Traceability) không phải là "tiện ích", nó là "Bảo hiểm rủi ro".</strong></li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">⛓️ Minh Bạch Hóa Chuỗi Cung Ứng & Nghệ Thuật Thu Hồi Thu Hẹp</div>
+                    <p>Trong vận hành chuỗi cung ứng hiện đại, thông tin bất đối xứng và cấu trúc cô lập (Information Silos) giữa các thành viên là nguyên nhân gốc rễ gây ra sự chậm trễ và lãng phí khi xảy ra biến cố. Hai phương thức quản lý khủng hoảng chất lượng:</p>
+                    <p>- <strong>Thu Hồi Diện Rộng (Blanket Recall)</strong>: Do không có hệ thống truy xuất liên kết, doanh nghiệp buộc phải tiêu hủy hoặc thu hồi toàn bộ sản phẩm trên tất cả các kênh phân phối để bảo vệ an toàn người dùng. Gây lãng phí tài chính khổng lồ và hủy diệt uy tín thương hiệu.</p>
+                    <p>- <strong>Thu Hồi Cắt Lớp (Surgical Recall)</strong>: Nhờ khả năng liên kết dữ liệu xuyên suốt (End-to-End Traceability), doanh nghiệp xác định chính xác 1 lô hàng lỗi duy nhất đến từ trang trại/nhà máy nào và hiện nằm tại 3 cửa hàng nào để thu hồi cục bộ, giúp tiết kiệm 95% chi phí xử lý khủng hoảng.</p>
+                    <p><strong>Vai trò của Blockchain trong SCM:</strong> Với đặc tính phi tập trung (Decentralization) và tính bất biến (Immutability), sổ cái Blockchain cho phép ghi nhận mã băm (Hash) mỗi bước dịch chuyển của hàng hóa từ khâu hạt giống đến bàn ăn, ngăn chặn tuyệt đối việc ngụy tạo hoặc sửa đổi hồ sơ nguồn gốc.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #34d399;">🏢 Walmart Giải Cứu Rau Xà Lách Bằng IBM Food Trust & Tôm Xuất Khẩu Việt Nam</div>
+                    <p><strong>Case Study 1: Hệ Thống IBM Food Trust Của Walmart (Mỹ):</strong> Năm 2018, dịch vi khuẩn E. Coli lây nhiễm qua rau xà lách Romaine cướp đi sinh mạng nhiều người Mỹ. Walmart đã mất **7 ngày** để liên hệ các nhà vườn, truy tìm hóa đơn giấy tìm nguồn gốc. Cuối cùng, họ phải vứt bỏ toàn bộ rau sạch trên kệ hàng ngàn siêu thị để phòng ngừa rủi ro. Sau đó, Walmart hợp tác với IBM xây dựng hệ thống **IBM Food Trust** chạy trên nền tảng Hyperledger Fabric. Kết quả: Thời gian truy quét nguồn gốc của một bó rau từ nông trại đến kệ siêu thị được rút ngắn từ **7 ngày xuống còn đúng 2.2 giây**! Khi có sự cố mới, họ chỉ cần thu hồi rau ở đúng 2 siêu thị bị ảnh hưởng, cứu hàng triệu Đô la.</p>
+                    <p><strong>Case Study 2: Chuỗi Thủy Sản Bền Vững Minh Phú (Việt Nam):</strong> Là tập đoàn xuất khẩu tôm hàng đầu thế giới, Minh Phú đã sớm triển khai số hóa truy xuất nguồn gốc. Khách hàng tại Mỹ hoặc EU chỉ cần quét mã QR trên bao bì túi tôm đông lạnh để xem toàn bộ lịch sử: tôm nuôi ở ao nào của Việt Nam, thức ăn nuôi tôm đến từ hãng nào, ngày đánh bắt, nhà máy chế biến đạt chứng nhận sinh thái ASC/BAP nào, nhiệt độ container lạnh trong suốt hành trình vượt đại dương. Điều này giúp Minh Phú vượt qua các rào cản kỹ thuật khắt khe của liên minh Châu Âu và bảo vệ giá bán premium cao hơn 15% so với đối thủ cạnh tranh.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Thời Gian Truy Vết Nguồn Gốc (Traceability Retrieval Time)</div>
+                        <div class="kpi-desc">Thời gian cần thiết để truy xuất toàn bộ hành trình ngược dòng của sản phẩm từ điểm bán lẻ về nhà cung cấp nguyên liệu thô ban đầu.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">🎯 Tỷ Lệ Thu Hồi Chính Xác (Recall Execution Accuracy)</div>
+                        <div class="kpi-desc">Chỉ số đo lường tỷ lệ thu hồi chính xác lô hàng lỗi mà không gây ảnh hưởng nhầm lên các lô hàng đạt chuẩn khác trên hệ thống.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #34d399;">💡 Executive Insights: Tư Duy Kiến Tạo Chuỗi Cung Ứng Minh Bạch & Trách Nhiệm</div>
+                    <ul>
+                      <li><strong>Xem Truy Xuất Nguồn Gốc Là Khoản Bảo Hiểm Rủi Ro (Risk Insurance):</strong> Nhiều CFO coi việc đầu tư vào RFID, IoT hay phần mềm Blockchain là chi phí lãng phí vì "thường ngày không dùng tới". Hãy nhớ: Một vụ bê bối chất lượng thực phẩm hay đồ chơi trẻ em không được truy vết nhanh có thể phá hủy thương hiệu tích lũy hàng chục năm chỉ trong 24 giờ. Chi phí đầu tư công nghệ luôn rẻ hơn hàng nghìn lần hóa đơn đền bù khủng hoảng.</li>
+                      <li><strong>Triển Khai "Mã Hóa" Tận Gốc (First-Mile Tagging):</strong> Điểm yếu nhất của mọi hệ thống truy vết nằm ở khâu thu thập dữ liệu đầu tiên (First-mile). Nếu nông dân không dán nhãn mã vạch/QR ngay khi thu hoạch tại vườn mà để nhà trung chuyển tự gom đống dán sau, mọi dữ liệu Blockchain phía sau đều vô giá trị. Phải chuẩn hóa và hỗ trợ công nghệ cho cả các mắt xích yếu nhất ở đầu nguồn chuỗi cung ứng.</li>
+                      <li><strong>Tuân Thủ Tiêu Chuẩn Toàn Cầu GS1 (GS1 Standards):</strong> Tránh tự phát minh ra các hệ thống định danh nội bộ khép kín. Hãy áp dụng bộ tiêu chuẩn định danh toàn cầu GS1 (mã vạch EAN/UPC, mã số container SSCC, mã địa điểm GLN). Đây là ngôn ngữ chung giúp chuỗi cung ứng của bạn dễ dàng kết nối trao đổi dữ liệu tự động với hệ thống của Hải quan, Cảng biển và các siêu thị đa quốc gia.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -160,7 +222,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = initStores;

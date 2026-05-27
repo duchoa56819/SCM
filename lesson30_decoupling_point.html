@@ -39,6 +39,21 @@
         .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-top: 5px;}
         .bg-push { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger);}
         .bg-pull { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success);}
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -106,16 +121,67 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #14b8a6; margin-top: 0;">📚 Cẩm nang Ranh giới Push-Pull</h3>
-            <p><strong>Decoupling Point (Điểm tách biệt)</strong> là nơi hàng hóa được "tích trữ" chờ lệnh của Khách. Trước điểm này, nhà máy sản xuất theo dự báo (Push). Sau điểm này, nhà máy sản xuất theo đơn hàng thực tế (Pull).</p>
-            <ul>
-                <li><strong>Make-to-Order MTO (Tồn kho ở Bước 1):</strong> Bạn chỉ trữ ốc vít. Khi có đơn mới bắt đầu rèn khung, lắp chip. Chi phí kho siêu rẻ (ốc vít không bao giờ ế). NHƯNG khách hàng phải đợi 10 ngày mới có Laptop. Đa số khách hàng sẽ bỏ đi mua hãng khác.</li>
-                <li><strong>Make-to-Stock MTS (Tồn kho ở Bước 4):</strong> Bạn làm sẵn hàng ngàn cái Laptop xịn cất trong kho. Khách đặt phát là giao ngay lập tức (0 Ngày). Tuyệt vời! NHƯNG nếu khách không mua màu Đỏ mà đòi màu Xanh, kho laptop màu Đỏ của bạn trở thành rác công nghệ lỗi thời. Chi phí đọng vốn lên tới hàng triệu Đô. Bán lẻ truyền thống hay chết vì lỗi này.</li>
-                <li><strong>Assemble-to-Order ATO (Tồn kho ở Bước 2/3 - Tùy biến muộn / Postponement):</strong> Chiến lược của DELL: Họ sản xuất hàng loạt các Khung máy cơ bản (Không màu, Không chip) và trữ ở Bước 2. Khi khách đặt "Đỏ 16GB", họ mới sơn và gắn RAM. Giao hàng mất 6 ngày (Chấp nhận được), mà Tồn kho lại là hàng cơ bản chưa phân biệt, dùng chung cho mọi cấu hình (Risk Pooling). Hoàn hảo!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #14b8a6;">🎯 Điểm Tách Biệt Ranh Giới Đẩy-Kéo & Phép Màu Gom Tụ Rủi Ro</div>
+                    <p>Trong thiết kế chuỗi cung ứng, **Decoupling Point (Điểm tách biệt tồn kho / Customer Order Decoupling Point - CODP)** là mắt xích phân định ranh giới chiến lược giữa hai chu kỳ hoạt động:</p>
+                    <p>- <strong>Chu kỳ Đẩy (Push / Speculation)</strong>: Vận hành ở phía trước điểm tách biệt, hàng hóa được sản xuất hàng loạt dựa trên dự báo nhu cầu thị trường dài hạn để tối ưu chi phí đơn vị.</p>
+                    <p>- <strong>Chu kỳ Kéo (Pull / Commitment)</strong>: Vận hành ở phía sau điểm tách biệt, chỉ được kích hoạt sản xuất lắp ráp khi nhận được đơn hàng thực tế của khách hàng.</p>
+                    <p><strong>Bốn mô hình sản xuất kinh điển:</strong></p>
+                    <p>1. <strong>MTS (Make-to-Stock - Trữ thành phẩm)</strong>: Giao hàng tức thời (0 ngày) nhưng chi phí lưu kho đắt đỏ và rủi ro lỗi thời cực kỳ cao.</p>
+                    <p>2. <strong>ATO (Assemble-to-Order - Trữ bán thành phẩm)</strong>: Trữ sẵn phôi chung, lắp ráp hoàn thiện khi có cấu hình khách yêu cầu. Mô hình trung hòa tuyệt vời.</p>
+                    <p>3. <strong>MTO (Make-to-Order - Trữ nguyên liệu thô)</strong>: Chi phí trữ kho rẻ nhất nhưng Lead time giao hàng dài nhất, dễ mất khách vào tay đối thủ.</p>
+                    <p>4. <strong>ETO (Engineer-to-Order - Thiết kế theo đơn)</strong>: Thiết kế mới hoàn toàn từ đầu theo yêu cầu dự án đặc biệt.</p>
+                    <p><strong>Lợi ích Gom tụ Rủi ro (Risk Pooling):</strong> Việc giữ tồn kho dưới dạng "bán thành phẩm chưa biệt hóa" ở khâu ATO giúp gom cầu của nhiều cấu hình thành phẩm lại. Biến động cầu tổng luôn thấp hơn biến động cầu riêng lẻ, giúp doanh nghiệp giảm 40% lượng tồn kho an toàn bảo hiểm.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #0d9488;">🏢 Chiến Lược Assemble-to-Order Của Dell & Mô Hình Trì Hoãn Thuốc Nhuộm Của Zara</div>
+                    <p><strong>Case Study 1: Phá Vỡ Bán Lẻ Truyền Thống Bằng Mô Hình ATO Của Dell:</strong> Thập niên 1990, trong khi HP hay Compaq sản xuất sẵn máy tính lưu kho đại lý (MTS) đối mặt rủi ro giảm giá trị chip hàng tuần, Michael Dell phát minh ra mô hình bán hàng trực tiếp. Khách hàng tự do chọn cấu hình CPU, RAM, ổ cứng trên website của Dell. Nhà máy Dell chỉ trữ sẵn các linh kiện thô và khung máy cơ bản (Base chassis) ở ranh giới ATO. Ngay khi tiền cọc của khách đổ về hệ thống, quy trình PULL được kích hoạt, công nhân lắp ráp và giao hàng trong 4-6 ngày. Mô hình này giúp Dell duy trì vòng quay tồn kho dưới 5 ngày, vượt trội hoàn toàn so với 60 ngày của đối thủ.</p>
+                    <p><strong>Case Study 2: Chiến Thuật "Trì Hoãn Nhuộm Vải" (Late Customization) Của Zara:</strong> Để duy trì tốc độ đưa BST mới ra cửa hàng trong vòng 15 ngày, hãng thời trang nhanh Zara (Tây Ban Nha) áp dụng chiến lược trì hoãn cực kỳ thông minh. Thay vì sản xuất sẵn hàng triệu chiếc áo thun nhuộm màu theo xu hướng phỏng đoán (MTS), Zara mua sẵn một lượng khổng lồ vải mộc không màu (chưa biệt hóa) ở khâu PUSH. Khi hệ thống POS báo cáo màu Hồng đang cháy hàng tại Paris còn màu Xanh đang ế ẩm tại Madrid, Zara lập tiếp kích hoạt quy trình PULL nhuộm vải mộc sang màu Hồng và may thành phẩm giao siêu tốc đến cửa hàng. Điều này giúp Zara triệt tiêu rủi ro tồn kho ế lệch loại màu sắc.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Thời Gian Chờ Đợi Của Khách Hàng (Customer Lead Time)</div>
+                        <div class="kpi-desc">Tổng thời gian tính từ lúc khách đặt hàng cho đến khi nhận được sản phẩm thành phẩm tại tay.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💸 Vòng Quay Tồn Kho (Inventory Turnover)</div>
+                        <div class="kpi-desc">Số lần hàng tồn kho trung bình được bán hoặc thay thế trong một năm. Chỉ số này càng cao phản ánh hiệu quả đọng vốn cực tốt của mô hình PULL/ATO.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Nghệ Thuật Định Vị Ranh Giới Đẩy-Kéo & Tối Ưu Hóa Dòng Tồn Kho</div>
+                    <ul>
+                      <li><strong>Không Có Mô Hình Hoàn Hảo Nhất, Chỉ Có Mô Hình Phù Hợp Nhất:</strong> Sếp cần hiểu rõ đặc tính sản phẩm để định vị ranh giới CODP. Sản phẩm có nhu cầu cao ổn định, vòng đời dài (ví dụ: nước ngọt Coca-Cola) nên áp dụng MTS để tối ưu chi phí sản xuất lớn. Ngược lại, sản phẩm có tính tùy biến cao, vòng đời ngắn, nhạy cảm công nghệ (ví dụ: thiết bị y tế, laptop gaming) bắt buộc phải đẩy ranh giới về ATO hoặc MTO.</li>
+                      <li><strong>Thiết Kế Sản Phẩm Theo Dạng Mô-đun (Modular Design):</strong> Để triển khai thành công chiến lược trì hoãn (Postponement) tại điểm tách biệt, bộ phận R&D phải thiết kế sản phẩm theo dạng các mô-đun lắp ghép tiêu chuẩn. Ví dụ: nguồn điện máy in có thể tháo lắp tùy biến theo chuẩn ổ cắm các nước thay vì hàn cứng vào bo mạch từ đầu. Thiết kế mô-đun hóa chính là nền tảng kỹ thuật cho sự linh hoạt chuỗi cung ứng.</li>
+                      <li><strong>Đồng Bộ Hệ Thống WMS & Lịch Sản Xuất Thời Gian Thực:</strong> Khi dịch ranh giới CODP về phía ATO/MTO, áp lực giao hàng nhanh đè nặng lên khâu PULL. Sếp phải đầu tư hệ thống phần mềm quản lý kho bãi (WMS) và điều độ sản xuất (APS) tự động hóa cao độ để ngay khi nhận đơn hàng trực tuyến, linh kiện được xuất kho và xếp lịch chạy máy tức thời không trễ một giây.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -184,7 +250,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { selectPoint(1); };

@@ -27,6 +27,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -70,18 +85,62 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #d946ef; margin-top: 0;">📚 Cẩm nang Thị trường Vận tải (Freight Procurement)</h3>
-            <p><strong>Routing Guide (Sổ tay điều xe)</strong> của các tập đoàn khổng lồ như P&G hay Unilever luôn phân bổ xe tải theo dạng Danh mục (Portfolio).</p>
-            <ul>
-                <li><strong>100% Contract (Bảo thủ):</strong> Rất nhàn nhã. Tuy nhiên, vào những tháng thấp điểm (Tháng 2, 3), giá xe ngoài đường có $800, nhưng bạn vẫn phải nghiến răng trả $1,200 cho nhà xe vì đã trót ký hợp đồng. Bạn mất tiền oan uổng.</li>
-                <li><strong>100% Spot (Liều mạng):</strong> Bạn ăn đẫm vào các tháng thấp điểm vì bắt được xe rẻ ($800). NHƯNG, đến mùa Black Friday (Tháng 11, 12), cháy xe toàn quốc, bạn buộc phải đấu giá $2,500/xe để cứu hàng. Tiền lời của 10 tháng trước bay sạch trong 1 tháng!</li>
-                <li><strong>Danh mục Tối ưu (Optimal Portfolio - Thường là 70-80% Contract, 20-30% Spot):</strong> Ký hợp đồng cứng cho nhu cầu vận tải cơ bản. Chừa lại 20-30% ra chợ Spot. 
-                <br>➔ Khi Spot rẻ: Bạn thuê ngoài 30% này để kéo chi phí trung bình xuống.
-                <br>➔ Khi Spot đắt vọt: Dù phải trả $2,500 cho 3 xe, bạn vẫn có 7 xe được bảo vệ giá ở mức $1,200. Bạn vừa hớt được váng mùa ế, vừa sống sót qua mùa cao điểm.</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #d946ef;">🚚 Quản Trị Rủi Ro Cước Vận Tải: Đánh Đổi Giữa Spot vs. Contract</div>
+                    <p>Trong vận tải bộ và vận tải biển chặng dài (Long-haul freight), doanh nghiệp luôn phải đối mặt với sự biến động chu kỳ dữ dội của cước phí. Hai phương thức mua sắm dịch vụ vận tải cơ bản:</p>
+                    <p>- <strong>Cước Hợp Đồng (Contract Rate)</strong>: Giá cước cố định cam kết dài hạn (thường là 1 năm) ký kết trực tiếp với hãng vận chuyển (Carrier). Ưu điểm: Đảm bảo công suất xe ứng trực (Capacity guarantee) và giữ chi phí bình ổn, dễ dự báo ngân sách tài chính.</p>
+                    <p>- <strong>Cước Giao Ngay (Spot Rate)</strong>: Giá cước thả nổi mua bán tự do trên thị trường chặng ngắn theo cung cầu tức thời. Cực rẻ khi thị trường ế ẩm (Low season), nhưng tăng phi mã (gấp 3-5 lần) khi vào mùa cao điểm mua sắm (Peak season - Lễ Tết, Black Friday).</p>
+                    <p><strong>Nghệ thuật Quản lý Danh mục (Freight Portfolio Management):</strong> Đặt cược 100% vào Spot là hành vi liều lĩnh đẩy doanh nghiệp vào rủi ro cháy hàng do không thuê được xe mùa cao điểm. Ngược lại, ôm 100% Contract khiến bạn mất tính cạnh tranh về giá khi thị trường hạ nhiệt. Công thức phân bổ tối ưu kinh đoán thường là **70-80% Contract** để bảo vệ dòng hàng cơ sở và **20-30% Spot** để linh hoạt hớt váng giá rẻ.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #7e22ce;">🏢 Sổ Tay Điều Xe (Routing Guide) Của P&G & Cú Sốc Spot Rate Hậu Đại Dịch 2021</div>
+                    <p><strong>Case Study 1: Quy Trình Định Tuyến Tự Động Của Procter & Gamble (P&G):</strong> Là gã khổng lồ FMCG toàn cầu, P&G vận hành hệ thống Routing Guide phân cấp vô cùng tinh vi. Khi một đơn hàng xuất kho được kích hoạt, phần mềm TMS tự động định tuyến gửi yêu cầu cho hãng xe Contract cấp 1 (Primary Carrier) với mức giá cố định đã thỏa thuận đầu năm. Nếu hãng xe cấp 1 từ chối do thiếu công suất (tỷ lệ Tender Rejection), hệ thống tự động chuyển xuống hãng xe Contract cấp 2. Chỉ khi toàn bộ danh sách Contract từ chối, P&G mới đẩy lệnh lên sàn Spot tự do (Spot auction board). Quy trình kỷ luật này giúp P&G kiểm soát tổng chi phí logistics tối ưu bất chấp biến động thị trường.</p>
+                    <p><strong>Case Study 2: Thảm Họa Chi Phí Vận Tải Biển Biến Động (2021):</strong> Sau đại dịch Covid-19, cước Spot container từ Châu Á sang bờ Tây nước Mỹ vọt từ $1,500 lên mức kỷ lục hơn **$20,000/container 40ft** (tăng gấp 13 lần). Nhiều doanh nghiệp bán lẻ nhỏ phụ thuộc hoàn toàn vào thị trường Spot đã phải tuyên bố phá sản hoặc hoãn nhập hàng do giá cước logistics vượt quá giá trị hàng hóa. Ngược lại, các tập đoàn bán lẻ khổng lồ như Walmart, Target hay Home Depot đã bảo vệ biên lợi nhuận cực tốt nhờ ký hợp đồng Contract dài hạn trước đó, thậm chí tự thuê tàu container riêng (chartered vessels) để tự chủ vận tải.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Tỷ Lệ Chấp Nhận Hợp Đồng (Tender Acceptance Rate - TAR)</div>
+                        <div class="kpi-desc">Tỷ lệ phần trăm các chuyến hàng được hãng xe Contract đồng ý vận chuyển theo mức giá cam kết. TAR sụt giảm phản ánh thị trường Spot đang nóng lên và đối tác đang "bẻ kèo" ra ngoài chạy Spot kiếm lời nhiều hơn.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💵 Độ Lệch Cước Spot so với Contract (Spot-to-Contract Premium)</div>
+                        <div class="kpi-desc">Chênh lệch phần trăm giữa giá Spot ngoài đường và giá Contract ký kết. Chỉ số này định hướng cho sếp điều chỉnh tỷ lệ phân bổ danh mục mùa vụ tiếp theo.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Mua Sắm Vận Tải Bền Vững & Phòng Ngừa Rủi Ro</div>
+                    <ul>
+                      <li><strong>Xem Đối Tác Vận Tải Là Đối Tác Chiến Lược (Carrier of Choice):</strong> Khi thị trường Spot hạ nhiệt sâu, nhiều sếp ép nhà xe Contract phải hạ giá cước ngang Spot hoặc cố tình bẻ hợp đồng để ra chợ Spot gom xe rẻ. Đây là sai lầm chết người hủy hoại lòng tin. Đến khi thị trường khan hiếm trở lại, các nhà xe sẽ thẳng thừng từ chối cấp năng lực cho bạn (Tender Rejection 100%), khiến doanh nghiệp chịu tổn thất cháy hàng còn lớn hơn nhiều.</li>
+                      <li><strong>Ký Hợp Đồng Có Điều Khoản Trượt Giá (Indexed Contracts):</strong> Đối với các tuyến vận tải biến động xăng dầu hoặc cước biển sâu, hãy áp dụng điều khoản cước điều chỉnh theo chỉ số thị trường (như Freightos Baltic Index hoặc chỉ số dầu DO). Giá cước sẽ tự động tăng/giảm theo biên độ thỏa thuận, giúp chia sẻ rủi ro công bằng và giữ chân đối tác bền lâu.</li>
+                      <li><strong>Ứng Dụng Sàn Đấu Giá Vận Tải Ngược (Private Freight Auction):</strong> Đối với phần nhu cầu Spot (20-30%), không nên gọi điện khảo giá thủ công tốn thời gian. Hãy thiết lập một cổng đấu thầu nội bộ kín dành cho 5-10 nhà xe quen thuộc, cho phép họ đấu giá ngược trong vòng 2 giờ. Cạnh tranh lành mạnh sẽ giúp bạn thu về mức giá Spot tốt nhất thị trường ngay tức khắc.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -181,7 +240,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
     </script>
 </body>

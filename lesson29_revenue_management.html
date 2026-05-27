@@ -33,6 +33,21 @@
         
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 180px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -75,16 +90,63 @@
         <div class="log-container" id="logContent"></div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #c084fc; margin-top: 0;">📚 Cẩm nang Yield Management (Quy tắc Littlewood)</h3>
-            <p><strong>Revenue Management</strong> được phát minh bởi American Airlines vào những năm 1980, sinh ra hàng tỷ Đô la lợi nhuận bổ sung mỗi năm mà không tốn thêm 1 giọt xăng nào.</p>
-            <ul>
-                <li><strong>Cạm bẫy Bán sạch (0% Reserve):</strong> Tâm lý "Thà bán rẻ còn hơn ghế trống bay lên trời" khiến bạn bán 100 ghế với giá $50 (Thu $5,000). Ngày mai, có 30 người cần bay gấp sẵn sàng trả $150, bạn đành nói "Hết chỗ". Bạn mất trắng cơ hội ăn phần chênh lệch.</li>
-                <li><strong>Cạm bẫy Giữ quá nhiều (60% Reserve):</strong> Bạn giữ lại tới 60 ghế để chờ khách xịn $150. Nhưng đến giờ bay, chỉ có 30 khách xịn xuất hiện. 30 ghế còn lại bị bỏ trống (Empty). Chỗ trống trên máy bay là thứ hàng hóa thiu thối nhanh nhất thế giới: Khi cửa máy bay đóng lại, giá trị của nó = 0. Bạn lỗ thê thảm.</li>
-                <li><strong>Quy tắc Littlewood:</strong> Số lượng ghế tối ưu cần giữ lại phụ thuộc vào tỷ lệ giá <code>(Giá rẻ / Giá cao)</code> và Xác suất phân phối khách hàng. Trong game này, mức Reserve tối ưu thường nằm quanh vùng <strong>30 đến 40 ghế</strong>. Đó là cách bạn vừa lấp đầy máy bay bằng giá nền, vừa vắt kiệt túi tiền của khách hàng trễ giờ!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #8b5cf6;">✈️ Quy Tắc Littlewood & Bài Toán Đánh Đổi Doanh Thu Yield Management</div>
+                    <p>Trong quản trị chuỗi cung ứng dịch vụ và vận tải, **Revenue Management (Quản trị doanh thu / Yield Management)** là khoa học định giá động nhằm tối đa hóa doanh thu từ một năng lực cung ứng cố định và dễ hao tổn (Perishable Assets - ví dụ: chỗ trống trên máy bay, khoang tàu container, phòng khách sạn).</p>
+                    <p>Đặc tính của Perishable Assets: Có giá trị rơi về **bằng 0 tuyệt đối** ngay khi chuyến bay cất cánh hoặc qua ngày. Do đó, doanh nghiệp đối mặt với 2 loại tổn thất lớn:</p>
+                    <p>1. <strong>Tổn thất Bỏ trống (Spoilage - Lãng phí ghế trống)</strong>: Do giữ lại quá nhiều chỗ giá cao (Protection Level) nhưng nhu cầu thực tế không tới, khiến phương tiện phải chạy rỗng chỗ.</p>
+                    <p>2. <strong>Tổn thất Bán rẻ (Spillage - Tràn nhu cầu rẻ)</strong>: Do nôn nóng lấp đầy chỗ trống quá sớm bằng giá rẻ, dẫn đến hết chỗ khi khách giá cao (Last-minute) xuất hiện muộn.</p>
+                    <p><strong>Quy tắc Littlewood (Littlewood's Rule):</strong> Công thức toán học chỉ ra rằng sếp nên dừng bán chỗ giá rẻ $P_L$ khi xác suất bán được chỗ giá cao tiếp theo $P_H$ nhân với giá của nó nhỏ hơn giá rẻ: $Pr(Demand > Protection) \times P_H < P_L$.</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #c084fc;">🏢 American Airlines Khai Sinh Doanh Thu Động & Thuật Toán Phân Hạng Vé Vietjet</div>
+                    <p><strong>Case Study 1: American Airlines Đánh Bại People Express (Thập Niên 1980):</strong> Năm 1985, People Express ra đời với mô hình giá siêu rẻ đe dọa các ông lớn hàng không. Thay vì hạ giá toàn bộ vé để cạnh tranh trực tiếp (tự sát biên lợi nhuận), American Airlines đã phát minh ra hệ thống quản trị doanh thu **DINAMO**. Họ phân chia mỗi chuyến bay thành nhiều hạng vé (Buckets). Họ bán một số lượng ghế giá rẻ giới hạn tương đương đối thủ để lấp đầy phần đáy máy bay, đồng thời khóa chặt số ghế còn lại để bán cho hành khách công tác (business travelers) xuất hiện muộn với giá đắt gấp 4 lần. Chiến lược định giá động thông minh này đã vắt kiệt doanh số của People Express, khiến đối thủ phá sản chỉ sau vài năm.</p>
+                    <p><strong>Case Study 2: Chiến Thuật Quản Trị Giá Vé Máy Bay Của Vietjet Air:</strong> Là hãng hàng không giá rẻ (LCC) thành công tại Việt Nam, Vietjet Air ứng dụng triệt để thuật toán định giá động. Một chuyến bay của Vietjet từ TP.HCM đi Hà Nội được chia nhỏ thành hơn 10 hạng đặt chỗ (RBD - Reservation Book Designator) với các mức giá tăng dần. Thuật toán tự động theo dõi lịch sử và tốc độ đặt chỗ (Booking Curve) thời gian thực. Nếu tốc độ mua vé nhanh hơn dự kiến (Spillage risk), hệ thống tự động khóa hạng vé rẻ nhất và mở hạng vé cao hơn. Ngược lại, nếu sát ngày bay mà ghế trống còn nhiều (Spoilage risk), Vietjet sẽ tung ra các đợt flash-sale giờ vàng để lấp đầy khoang máy.</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">🔄 Hệ Số Lấp Đầy (Load Factor - LF %)</div>
+                        <div class="kpi-desc">Tỷ lệ số ghế thực tế có khách ngồi trên tổng số ghế thiết kế. LF cao phản ánh khả năng tận dụng công suất tốt nhưng chưa chắc doanh thu đã tối ưu nếu toàn bán vé giá rẻ.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">💵 Doanh Thu Trên Mỗi Chỗ Cung Ứng (RevPAS)</div>
+                        <div class="kpi-desc">RevPAS = Tổng doanh thu / Tổng số chỗ cung cấp. Đây là chỉ số tối thượng kết hợp cả hiệu suất lấp đầy và giá bán trung bình để phản ánh chất lượng Yield Management.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Định Giá Của Lãnh Đạo & Chống Xói Mòn Thương Hiệu</div>
+                    <ul>
+                      <li><strong>Thiết Lập Rào Cản Định Giá (Rate Fences):</strong> Làm sao để khách VIP có nhiều tiền không mua được vé giá rẻ của khách nghèo? Hãy dựng lên các rào cản hành vi (Fences): Yêu cầu đặt trước 14 ngày, không được hoàn hủy vé, hoặc bắt buộc phải lưu trú qua đêm thứ Bảy. Khách đi du lịch tự túc sẽ sẵn sàng chấp nhận các điều kiện này để lấy giá rẻ, trong khi khách doanh nhân đi công tác khẩn cấp sẽ chấp nhận trả giá cao để lấy sự linh hoạt đổi giờ bay.</li>
+                      <li><strong>Ngăn Chặn Hiện Tượng Ghế Trống Ảo (No-Show & Overbooking):</strong> Nhiều khách hàng đặt chỗ trước nhưng đến giờ bay không xuất hiện (No-show), gây lãng phí năng lực nghiêm trọng. Sếp nên áp dụng chính sách bán vượt công suất nhẹ (Overbooking) dựa trên tỷ lệ No-show lịch sử (ví dụ bán 102 vé cho máy bay 100 chỗ) kết hợp với phí phạt hủy chỗ (Cancellation fees) để bảo vệ dòng tiền.</li>
+                      <li><strong>Tránh Bẫy "Giảm Giá Đại Trà" Phá Hủy Uy Tín:</strong> Khi sản phẩm tồn kho ế ẩm, việc giảm giá đại trà ngay lập tức sẽ tạo ra thói quen "chờ giảm giá" của khách hàng (Strategic consumers), xói mòn nghiêm trọng giá trị thương hiệu. Hãy áp dụng hình thức giảm giá ẩn danh thông qua các combo đóng gói hoặc bán qua bên thứ ba (opaque channels) để xả hàng mà không làm hỏng cấu trúc giá niêm yết cốt lõi.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -149,7 +211,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { initMap(); updateSlider(); };

@@ -34,6 +34,21 @@
 
         .log-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; height: 120px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px;}
         .log-entry { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; }
+
+        /* Luxury MBA Theory Tabs Styling */
+        .theory-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 25px; padding-bottom: 5px; overflow-x: auto; }
+        .theory-tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 700; padding: 10px 15px; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .theory-tab-btn:hover { color: #f8fafc; }
+        .theory-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .theory-tab-content { display: none; animation: fadeIn 0.5s ease forwards; }
+        .theory-tab-content.active { display: block; }
+        .theory-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .theory-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .kpi-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; }
+        .kpi-title { font-weight: 700; color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+        .kpi-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -118,16 +133,63 @@
         </div>
 
         <div style="text-align: center; margin-top: 10px;">
-            <button onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
+            <button id="toggleGuideBtn" onclick="toggleGuide()" style="background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 10px 20px; border-radius: 8px; cursor: pointer;">📖 Xem Cẩm nang Chiến thuật</button>
         </div>
-        <div id="strategyGuide" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.6;">
-            <h3 style="color: #22d3ee; margin-top: 0;">📚 Cẩm nang Sản xuất Tinh gọn (Lean - OEE)</h3>
-            <p><strong>OEE (Overall Equipment Effectiveness)</strong> là chỉ số đo lường hiệu quả "Thực sự" của nhà máy. Nó phơi bày sự thật phũ phàng.</p>
-            <ul>
-                <li><strong>Cạm bẫy của Phép nhân (Multiplication Rule):</strong> Nếu mỗi khía cạnh của máy bạn đều khá tốt (90% Sẵn sàng, 90% Tốc độ, 90% Tỷ lệ chuẩn). Bạn nghĩ máy chạy tốt? KHÔNG! OEE = 0.9 x 0.9 x 0.9 = <strong>72.9%</strong>. Bạn mất đi GẦN 30% công suất nhà máy chỉ vì mỗi chỗ hao hụt một ít.</li>
-                <li><strong>Hiệu ứng Cấp số nhân:</strong> Đầu tư để tăng 15% Sẵn sàng KHÔNG CHỈ mang lại 15% sản lượng. Nó sẽ nhân với Performance và Quality hiện tại để đẩy tổng OEE lên một mốc mới.</li>
-                <li><strong>World-Class OEE (Tiêu chuẩn Toyota):</strong> OEE lớn hơn 85% được coi là đẳng cấp thế giới. Thường là: Sẵn sàng 90% x Hiệu năng 95% x Chất lượng 99.9%. Trò chơi yêu cầu bạn chi tiêu $100k khôn ngoan nhất để ghép các Nâng cấp lại và vượt mốc 85% OEE!</li>
-            </ul>
+        
+        <div id="strategyGuide" style="display: none; margin-top: 20px; background: var(--panel-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="theory-tabs">
+                <button class="theory-tab-btn active" onclick="switchTab(this, 'core-theory')">LÝ THUYẾT CỐT LÕI</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'case-study')">CASE STUDY THỰC TẾ</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'kpi-metrics')">KPIS ĐO LƯỜNG</button>
+                <button class="theory-tab-btn" onclick="switchTab(this, 'exec-insights')">BÀI HỌC CHO SẾP</button>
+            </div>
+
+            <!-- Tab 1: Core Theory -->
+            <div id="core-theory" class="theory-tab-content active">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #22d3ee;">⚙️ OEE & 3 Trụ Cột Đo Lường Hiệu Suất Thiết Bị Thực Tế</div>
+                    <p>Trong Lean Manufacturing, <strong>OEE (Overall Equipment Effectiveness - Hiệu suất thiết bị toàn phần)</strong> là chỉ số đo lường hiệu quả khai thác tài sản cố định (máy móc) thực tế so với tiềm năng thiết kế tối đa. OEE được cấu thành bởi 3 tỷ lệ thành phần:</p>
+                    <p>1. <strong>Mức sẵn sàng (Availability - A)</strong>: Tỷ lệ thời gian máy chạy thực tế so với thời gian chạy dự kiến. Tổn thất do: máy hỏng hóc, dừng đột ngột, thay khuôn (setup/changeover).</p>
+                    <p>2. <strong>Hiệu năng (Performance - P)</strong>: Tốc độ chạy thực tế so với tốc độ thiết kế của máy. Tổn thất do: máy chạy chậm hơn công suất định mức, dừng vặt (micro-stops dưới 5 phút).</p>
+                    <p>3. <strong>Chất lượng (Quality - Q)</strong>: Tỷ lệ sản phẩm đạt tiêu chuẩn chất lượng (First Pass Yield) so với tổng số lượng sản xuất ra. Tổn thất do: phế phẩm, sản phẩm lỗi phải gia công lại (rework).</p>
+                    <p><strong>Cạm bẫy cấp số nhân (Multiplication Trap):</strong> OEE = A × P × Q. Nếu một quản đốc báo cáo A, P, Q đều đạt mức "khá tốt" 90%, OEE thực tế toàn máy chỉ là 0.9 × 0.9 × 0.9 = <strong>72.9%</strong>. Điều này có nghĩa là bạn đang lãng phí tới 27% năng lực sản xuất của máy mà không hề hay biết!</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Case Study -->
+            <div id="case-study" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #0284c7;">🏢 Ứng Dụng SMED Tại Toyota & Quản Lý OEE Cánh Tay Robot Của VinFast</div>
+                    <p><strong>Case Study 1: Kỹ Thuật Thay Khuôn Cực Nhanh (SMED) Của Toyota:</strong> Thập niên 1950, Shigeo Shingo phát minh ra phương pháp SMED (Single-Minute Exchange of Die) tại Toyota. Ban đầu, việc thay thế các khuôn dập kim loại khổng lồ cho thân xe tốn đến **4 giờ** dừng máy (làm giảm nghiêm trọng chỉ số Availability). Bằng cách phân tách các bước thay khuôn thành công việc bên ngoài (chuẩn bị khi máy vẫn chạy) và bên trong (chỉ thực hiện khi máy dừng), Toyota đã giảm thời gian thay khuôn xuống còn **dưới 3 phút**. Điều này giúp giải phóng năng lực Availability đáng kể, cho phép Toyota sản xuất lô nhỏ linh hoạt thay vì ép sản xuất lô lớn gây tồn kho.</p>
+                    <p><strong>Case Study 2: Hệ Thống Giám Sát OEE IoT Thời Gian Thực Của VinFast:</strong> Tại tổ hợp nhà máy sản xuất ô tô hiện đại của VinFast ở Hải Phòng, các xưởng hàn thân xe (Body Shop) và xưởng dập (Press Shop) được trang bị hàng trăm cảm biến IoT kết nối trực tiếp với hệ thống MES. Mọi chu kỳ hoạt động của cánh tay robot ABB đều được ghi nhận tự động. Nếu một robot bị trễ 2 giây so với nhịp Takt Time thiết kế, hệ thống lập tức cảnh báo sụt giảm Hiệu năng (P). Nếu tỷ lệ hàn lỗi đạt quá ngưỡng 0.5%, tín hiệu Andon kích hoạt lập tức để điều chỉnh thông số hàn, giúp duy trì OEE toàn xưởng ở mức cực cao (>88%).</p>
+                </div>
+            </div>
+
+            <!-- Tab 3: KPIs -->
+            <div id="kpi-metrics" class="theory-tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">📊 World-Class OEE Benchmark</div>
+                        <div class="kpi-desc">Tiêu chuẩn vàng toàn cầu của Toyota: OEE đạt trên <strong>85%</strong>. Cấu thành từ: Availability > 90%, Performance > 95%, và Quality > 99.9%.</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">⏱️ Mean Time Between Failures (MTBF)</div>
+                        <div class="kpi-desc">Thời gian trung bình giữa các sự cố hỏng máy. Chỉ số này càng cao chứng tỏ công tác bảo trì phòng ngừa (TPM) hoạt động càng tốt.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Executive Insights -->
+            <div id="exec-insights" class="theory-tab-content">
+                <div class="theory-card">
+                    <div class="theory-title" style="color: #10b981;">💡 Executive Insights: Tư Duy Đầu Tư Thiết Bị & Tối Ưu Hóa OEE Thực Chiến</div>
+                    <ul>
+                      <li><strong>Tránh Bẫy "Ép Máy Chạy Quá Tải":</strong> Để đạt KPI sản lượng ngắn hạn, nhiều quản đốc ép máy chạy quá công suất thiết kế hoặc bỏ qua các chu kỳ bảo dưỡng định kỳ. Điều này làm tăng tạm thời hiệu năng (P) nhưng phá hủy trầm trọng tuổi thọ máy, dẫn đến hỏng hóc lớn gây sập Availability (A) sau đó. Hãy nhớ: Bảo trì phòng ngừa luôn rẻ hơn sửa chữa khẩn cấp.</li>
+                      <li><strong>Khắc Phục 6 Đại Tổn Thất (Six Big Losses):</strong> Khi sếp muốn cải thiện OEE, hãy yêu cầu bộ phận kỹ thuật bóc tách dữ liệu theo 6 nhóm: 1. Hỏng hóc thiết bị, 2. Thiết lập & Điều chỉnh, 3. Dừng vặt không tải, 4. Giảm tốc độ chạy máy, 5. Lỗi quy trình khởi động, 6. Phế phẩm trong vận hành. Mỗi nhóm tổn thất có một giải pháp khắc phục chuyên biệt (ví dụ: SMED cho setup, Poka-Yoke cho lỗi chất lượng).</li>
+                      <li><strong>Đồng Bộ Nhịp Độ Toàn Chuỗi (Takt Time Alignment):</strong> Cải thiện OEE ở một máy không phải là điểm nghẽn (non-bottleneck) của nhà máy chỉ gây thêm ứ đọng tồn kho bán thành phẩm (WIP). Hãy đầu tư tối ưu hóa OEE tập trung vào khâu nghẽn (Constraint) để giải phóng toàn bộ năng lực sản xuất tổng thể của chuỗi cung ứng.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -192,7 +254,22 @@
 
         function toggleGuide() {
             let g = document.getElementById('strategyGuide');
-            g.style.display = g.style.display === 'none' ? 'block' : 'none';
+            let btn = document.getElementById('toggleGuideBtn');
+            if (g.style.display === 'none') {
+                g.style.display = 'block';
+                btn.innerText = '📖 Ẩn Cẩm nang Chiến thuật';
+            } else {
+                g.style.display = 'none';
+                btn.innerText = '📖 Xem Cẩm nang Chiến thuật';
+            }
+        }
+
+        function switchTab(el, tabId) {
+            let container = el.closest('#strategyGuide');
+            container.querySelectorAll('.theory-tab-btn').forEach(btn => btn.classList.remove('active'));
+            container.querySelectorAll('.theory-tab-content').forEach(content => content.classList.remove('active'));
+            el.classList.add('active');
+            container.querySelector('#' + tabId).classList.add('active');
         }
 
         window.onload = () => { calcOEE(); updateButtons(); };
